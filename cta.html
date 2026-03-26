@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect — sorigrim</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .cta-main { padding: 15rem 0; text-align: center; }
+        .sns-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 6rem; }
+        .sns-link {
+            padding: 3rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+            text-decoration: none; color: white; transition: var(--transition-premium);
+            display: flex; flex-direction: column; align-items: center; gap: 1rem;
+        }
+        .sns-link:hover { background: white; color: black; transform: translateY(-10px); }
+        .sns-link span { font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; }
+        .sns-link h3 { font-family: var(--font-editorial); font-size: 1.8rem; font-weight: 400; font-style: italic; }
+    </style>
+</head>
+<body>
+    <nav id="global-nav">
+        <a href="/" class="brand">sorigrim</a>
+        <div class="nav-links">
+            <a href="/portfolio/">Archive</a>
+            <a href="/cta.html" style="opacity: 1;">Connect</a>
+        </div>
+    </nav>
+
+    <main class="container cta-main">
+        <header class="reveal">
+            <span class="tag" style="color: var(--sori-accent);">Join the Journey</span>
+            <h1 style="font-size: clamp(3rem, 10vw, 8rem); margin-top: 2rem;">Let's Create.</h1>
+            <p style="opacity: 0.5; margin-top: 2rem; font-size: 1.2rem;">인공지능이 그리는 새로운 지평에 함께하세요.</p>
+        </header>
+
+        <div id="sns-list" class="sns-grid reveal">
+            <!-- Dynamic SNS Links -->
+        </div>
+
+        <section style="margin-top: 10rem;" class="reveal">
+            <p style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.3em; opacity: 0.4;">Direct Inquiry</p>
+            <a href="mailto:contact@sorigrim.com" style="font-family: var(--font-editorial); font-size: 3rem; color: white; text-decoration: none; display: block; margin-top: 1.5rem; font-style: italic;">contact@sorigrim.com</a>
+        </section>
+    </main>
+
+    <sg-footer></sg-footer>
+
+    <script type="module">
+        async function loadSNS() {
+            try {
+                const res = await fetch('/api/settings');
+                const data = await res.json();
+                const list = document.getElementById('sns-list');
+                if (data.length > 0) {
+                    list.innerHTML = data.map(item => `
+                        <a href="${item.value}" target="_blank" class="sns-link">
+                            <span>${item.key}</span>
+                            <h3>Explore →</h3>
+                        </a>
+                    `).join('');
+                } else {
+                    list.innerHTML = '<p style="grid-column: 1/-1; opacity: 0.3;">준비된 채널이 없습니다.</p>';
+                }
+                document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
+            } catch (e) { }
+        }
+        document.addEventListener('DOMContentLoaded', loadSNS);
+    </script>
+</body>
+</html>
