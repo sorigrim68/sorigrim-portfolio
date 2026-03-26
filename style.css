@@ -1,0 +1,94 @@
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,700;1,700&display=swap');
+
+@layer base, components, utilities;
+
+@layer base {
+  :root {
+    /* Brand Colors - No Purple Bias, Cinematic Tone */
+    --sori-bg: oklch(12% 0.02 240); /* Deep Slate/Midnight */
+    --sori-fg: oklch(98% 0.01 240);
+    --sori-accent: oklch(75% 0.12 180); /* Muted Cyan/Mint */
+    --sori-muted: oklch(50% 0.02 240);
+    
+    --font-editorial: "Cormorant Garamond", serif;
+    --font-main: "Pretendard Variable", sans-serif;
+    
+    --transition-premium: all 1.2s cubic-bezier(0.19, 1, 0.22, 1);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    background-color: var(--sori-bg);
+    color: var(--sori-fg);
+    font-family: var(--font-main);
+    line-height: 1.4;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Cinematic Grain Texture */
+  body::after {
+    content: ""; position: fixed; top: -50%; left: -50%; width: 200%; height: 200%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.04; z-index: 10000; pointer-events: none;
+  }
+
+  h1, h2 { font-weight: 900; letter-spacing: -0.05em; line-height: 1; }
+}
+
+@layer components {
+  /* Cinematic Navigation */
+  #global-nav {
+    position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+    padding: 2rem 4rem;
+    display: flex; justify-content: space-between; align-items: center;
+    mix-blend-mode: difference; /* Inverts color based on background */
+  }
+  #global-nav .brand { font-family: var(--font-editorial); font-size: 1.8rem; font-style: italic; text-decoration: none; color: inherit; }
+  #global-nav .links { display: flex; gap: 3rem; }
+  #global-nav .links a { font-size: 0.75rem; font-weight: 600; text-decoration: none; color: inherit; text-transform: uppercase; letter-spacing: 0.2em; opacity: 0.7; transition: opacity 0.3s; }
+  #global-nav .links a:hover { opacity: 1; }
+
+  /* Full-bleed Hero */
+  #hero {
+    height: 100vh; width: 100%; position: relative;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+  }
+  .hero-media {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1;
+    background: radial-gradient(circle at center, transparent, var(--sori-bg));
+  }
+  .hero-media video { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.6); }
+  
+  .hero-content {
+    z-index: 10; text-align: center; max-width: 1000px; padding: 0 2rem;
+  }
+  .hero-content h1 { font-size: clamp(4rem, 12vw, 12rem); margin-bottom: 1.5rem; }
+  .hero-content p { font-size: 1.25rem; font-weight: 300; opacity: 0.6; margin-bottom: 3rem; letter-spacing: 0.05em; }
+
+  .btn-premium {
+    display: inline-flex; padding: 1.2rem 3.5rem; border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.05); backdrop-filter: blur(10px);
+    color: white; text-decoration: none; font-weight: 700; font-size: 0.8rem;
+    text-transform: uppercase; letter-spacing: 0.2em; transition: var(--transition-premium);
+  }
+  .btn-premium:hover { background: white; color: black; transform: scale(1.05); }
+
+  /* Grid 3x3 - Edge to Edge */
+  .grid-archive {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 1px; background: rgba(255,255,255,0.05);
+  }
+  .archive-item {
+    aspect-ratio: 1; position: relative; overflow: hidden; cursor: pointer;
+  }
+  .archive-item img { width: 100%; height: 100%; object-fit: cover; transition: var(--transition-premium); filter: grayscale(0.2); }
+  .archive-item:hover img { transform: scale(1.1); filter: grayscale(0); }
+}
+
+/* Animations */
+.reveal-up { opacity: 0; transform: translateY(40px); transition: var(--transition-premium); }
+.reveal-up.active { opacity: 1; transform: translateY(0); }
