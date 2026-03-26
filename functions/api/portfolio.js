@@ -63,3 +63,4 @@ export async function onRequest(context) {
 
   return new Response("Method not allowed", { status: 405 });
 }
+// Version 1.0.1 - Force Sync
