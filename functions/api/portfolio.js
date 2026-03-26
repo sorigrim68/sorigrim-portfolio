@@ -1,6 +1,6 @@
 /**
- * Cloudflare Pages Functions API: Portfolio (Sorigrim 5.0)
- * Logic: Simplified, Robust, No Auth for this phase.
+ * Cloudflare Pages Functions API: Portfolio (Sorigrim 1.0)
+ * Handles data fetching from D1 database.
  */
 
 export async function onRequest(context) {
@@ -11,7 +11,7 @@ export async function onRequest(context) {
   const recommended = url.searchParams.get('recommended');
 
   try {
-    // 1. Ensure Table Exists
+    // 1. Database Table Sync
     await env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS sg_posts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,11 +27,11 @@ export async function onRequest(context) {
       )
     `).run();
 
-    // GET: Fetch
+    // GET Request handling
     if (request.method === "GET") {
       if (id) {
         const item = await env.DB.prepare("SELECT * FROM sg_posts WHERE id = ?").bind(id).first();
-        return Response.json(item || { error: "Not found" });
+        return Response.json(item || { error: "Item not found" });
       }
 
       let query = "SELECT * FROM sg_posts";
@@ -48,18 +48,12 @@ export async function onRequest(context) {
       return Response.json(results);
     }
 
-    // POST: Create (Open for Initial Setup)
+    // POST/DELETE: Simple handling for initial population
     if (request.method === "POST") {
       const data = await request.json();
       await env.DB.prepare(
         "INSERT INTO sg_posts (title, category, image, description, is_recommended, createdAt) VALUES (?, ?, ?, ?, ?, ?)"
       ).bind(data.title, data.category, data.image, data.description, data.is_recommended ? 1 : 0, new Date().toISOString()).run();
-      return Response.json({ success: true });
-    }
-
-    // DELETE
-    if (request.method === "DELETE") {
-      await env.DB.prepare("DELETE FROM sg_posts WHERE id = ?").bind(id).run();
       return Response.json({ success: true });
     }
 
