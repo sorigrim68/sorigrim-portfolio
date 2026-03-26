@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorigrim | Admin Dashboard</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .admin-main { padding: 8rem 4rem; }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 4rem; }
+        .admin-table th, .admin-table td { padding: 1.5rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .admin-table th { font-size: 0.7rem; text-transform: uppercase; color: var(--sori-muted); letter-spacing: 0.2em; }
+        .admin-table td { font-size: 0.9rem; }
+        .admin-actions { display: flex; gap: 1.5rem; }
+        .admin-actions a, .admin-actions button { background: none; border: none; color: var(--sori-muted); cursor: pointer; font-weight: 700; font-size: 0.7rem; text-transform: uppercase; }
+        .admin-actions a:hover { color: var(--sori-fg); }
+        .admin-actions .del-btn:hover { color: #ff4d4d; }
+    </style>
+</head>
+<body class="bg-surface">
+    <nav id="global-nav">
+        <a href="/" class="brand">sorigrim</a>
+        <div class="nav-links">
+            <a href="/admin/dashboard.html">CMS</a>
+            <a href="/admin/editor.html" class="btn-premium" style="padding: 0.6rem 1.5rem; font-size: 0.6rem;">New Post</a>
+        </div>
+    </nav>
+
+    <main class="admin-main container">
+        <header class="section-header">
+            <h1>Archive Control.</h1>
+        </header>
+
+        <table class="admin-table">
+            <thead>
+                <tr><th>Thumbnail</th><th>Title</th><th>Category</th><th>Actions</th></tr>
+            </thead>
+            <tbody id="admin-list">
+                <!-- Dynamic List -->
+            </tbody>
+        </table>
+    </main>
+
+    <script type="module">
+        async function loadAdminList() {
+            const res = await fetch('/api/portfolio');
+            const data = await res.json();
+            const list = document.getElementById('admin-list');
+            list.innerHTML = data.map(item => `
+                <tr>
+                    <td><img src="${item.image}" style="width: 60px; height: 60px; object-fit: cover; opacity: 0.6;"></td>
+                    <td>${item.title}</td>
+                    <td style="font-size: 0.7rem; font-weight: 800; color: var(--sori-accent);">${item.category}</td>
+                    <td class="admin-actions">
+                        <a href="editor.html?id=${item.id}">Edit</a>
+                        <button class="del-btn" onclick="deleteItem(${item.id})">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        window.deleteItem = async (id) => {
+            if (confirm('Permanently delete this fragments?')) {
+                await fetch(`/api/portfolio?id=${id}`, { method: 'DELETE' });
+                loadAdminList();
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', loadAdminList);
+    </script>
+</body>
+</html>

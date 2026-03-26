@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sorigrim | Edit Content</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .editor-container { padding: 8rem 0; max-width: 800px; }
+        .form-group { margin-bottom: 3rem; }
+        .form-group label { display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--sori-muted); letter-spacing: 0.2em; margin-bottom: 1rem; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 1.2rem; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+            color: white; font-family: inherit; font-size: 1rem;
+        }
+        .form-group input:focus { outline: none; border-color: var(--sori-accent); }
+    </style>
+</head>
+<body>
+    <nav id="global-nav">
+        <a href="/" class="brand">sorigrim</a>
+        <a href="dashboard.html" style="font-size: 0.7rem; color: var(--sori-muted); text-decoration: none;">← Back to CMS</a>
+    </nav>
+
+    <main class="container editor-container">
+        <form id="editor-form">
+            <div class="form-group"><label>Title</label><input type="text" id="title" required></div>
+            <div class="form-group"><label>Category</label><select id="category">
+                <option value="PHOTO WORK">PHOTO WORK</option>
+                <option value="VIDEO WORK">VIDEO WORK</option>
+                <option value="PROMPT SHARE">PROMPT SHARE</option>
+                <option value="AI NEWS">AI NEWS</option>
+            </select></div>
+            <div class="form-group"><label>Thumbnail Image URL</label><input type="url" id="image"></div>
+            <div class="form-group"><label>Short Description</label><textarea id="description" rows="2"></textarea></div>
+            <div class="form-group"><label>Main Content (HTML Support)</label><textarea id="content" rows="10"></textarea></div>
+            <div class="form-group" style="display:flex; align-items:center; gap:1rem;">
+                <input type="checkbox" id="is_recommended" style="width: auto;">
+                <label style="margin-bottom:0;">Pin to Home (Recommended)</label>
+            </div>
+            <button type="submit" class="btn-premium">Save Fragments</button>
+        </form>
+    </main>
+
+    <script type="module">
+        const form = document.getElementById('editor-form');
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('id');
+
+        if (editId) {
+            fetch(`/api/portfolio?id=${editId}`).then(r => r.json()).then(data => {
+                document.getElementById('title').value = data.title;
+                document.getElementById('category').value = data.category;
+                document.getElementById('image').value = data.image || '';
+                document.getElementById('description').value = data.description || '';
+                document.getElementById('content').value = data.content || '';
+                document.getElementById('is_recommended').checked = data.is_recommended === 1;
+            });
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const data = {
+                title: document.getElementById('title').value,
+                category: document.getElementById('category').value,
+                image: document.getElementById('image').value,
+                description: document.getElementById('description').value,
+                content: document.getElementById('content').value,
+                is_recommended: document.getElementById('is_recommended').checked
+            };
+            await fetch('/api/portfolio', {
+                method: 'POST', // Simplified: handles both new and update in this API logic
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+            window.location.href = 'dashboard.html';
+        });
+    </script>
+</body>
+</html>

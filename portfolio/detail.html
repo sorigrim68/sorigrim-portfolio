@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fragment — sorigrim</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .detail-view { padding-bottom: 12rem; }
+        .detail-hero { width: 100%; height: 70vh; overflow: hidden; position: relative; }
+        .detail-hero img, .detail-hero video { width: 100%; height: 100%; object-fit: cover; }
+        .detail-body { max-width: 900px; margin: 6rem auto 0; padding: 0 2rem; }
+        .detail-body header { margin-bottom: 4rem; }
+        .detail-body h1 { font-family: var(--font-editorial); font-size: 4.5rem; font-style: italic; font-weight: 400; margin-bottom: 1.5rem; }
+        .detail-body .tag { font-size: 0.7rem; color: var(--sori-accent); font-weight: 900; letter-spacing: 0.3em; }
+        .rich-text { font-size: 1.25rem; line-height: 1.8; color: var(--sori-muted); font-weight: 300; }
+        .rich-text h2 { color: white; margin: 4rem 0 1.5rem; }
+    </style>
+</head>
+<body>
+    <nav id="global-nav">
+        <a href="/" class="brand">sorigrim</a>
+        <div class="nav-links">
+            <a href="/portfolio/">Archive</a>
+            <a href="/cta.html">Connect</a>
+        </div>
+    </nav>
+
+    <main id="detail-target" class="detail-view">
+        <!-- Dynamic Content -->
+    </main>
+
+    <sg-footer></sg-footer>
+
+    <script type="module">
+        async function loadDetail() {
+            const id = new URLSearchParams(window.location.search).get('id');
+            if (!id) return;
+            const res = await fetch(`/api/portfolio?id=${id}`);
+            const work = await res.json();
+            
+            document.getElementById('detail-target').innerHTML = `
+                <div class="detail-hero reveal">
+                    <img src="${work.image || ''}" alt="${work.title}">
+                </div>
+                <div class="detail-body reveal">
+                    <header>
+                        <span class="tag">${work.category}</span>
+                        <h1>${work.title}</h1>
+                        <p style="font-size: 1.1rem; opacity: 0.6;">${work.description || ''}</p>
+                    </header>
+                    <div class="rich-text">${work.content || 'Content coming soon.'}</div>
+                    <div style="margin-top: 8rem;">
+                        <a href="/portfolio/" class="btn-premium">Return to Archive</a>
+                    </div>
+                </div>
+            `;
+            
+            setTimeout(() => document.querySelectorAll('.reveal').forEach(el => el.classList.add('active')), 100);
+        }
+        document.addEventListener('DOMContentLoaded', loadDetail);
+    </script>
+</body>
+</html>
