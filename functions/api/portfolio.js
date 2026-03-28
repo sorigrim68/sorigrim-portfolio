@@ -12,7 +12,7 @@ export async function onRequest(context) {
   const isHeroParam = url.searchParams.get('is_hero');
 
   try {
-    // 1. Database Table Sync
+    // 1. Database Table Sync (Ensure all columns exist)
     await env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS sg_posts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -39,16 +39,16 @@ export async function onRequest(context) {
 
       if (id) {
         const item = await env.DB.prepare("SELECT * FROM sg_posts WHERE id = ?").bind(id).first();
-        if (!item) return Response.json({ error: "Item not found" });
+        if (!item) return Response.json({ error: "Item not found" }, { status: 404 });
 
         // Fetch Next & Prev
-        const next = await env.DB.prepare("SELECT id, title FROM sg_posts WHERE id > ? ORDER BY id ASC LIMIT 1").bind(id).first();
-        const prev = await env.DB.prepare("SELECT id, title FROM sg_posts WHERE id < ? ORDER BY id DESC LIMIT 1").bind(id).first();
+        const next = await env.DB.prepare("SELECT id, title FROM sg_posts WHERE id > ? AND category != 'HERO_CONFIG' ORDER BY id ASC LIMIT 1").bind(id).first();
+        const prev = await env.DB.prepare("SELECT id, title FROM sg_posts WHERE id < ? AND category != 'HERO_CONFIG' ORDER BY id DESC LIMIT 1").bind(id).first();
 
         return Response.json({ ...item, next, prev });
       }
 
-      let query = "SELECT * FROM sg_posts WHERE category != 'HERO_CONFIG'"; // Hide system configs
+      let query = "SELECT * FROM sg_posts WHERE category != 'HERO_CONFIG'"; 
       let params = [];
       if (recommended === 'true') {
         query += " AND is_recommended = 1";
@@ -66,6 +66,7 @@ export async function onRequest(context) {
     if (request.method === "POST") {
       const data = await request.json();
       const isHero = data.is_hero ? 1 : 0;
+      const isRec = data.is_recommended ? 1 : 0;
 
       // If marking as hero, unmark all others
       if (isHero === 1) {
@@ -73,7 +74,7 @@ export async function onRequest(context) {
       }
 
       if (id) {
-        // UPDATE
+        // UPDATE (Surgical update to match current schema)
         await env.DB.prepare(
           "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ?, is_hero = ? WHERE id = ?"
         ).bind(
@@ -82,7 +83,7 @@ export async function onRequest(context) {
           data.image, 
           data.description, 
           data.content || "", 
-          data.is_recommended ? 1 : 0, 
+          isRec, 
           isHero,
           id
         ).run();
@@ -97,7 +98,7 @@ export async function onRequest(context) {
           data.image, 
           data.description, 
           data.content || "", 
-          data.is_recommended ? 1 : 0, 
+          isRec, 
           isHero,
           new Date().toISOString()
         ).run();
@@ -113,6 +114,7 @@ export async function onRequest(context) {
     }
 
   } catch (e) {
+    console.error("DB Error:", e.message);
     return Response.json({ error: e.message }, { status: 500 });
   }
 
