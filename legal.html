@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal — sorigrim</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .legal-container { padding: 12rem 0; max-width: 800px; margin: 0 auto; }
+        .legal-header { margin-bottom: 5rem; border-bottom: 1px solid var(--border); padding-bottom: 2rem; }
+        .legal-header h1 { font-size: 3rem; font-weight: 800; color: var(--secondary); letter-spacing: -0.03em; }
+        .legal-content { font-size: 1.1rem; color: #444; line-height: 2; }
+        .legal-content h2 { font-size: 1.5rem; color: var(--secondary); margin: 3rem 0 1rem; }
+        .legal-content p { margin-bottom: 1.5rem; }
+        .legal-content ul { margin-bottom: 2rem; padding-left: 1.5rem; }
+        .legal-content li { margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+    <nav id="global-nav">
+      <a href="/" class="brand">sorigrim</a>
+      <div class="nav-links">
+        <a href="/portfolio/">Archive</a>
+      </div>
+    </nav>
+
+    <main class="container">
+        <article class="legal-container">
+            <header class="legal-header">
+                <h1 id="legal-title">Legal Information</h1>
+                <p id="legal-date" style="color: var(--primary); font-weight: 700; margin-top: 1rem; font-size: 0.9rem; text-transform: uppercase;">Effective as of March 2026</p>
+            </header>
+            <div id="legal-body" class="legal-content">
+                <!-- Content injected via script -->
+            </div>
+            <div style="margin-top: 8rem; text-align: center;">
+                <a href="/" class="btn-premium">Return to Home</a>
+            </div>
+        </article>
+    </main>
+
+    <sg-footer></sg-footer>
+
+    <script defer src="/main.js" type="module"></script>
+    <script>
+        const content = {
+            privacy: {
+                title: "Privacy Policy",
+                body: `
+                    <h2>1. Information Collection</h2>
+                    <p>sorigrim respects your privacy and is committed to protecting your personal data. We collect information only necessary to provide our professional portfolio services.</p>
+                    <h2>2. How We Use Data</h2>
+                    <p>The collected data is used to analyze site traffic, improve user experience, and communicate with partners regarding generative vision projects.</p>
+                    <h2>3. Data Security</h2>
+                    <p>We implement technical and organizational measures to ensure a level of security appropriate to the risk of unauthorized access or disclosure.</p>
+                    <h2>4. Third-Party Links</h2>
+                    <p>Our site may include links to third-party websites. Clicking those links may allow third parties to collect or share data about you.</p>
+                `
+            },
+            terms: {
+                title: "Terms of Service",
+                body: `
+                    <h2>1. Acceptance of Terms</h2>
+                    <p>By accessing sorigrim.com, you agree to be bound by these professional terms of service and all applicable laws and regulations.</p>
+                    <h2>2. Intellectual Property</h2>
+                    <p>The cinematic visions and generative fragments showcased on this platform are the intellectual property of sorigrim unless otherwise stated. Unauthorized reproduction is strictly prohibited.</p>
+                    <h2>3. Usage License</h2>
+                    <p>Permission is granted to temporarily view the materials on our website for personal, non-commercial transitory viewing only.</p>
+                    <h2>4. Disclaimer</h2>
+                    <p>The materials on sorigrim's website are provided on an 'as is' basis. sorigrim makes no warranties, expressed or implied.</p>
+                `
+            }
+        };
+
+        function initLegal() {
+            const params = new URLSearchParams(window.location.search);
+            const type = params.get('type') || 'privacy';
+            const data = content[type] || content.privacy;
+
+            document.title = `${data.title} — sorigrim`;
+            document.getElementById('legal-title').textContent = data.title;
+            document.getElementById('legal-body').innerHTML = data.body;
+        }
+
+        window.addEventListener('load', initLegal);
+    </script>
+</body>
+</html>

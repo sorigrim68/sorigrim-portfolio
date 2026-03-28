@@ -289,8 +289,8 @@ class SorigrimFooter extends HTMLElement {
           </div>
           <div class="link-group">
             <h4>Legal</h4>
-            <a href="#">Privacy Policy</a>
-            <a href="#">Terms of Service</a>
+            <a href="/legal.html?type=privacy">Privacy Policy</a>
+            <a href="/legal.html?type=terms">Terms of Service</a>
           </div>
           <div class="link-group">
             <h4>Connect</h4>
