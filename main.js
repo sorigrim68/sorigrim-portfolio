@@ -220,71 +220,92 @@ class SorigrimFooter extends HTMLElement {
       <style>
         :host {
           display: block;
-          padding: 10rem 4rem 4rem;
-          background: var(--sori-bg, #050505);
-          color: var(--sori-fg, #fff);
+          padding: 6rem 0;
+          background: #F8F9FA;
+          color: #1A1A1A;
           font-family: "Pretendard Variable", sans-serif;
-          border-top: 1px solid rgba(255,255,255,0.05);
+          border-top: 1px solid #E9ECEF;
         }
-        .container { max-width: 1400px; margin: 0 auto; }
+        .container { 
+          max-width: 1400px; 
+          margin: 0 auto; 
+          padding: 0 4rem;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          flex-wrap: wrap;
+          gap: 4rem;
+        }
         
-        /* Connect Section */
-        .connect-section {
-          display: flex; justify-content: space-between; align-items: flex-start;
-          margin-bottom: 8rem; border-bottom: 1px solid rgba(255,255,255,0.03);
-          padding-bottom: 8rem;
+        .brand-section { flex: 1; min-width: 300px; }
+        .brand-section h2 { 
+          font-size: 1.5rem; font-weight: 900; color: #0055FF; 
+          margin-bottom: 1.5rem; letter-spacing: -0.02em;
         }
-        .connect-header h2 {
-          font-family: "Cormorant Garamond", serif; font-size: 3.5rem; font-style: italic;
-          font-weight: 700; margin-bottom: 1.5rem; opacity: 0.9;
+        .brand-section p { 
+          font-size: 0.9rem; color: #666; line-height: 1.8; 
+          max-width: 400px;
         }
-        .sns-grid { display: flex; gap: 3rem; }
-        .sns-item { text-align: center; text-decoration: none; color: inherit; opacity: 0.4; transition: 0.4s; }
-        .sns-item:hover { opacity: 1; transform: translateY(-5px); }
-        .sns-item img { width: 32px; height: 32px; filter: invert(1); margin-bottom: 1rem; }
-        .sns-item span { display: block; font-size: 0.65rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.2em; }
 
-        /* Bottom Area */
-        .footer-bottom {
-          display: flex; justify-content: space-between; align-items: flex-end;
-          font-size: 0.65rem; color: var(--sori-muted);
+        .links-section { display: flex; gap: 6rem; }
+        .link-group h4 { 
+          font-size: 0.75rem; font-weight: 800; color: #1A1A1A; 
+          text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.5rem;
         }
-        .brand-area h3 { font-family: "Cormorant Garamond", serif; font-size: 2rem; font-style: italic; margin-bottom: 0.5rem; color: white; }
-        .regulatory { display: flex; gap: 2rem; opacity: 0.3; }
-        .regulatory a { color: inherit; text-decoration: none; transition: 0.3s; }
-        .regulatory a:hover { opacity: 1; }
+        .link-group a { 
+          display: block; font-size: 0.85rem; color: #666; 
+          text-decoration: none; margin-bottom: 0.8rem; transition: 0.2s;
+        }
+        .link-group a:hover { color: #0055FF; }
+
+        .footer-bottom {
+          width: 100%; margin-top: 6rem; padding-top: 2rem;
+          border-top: 1px solid #E9ECEF;
+          display: flex; justify-content: space-between; align-items: center;
+          font-size: 0.8rem; color: #999;
+        }
+        .sns-icons { display: flex; gap: 1.5rem; }
+        .sns-icons a { opacity: 0.5; transition: 0.3s; }
+        .sns-icons a:hover { opacity: 1; transform: translateY(-3px); }
+        .sns-icons img { width: 20px; height: 20px; }
 
         @media (max-width: 768px) {
-          :host { padding: 6rem 2rem 3rem; }
-          .connect-section { flex-direction: column; gap: 4rem; }
-          .footer-bottom { flex-direction: column; align-items: flex-start; gap: 3rem; }
+          .container { padding: 0 2rem; flex-direction: column; gap: 3rem; }
+          .links-section { gap: 3rem; width: 100%; justify-content: space-between; }
+          .footer-bottom { flex-direction: column; align-items: flex-start; gap: 2rem; }
         }
       </style>
       <div class="container">
-        <section class="connect-section">
-          <div class="connect-header">
-            <h2>Connect.</h2>
-            <p style="font-size: 0.8rem; opacity: 0.4; letter-spacing: 0.1em;">Refining boundaries together.</p>
-          </div>
-          <div class="sns-grid">
-            ${sns.map(s => `
-              <a href="${s.value}" target="_blank" class="sns-item">
-                <img src="${s.icon || ''}" alt="${s.key}">
-                <span>${s.key}</span>
-              </a>
-            `).join('')}
-          </div>
-        </section>
+        <div class="brand-section">
+          <h2>sorigrim</h2>
+          <p>Professional portfolio platform refining the boundary between prompt and perception with technical precision.</p>
+        </div>
 
-        <div class="footer-bottom">
-          <div class="brand-area">
-            <h3>sorigrim</h3>
-            <p>&copy; ${year} Sorigrim. All rights reserved.</p>
+        <div class="links-section">
+          <div class="link-group">
+            <h4>Explore</h4>
+            <a href="/">Main Home</a>
+            <a href="/portfolio/">Archive</a>
           </div>
-          <div class="regulatory">
+          <div class="link-group">
+            <h4>Legal</h4>
             <a href="#">Privacy Policy</a>
             <a href="#">Terms of Service</a>
-            <a href="#">Regulatory Notice</a>
+          </div>
+          <div class="link-group">
+            <h4>Connect</h4>
+            ${sns.map(s => `<a href="${s.value}" target="_blank">${s.key}</a>`).join('')}
+          </div>
+        </div>
+
+        <div class="footer-bottom">
+          <p>&copy; ${year} Sorigrim. All rights reserved.</p>
+          <div class="sns-icons">
+            ${sns.map(s => `
+              <a href="${s.value}" target="_blank">
+                <img src="${s.icon || ''}" alt="${s.key}" style="filter: grayscale(1) invert(0);">
+              </a>
+            `).join('')}
           </div>
         </div>
       </div>
