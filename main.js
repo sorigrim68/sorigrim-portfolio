@@ -91,11 +91,11 @@ async function loadRecommended() {
   const grid = document.getElementById('recommended-grid');
   if (!grid) return;
   try {
-    // 추천 필터(recommended=true) 대신 전체 목록에서 최신 6개를 가져옴
+    // 최신순으로 상위 9개의 작품을 가져옵니다.
     const res = await fetch('/api/portfolio');
     const works = await res.json();
     if (works && works.length > 0) {
-      grid.innerHTML = works.slice(0, 6).map((work, i) => renderTechnicalCard(work, i)).join('');
+      grid.innerHTML = works.slice(0, 9).map((work, i) => renderTechnicalCard(work, i)).join('');
       triggerReveals();
     }
   } catch (e) { console.error("Recommended Load Error", e); }
