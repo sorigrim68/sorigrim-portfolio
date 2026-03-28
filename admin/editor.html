@@ -6,7 +6,7 @@
     <title>Sorigrim | Edit Content</title>
     <link rel="stylesheet" href="/style.css">
     <style>
-        .editor-container { padding: 8rem 0; max-width: 800px; }
+        .editor-container { padding: 8rem 0; max-width: 1000px; }
         .form-group { margin-bottom: 3rem; }
         .form-group label { display: block; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; color: var(--sori-muted); letter-spacing: 0.2em; margin-bottom: 1rem; }
         .form-group input, .form-group select, .form-group textarea {
@@ -14,9 +14,43 @@
             color: white; font-family: inherit; font-size: 1rem;
         }
         .form-group input:focus { outline: none; border-color: var(--sori-accent); }
+
+        /* Professional Document Editor */
+        .editor-card { background: rgba(255,255,255,0.01); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; overflow: hidden; }
+        .editor-toolbar {
+            display: flex; gap: 0.5rem; padding: 1rem; background: rgba(255,255,255,0.03); 
+            border-bottom: 1px solid rgba(255,255,255,0.05); flex-wrap: wrap;
+        }
+        .editor-toolbar .group { display: flex; gap: 0.3rem; border-right: 1px solid rgba(255,255,255,0.1); padding-right: 0.5rem; margin-right: 0.5rem; }
+        .editor-toolbar .group:last-child { border-right: none; }
+        
+        .editor-toolbar button {
+            background: none; border: 1px solid transparent; color: var(--sori-muted);
+            padding: 0.5rem 0.8rem; font-size: 0.75rem; font-weight: 700; cursor: pointer; border-radius: 4px; transition: 0.2s;
+        }
+        .editor-toolbar button:hover { color: white; background: rgba(255,255,255,0.05); }
+        .editor-toolbar button.active { color: var(--sori-accent); border-color: var(--sori-accent); }
+
+        .rich-editor {
+            min-height: 600px; padding: 4rem; color: white; font-family: var(--font-main); 
+            font-size: 1.2rem; line-height: 1.8; outline: none; font-weight: 300;
+        }
+        .rich-editor h2 { font-family: var(--font-editorial); font-size: 3rem; font-style: italic; margin: 3rem 0 1.5rem; font-weight: 400; }
+        .rich-editor h3 { font-size: 1.5rem; margin: 2rem 0 1rem; }
+        .rich-editor p { margin-bottom: 1.5rem; opacity: 0.8; }
+        .rich-editor img, .rich-editor video { max-width: 100%; height: auto; margin: 3rem 0; border-radius: 4px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
+        
+        .upload-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 10000; flex-direction: column; gap: 2rem; }
+        .upload-overlay .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--sori-accent); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+    <div id="upload-overlay" class="upload-overlay">
+        <div class="spinner"></div>
+        <div style="font-size: 0.7rem; letter-spacing: 0.2em; text-transform: uppercase;">Uploading Fragments...</div>
+    </div>
+
     <nav id="global-nav">
         <a href="/" class="brand">sorigrim</a>
         <a href="dashboard.html" style="font-size: 0.7rem; color: var(--sori-muted); text-decoration: none;">← Back to CMS</a>
@@ -24,21 +58,56 @@
 
     <main class="container editor-container">
         <form id="editor-form">
-            <div class="form-group"><label>Title</label><input type="text" id="title" required></div>
+            <div class="form-group"><label>Title</label><input type="text" id="title" placeholder="Enter Vision Title..." required></div>
             <div class="form-group"><label>Category</label><select id="category">
                 <option value="PHOTO WORK">PHOTO WORK</option>
                 <option value="VIDEO WORK">VIDEO WORK</option>
                 <option value="PROMPT SHARE">PROMPT SHARE</option>
                 <option value="AI NEWS">AI NEWS</option>
             </select></div>
-            <div class="form-group"><label>Thumbnail Image URL</label><input type="url" id="image"></div>
-            <div class="form-group"><label>Short Description</label><textarea id="description" rows="2"></textarea></div>
-            <div class="form-group"><label>Main Content (HTML Support)</label><textarea id="content" rows="10"></textarea></div>
-            <div class="form-group" style="display:flex; align-items:center; gap:1rem;">
-                <input type="checkbox" id="is_recommended" style="width: auto;">
-                <label style="margin-bottom:0;">Pin to Home (Recommended)</label>
+            
+            <div class="form-group">
+                <label>Manual Thumbnail (Optional)</label>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <input type="url" id="image" placeholder="Will auto-extract from content if empty">
+                    <input type="file" id="thumb-upload" style="display: none;" accept="image/*,video/*">
+                    <button type="button" class="btn-premium" style="padding: 0.8rem 1.5rem; font-size: 0.6rem;" onclick="document.getElementById('thumb-upload').click()">Upload</button>
+                </div>
             </div>
-            <button type="submit" class="btn-premium">Save Fragments</button>
+
+            <div class="form-group"><label>Short Catchphrase</label><textarea id="description" rows="2" placeholder="A brief echo of the vision..."></textarea></div>
+            
+            <div class="form-group">
+                <label>Vision Body (Rich Editorial)</label>
+                <div class="editor-card">
+                    <div class="editor-toolbar">
+                        <div class="group">
+                            <button type="button" onclick="execCmd('formatBlock', 'H2')">H2</button>
+                            <button type="button" onclick="execCmd('formatBlock', 'H3')">H3</button>
+                            <button type="button" onclick="execCmd('formatBlock', 'P')">P</button>
+                        </div>
+                        <div class="group">
+                            <button type="button" onclick="execCmd('bold')">B</button>
+                            <button type="button" onclick="execCmd('italic')">I</button>
+                            <button type="button" onclick="execCmd('justifyLeft')">←</button>
+                            <button type="button" onclick="execCmd('justifyCenter')">↔</button>
+                        </div>
+                        <div class="group">
+                            <button type="button" onclick="insertLink()">Link</button>
+                            <button type="button" onclick="insertMedia('image')">+ Image</button>
+                            <button type="button" onclick="insertMedia('video')">+ Video</button>
+                        </div>
+                    </div>
+                    <div id="content-editor" class="rich-editor" contenteditable="true" spellcheck="false"></div>
+                </div>
+                <input type="file" id="editor-media-upload" style="display: none;">
+            </div>
+
+            <div class="form-group" style="display:flex; align-items:center; gap:1rem; background: rgba(255,255,255,0.02); padding: 2rem; border-radius: 4px;">
+                <input type="checkbox" id="is_recommended" style="width: auto;">
+                <label style="margin-bottom:0;">Feature on Landing Page (Curated Echoes)</label>
+            </div>
+            <button type="submit" class="btn-premium" style="width: 100%; padding: 2rem;">Seal Vision</button>
         </form>
     </main>
 
@@ -46,6 +115,63 @@
         const form = document.getElementById('editor-form');
         const urlParams = new URLSearchParams(window.location.search);
         const editId = urlParams.get('id');
+        const editor = document.getElementById('content-editor');
+        const overlay = document.getElementById('upload-overlay');
+
+        window.execCmd = (cmd, val = null) => {
+            document.execCommand(cmd, false, val);
+            editor.focus();
+        };
+
+        window.insertLink = () => {
+            const url = prompt("Enter URL:", "https://");
+            if (url) execCmd('createLink', url);
+        };
+
+        window.insertMedia = (type) => {
+            const upload = document.getElementById('editor-media-upload');
+            upload.accept = type === 'image' ? 'image/*' : 'video/*';
+            upload.onchange = async () => {
+                if (upload.files[0]) {
+                    overlay.style.display = 'flex';
+                    const url = await uploadFile(upload.files[0]);
+                    overlay.style.display = 'none';
+                    if (url) {
+                        if (type === 'image') {
+                            document.execCommand('insertHTML', false, `<img src="${url}" alt="Vision Media">`);
+                        } else {
+                            const video = `<video controls playsinline src="${url}" style="max-width:100%"></video><p><br></p>`;
+                            document.execCommand('insertHTML', false, video);
+                        }
+                    }
+                }
+            };
+            upload.click();
+        };
+
+        async function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            try {
+                const res = await fetch('/api/assets', { method: 'POST', body: formData });
+                const data = await res.json();
+                return data.url;
+            } catch (e) {
+                alert('Fragment upload failed.');
+                return null;
+            }
+        }
+
+        // Auto-extract Thumbnail
+        function extractThumbnail(html) {
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            const img = div.querySelector('img');
+            if (img) return img.src;
+            const video = div.querySelector('video');
+            if (video) return video.src;
+            return null;
+        }
 
         if (editId) {
             fetch(`/api/portfolio?id=${editId}`).then(r => r.json()).then(data => {
@@ -53,27 +179,43 @@
                 document.getElementById('category').value = data.category;
                 document.getElementById('image').value = data.image || '';
                 document.getElementById('description').value = data.description || '';
-                document.getElementById('content').value = data.content || '';
+                editor.innerHTML = data.content || '';
                 document.getElementById('is_recommended').checked = data.is_recommended === 1;
             });
         }
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
+            
+            let thumb = document.getElementById('image').value;
+            if (!thumb) {
+                thumb = extractThumbnail(editor.innerHTML) || '';
+            }
+
             const data = {
                 title: document.getElementById('title').value,
                 category: document.getElementById('category').value,
-                image: document.getElementById('image').value,
+                image: thumb,
                 description: document.getElementById('description').value,
-                content: document.getElementById('content').value,
+                content: editor.innerHTML,
                 is_recommended: document.getElementById('is_recommended').checked
             };
-            await fetch('/api/portfolio', {
-                method: 'POST', // Simplified: handles both new and update in this API logic
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            window.location.href = 'dashboard.html';
+            
+            const url = '/api/portfolio' + (editId ? `?id=${editId}` : '');
+            
+            try {
+                const res = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+                if (res.ok) {
+                    alert('Vision Sealed Successfully.');
+                    window.location.href = 'dashboard.html';
+                }
+            } catch (err) {
+                alert('Connection to origin failed.');
+            }
         });
     </script>
 </body>

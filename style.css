@@ -35,6 +35,14 @@
     opacity: 0.05; z-index: 10000; pointer-events: none;
   }
 
+  /* Page Transition */
+  #page-transition {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: var(--sori-bg); z-index: 99999;
+    pointer-events: none; transition: opacity 1.2s var(--ease-premium);
+  }
+  #page-transition.hidden { opacity: 0; }
+
   h1, h2 { font-weight: 900; letter-spacing: -0.05em; }
 }
 

@@ -15,6 +15,7 @@ export async function onRequest(context) {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         key TEXT NOT NULL UNIQUE,
         value TEXT NOT NULL,
+        icon TEXT,
         type TEXT DEFAULT 'sns'
       )
     `).run();
@@ -29,8 +30,8 @@ export async function onRequest(context) {
     if (request.method === "POST") {
       const data = await request.json();
       await env.DB.prepare(
-        "INSERT INTO sg_settings (key, value, type) VALUES (?, ?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value"
-      ).bind(data.key, data.value, data.type || 'sns').run();
+        "INSERT INTO sg_settings (key, value, icon, type) VALUES (?, ?, ?, ?) ON CONFLICT(key) DO UPDATE SET value=excluded.value, icon=excluded.icon"
+      ).bind(data.key, data.value, data.icon || null, data.type || 'sns').run();
       return Response.json({ success: true });
     }
 

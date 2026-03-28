@@ -31,7 +31,13 @@ export async function onRequest(context) {
     if (request.method === "GET") {
       if (id) {
         const item = await env.DB.prepare("SELECT * FROM sg_posts WHERE id = ?").bind(id).first();
-        return Response.json(item || { error: "Item not found" });
+        if (!item) return Response.json({ error: "Item not found" });
+
+        // Fetch Next & Prev
+        const next = await env.DB.prepare("SELECT id, title FROM sg_posts WHERE id > ? ORDER BY id ASC LIMIT 1").bind(id).first();
+        const prev = await env.DB.prepare("SELECT id, title FROM sg_posts WHERE id < ? ORDER BY id DESC LIMIT 1").bind(id).first();
+
+        return Response.json({ ...item, next, prev });
       }
 
       let query = "SELECT * FROM sg_posts";
@@ -48,14 +54,48 @@ export async function onRequest(context) {
       return Response.json(results);
     }
 
-    // POST/DELETE: Simple handling for initial population
+    // POST Request: Handle INSERT and UPDATE
     if (request.method === "POST") {
       const data = await request.json();
-      await env.DB.prepare(
-        "INSERT INTO sg_posts (title, category, image, description, is_recommended, createdAt) VALUES (?, ?, ?, ?, ?, ?)"
-      ).bind(data.title, data.category, data.image, data.description, data.is_recommended ? 1 : 0, new Date().toISOString()).run();
-      return Response.json({ success: true });
+
+      if (id) {
+        // UPDATE
+        await env.DB.prepare(
+          "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ? WHERE id = ?"
+        ).bind(
+          data.title, 
+          data.category, 
+          data.image, 
+          data.description, 
+          data.content || "", 
+          data.is_recommended ? 1 : 0, 
+          id
+        ).run();
+        return Response.json({ success: true, action: "update" });
+      } else {
+        // INSERT
+        await env.DB.prepare(
+          "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)"
+        ).bind(
+          data.title, 
+          data.category, 
+          data.image, 
+          data.description, 
+          data.content || "", 
+          data.is_recommended ? 1 : 0, 
+          new Date().toISOString()
+        ).run();
+        return Response.json({ success: true, action: "insert" });
+      }
     }
+
+    // DELETE Request: Handle deletion
+    if (request.method === "DELETE") {
+      if (!id) return Response.json({ error: "ID required for deletion" }, { status: 400 });
+      await env.DB.prepare("DELETE FROM sg_posts WHERE id = ?").bind(id).run();
+      return Response.json({ success: true, action: "delete" });
+    }
+
 
   } catch (e) {
     return Response.json({ error: e.message }, { status: 500 });

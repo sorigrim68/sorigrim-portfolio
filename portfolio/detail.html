@@ -4,6 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fragment — sorigrim</title>
+    <meta id="meta-description" name="description" content="Cinematic AI vision fragment.">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="article">
+    <meta id="og-title" property="og:title" content="Fragment — sorigrim">
+    <meta id="og-description" property="og:description" content="Cinematic AI vision fragment.">
+    <meta id="og-image" property="og:image" content="">
+
     <link rel="stylesheet" href="/style.css">
     <style>
         .detail-view { padding-bottom: 12rem; }
@@ -15,6 +23,25 @@
         .detail-body .tag { font-size: 0.7rem; color: var(--sori-accent); font-weight: 900; letter-spacing: 0.3em; }
         .rich-text { font-size: 1.25rem; line-height: 1.8; color: var(--sori-muted); font-weight: 300; }
         .rich-text h2 { color: white; margin: 4rem 0 1.5rem; }
+        .rich-text img { max-width: 100%; height: auto; margin: 3rem 0; border-radius: 4px; }
+
+        /* Next/Prev Navigation */
+        .post-nav {
+            margin-top: 15rem; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 8rem;
+            display: flex; justify-content: space-between; align-items: flex-start;
+        }
+        .nav-item { flex: 1; max-width: 45%; text-decoration: none; color: inherit; transition: 0.4s var(--ease-premium); }
+        .nav-item:hover { transform: translateY(-10px); }
+        .nav-item.next { text-align: right; }
+        .nav-label { font-size: 0.65rem; color: var(--sori-muted); text-transform: uppercase; letter-spacing: 0.3em; margin-bottom: 1rem; display: block; }
+        .nav-title { font-family: var(--font-editorial); font-size: 2rem; font-style: italic; opacity: 0.8; }
+        .nav-item:hover .nav-title { opacity: 1; color: var(--sori-accent); }
+
+        @media (max-width: 768px) {
+            .detail-body h1 { font-size: 3rem; }
+            .post-nav { flex-direction: column; gap: 4rem; }
+            .nav-item { max-width: 100%; }
+        }
     </style>
 </head>
 <body>
@@ -22,7 +49,6 @@
         <a href="/" class="brand">sorigrim</a>
         <div class="nav-links">
             <a href="/portfolio/">Archive</a>
-            <a href="/cta.html">Connect</a>
         </div>
     </nav>
 
@@ -39,6 +65,13 @@
             const res = await fetch(`/api/portfolio?id=${id}`);
             const work = await res.json();
             
+            // Update Meta Tags
+            document.title = `${work.title} — sorigrim`;
+            document.getElementById('meta-description').content = work.description || '';
+            document.getElementById('og-title').content = `${work.title} — sorigrim`;
+            document.getElementById('og-description').content = work.description || '';
+            document.getElementById('og-image').content = work.image || '';
+
             document.getElementById('detail-target').innerHTML = `
                 <div class="detail-hero reveal">
                     <img src="${work.image || ''}" alt="${work.title}">
@@ -50,7 +83,24 @@
                         <p style="font-size: 1.1rem; opacity: 0.6;">${work.description || ''}</p>
                     </header>
                     <div class="rich-text">${work.content || 'Content coming soon.'}</div>
-                    <div style="margin-top: 8rem;">
+                    
+                    <nav class="post-nav">
+                        ${work.prev ? `
+                            <a href="/portfolio/detail.html?id=${work.prev.id}" class="nav-item prev">
+                                <span class="nav-label">Previous</span>
+                                <div class="nav-title">${work.prev.title}</div>
+                            </a>
+                        ` : '<div></div>'}
+                        
+                        ${work.next ? `
+                            <a href="/portfolio/detail.html?id=${work.next.id}" class="nav-item next">
+                                <span class="nav-label">Next</span>
+                                <div class="nav-title">${work.next.title}</div>
+                            </a>
+                        ` : '<div></div>'}
+                    </nav>
+
+                    <div style="margin-top: 10rem; text-align: center;">
                         <a href="/portfolio/" class="btn-premium">Return to Archive</a>
                     </div>
                 </div>
