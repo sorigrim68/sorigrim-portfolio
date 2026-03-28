@@ -8,9 +8,7 @@
   --text-main: #1A1A1A;
   --text-muted: #666666;
   --border: #E9ECEF;
-  
   --font-main: "Pretendard Variable", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
   --ease-smooth: cubic-bezier(0.19, 1, 0.22, 1);
 }
 
@@ -21,142 +19,143 @@ body {
   color: var(--text-main);
   font-family: var(--font-main);
   line-height: 1.6;
-  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Page Transition Overlay */
-#page-transition {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  background: var(--bg-white); z-index: 99999;
-  pointer-events: none; transition: opacity 0.8s var(--ease-smooth);
-}
-#page-transition.hidden { opacity: 0; visibility: hidden; }
-
-/* Navigation: DMS Style Transparent to Solid */
+/* DMS Style Navigation */
 #global-nav {
-  position: fixed; top: 0; left: 0; width: 100%; z-index: 9999;
-  padding: 2rem 4rem;
-  display: flex; justify-content: space-between; align-items: center;
-  background: transparent;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  transition: all 0.4s var(--ease-standard);
+  position: fixed; top: 0; left: 0; width: 100%; z-index: 1000;
+  padding: 2rem 4rem; display: flex; justify-content: space-between; align-items: center;
+  background: transparent; border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.4s var(--ease-smooth);
 }
 #global-nav.scrolled {
   background: rgba(255, 255, 255, 0.95);
-  padding: 1.2rem 4rem;
-  backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--border);
+  padding: 1.2rem 4rem; backdrop-filter: blur(10px); border-bottom: 1px solid var(--border);
 }
 #global-nav .brand {
-  font-size: 1.6rem; font-weight: 900; color: #FFF;
-  text-decoration: none; letter-spacing: -0.02em;
-  transition: color 0.3s;
+  font-size: 1.6rem; font-weight: 900; color: #FFF; text-decoration: none; transition: 0.3s;
 }
 #global-nav.scrolled .brand { color: var(--primary); }
-
-#global-nav .nav-links { display: flex; gap: 3rem; }
 #global-nav .nav-links a {
-  font-size: 0.95rem; font-weight: 600; text-decoration: none; color: rgba(255,255,255,0.8);
-  transition: 0.3s;
+  font-size: 0.95rem; font-weight: 600; text-decoration: none; color: rgba(255,255,255,0.8); transition: 0.3s;
 }
 #global-nav.scrolled .nav-links a { color: var(--text-main); }
-#global-nav .nav-links a:hover { color: #FFF; }
-#global-nav.scrolled .nav-links a:hover { color: var(--primary); }
 
-/* Hero Section: Technical Overlay with Animation */
+/* DMS 기술적 구현: Hero Section */
 #hero {
-  width: 100%; height: 100vh;
-  position: relative; overflow: hidden;
-  display: flex; align-items: center;
-  background: #000;
+  position: relative;
+  width: 100%;
+  height: 100vh; /* 전체 화면 점유 */
+  min-height: 600px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  background: #000; /* 로딩 전 검은색 배경 */
 }
+
+/* 배경 미디어 레이어 (DMS 방식) */
 .hero-media {
-  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  z-index: 1;
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 1; /* 가장 뒤 */
 }
+
 .hero-media::after {
-  content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.3); /* Subtle darkening for readability */
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.4); /* 가독성을 위한 어두운 오버레이 */
   z-index: 2;
 }
 
-/* 기술적 핵심: Ken Burns Animation */
-.hero-media video, .hero-media img { 
-  width: 100%; height: 100%; object-fit: cover; display: block;
-  transform: scale(1);
+#hero-video-container {
+  width: 100%; height: 100%;
+}
+
+/* 이미지/영상 강제 피팅 및 애니메이션 */
+#hero-video-container img, #hero-video-container video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* 화면에 꽉 채움 */
+  display: block;
   animation: ken-burns 20s ease-in-out infinite alternate;
 }
 
 @keyframes ken-burns {
-  0% { transform: scale(1); }
-  100% { transform: scale(1.15); }
+  from { transform: scale(1); }
+  to { transform: scale(1.1); }
 }
 
+/* 콘텐츠 레이어 */
 .hero-content {
-  position: relative; z-index: 10;
-  padding: 0 4rem; max-width: 1400px; margin: 0 auto; width: 100%;
+  position: relative;
+  z-index: 10; /* 미디어보다 위 */
+  padding: 0 4rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
 }
+
 .hero-content h1 {
-  font-size: clamp(3rem, 7vw, 5.5rem); font-weight: 850; line-height: 1.05;
-  color: #FFF; margin-bottom: 2.5rem; letter-spacing: -0.04em;
+  font-size: clamp(3rem, 7vw, 5rem);
+  font-weight: 850;
+  line-height: 1.1;
+  color: #FFF;
+  margin-bottom: 2rem;
+  letter-spacing: -0.04em;
   opacity: 0; transform: translateY(40px);
-  animation: reveal-up 1.2s var(--ease-smooth) 0.2s forwards;
+  animation: reveal-up 1.2s var(--ease-smooth) forwards;
 }
+
 .hero-content p {
-  font-size: clamp(1.1rem, 2vw, 1.4rem); font-weight: 400; color: rgba(255,255,255,0.7);
-  max-width: 650px; margin-bottom: 4rem; line-height: 1.6;
+  font-size: clamp(1.1rem, 2vw, 1.4rem);
+  color: rgba(255,255,255,0.8);
+  max-width: 600px;
+  margin-bottom: 3.5rem;
   opacity: 0; transform: translateY(30px);
-  animation: reveal-up 1.2s var(--ease-smooth) 0.4s forwards;
+  animation: reveal-up 1.2s var(--ease-smooth) 0.2s forwards;
 }
 
 .btn-premium {
-  display: inline-flex; padding: 1.3rem 3.5rem;
+  display: inline-flex; padding: 1.2rem 3.5rem;
   background: var(--primary); color: white; text-decoration: none;
-  font-weight: 700; font-size: 1rem; border-radius: 4px;
-  transition: 0.3s var(--ease-standard);
-  opacity: 0; animation: reveal-up 1.2s var(--ease-smooth) 0.6s forwards;
+  font-weight: 700; font-size: 1rem; border-radius: 4px; transition: 0.3s;
+  opacity: 0; animation: reveal-up 1.2s var(--ease-smooth) 0.4s forwards;
 }
-.btn-premium:hover { background: #0044CC; transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,85,255,0.3); }
+.btn-premium:hover { background: #0044CC; transform: translateY(-5px); }
 
-/* Grid and Sections */
+/* 아카이브 그리드 전문 스타일 */
 .container { max-width: 1400px; margin: 0 auto; padding: 0 4rem; }
 .grid-archive {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 3rem;
 }
 .archive-card {
-  background: var(--bg-white); border: 1px solid var(--border);
+  background: white; border: 1px solid var(--border);
   transition: 0.5s var(--ease-smooth); overflow: hidden; cursor: pointer;
 }
 .archive-card:hover { transform: translateY(-15px); box-shadow: 0 30px 60px rgba(0,0,0,0.1); border-color: var(--primary); }
-
-.img-box { aspect-ratio: 16 / 10; overflow: hidden; background: #f0f0f0; }
-.img-box img, .img-box video { width: 100%; height: 100%; object-fit: cover; transition: 0.8s var(--ease-smooth); }
+.img-box { aspect-ratio: 16 / 10; overflow: hidden; }
+.img-box img, .img-box video { width: 100%; height: 100%; object-fit: cover; transition: 0.8s; }
 .archive-card:hover .img-box img { transform: scale(1.08); }
-
 .card-meta { padding: 2.5rem; }
-.card-meta .tag { 
-  display: inline-block; font-size: 0.8rem; font-weight: 800; color: var(--primary);
-  margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em;
-}
-.card-meta h3 { font-size: 1.6rem; font-weight: 700; color: var(--text-main); line-height: 1.3; letter-spacing: -0.02em; }
+.card-meta .tag { font-size: 0.8rem; font-weight: 800; color: var(--primary); margin-bottom: 1rem; text-transform: uppercase; }
+.card-meta h3 { font-size: 1.6rem; font-weight: 700; color: var(--text-main); }
 
-/* Utilities */
 .py-xl { padding: 12rem 0; }
 .reveal { opacity: 0; transform: translateY(40px); transition: 1.2s var(--ease-smooth); }
 .reveal.active { opacity: 1; transform: translateY(0); }
 
-@keyframes reveal-up {
-  to { opacity: 1; transform: translateY(0); }
-}
+@keyframes reveal-up { to { opacity: 1; transform: translateY(0); } }
 
 @media (max-width: 1024px) {
   .grid-archive { grid-template-columns: repeat(2, 1fr); }
-  #global-nav, #global-nav.scrolled { padding: 1.5rem 2rem; }
+  #global-nav { padding: 1.5rem 2rem; }
   .container, .hero-content { padding: 0 2rem; }
 }
 @media (max-width: 768px) {
   .grid-archive { grid-template-columns: 1fr; }
-  .py-xl { padding: 8rem 0; }
   .hero-content h1 { font-size: 2.8rem; }
 }
