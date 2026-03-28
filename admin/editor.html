@@ -109,13 +109,14 @@
         </div>
     </main>
 
-    <input type="file" id="editor-media-upload" style="display: none;">
+    <input type="file" id="editor-media-upload" style="display: none;" multiple>
 
     <script type="module">
         const form = document.getElementById('editor-form');
         const saveBtn = document.getElementById('save-btn');
         const editor = document.getElementById('content-editor');
         const overlay = document.getElementById('upload-overlay');
+        const uploadText = overlay.querySelector('div:last-child');
         const mediaInput = document.getElementById('editor-media-upload');
         const categorySelect = document.getElementById('category');
         
@@ -130,7 +131,6 @@
             const cats = await res.json();
             categorySelect.innerHTML = cats.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
             
-            // 만약 수정 모드라면 데이터 로드 후 값 설정
             if (editId) loadPostData();
         }
 
@@ -154,32 +154,45 @@
         editor.addEventListener('keyup', saveSelection);
         editor.addEventListener('click', saveSelection);
 
-        // --- 3. Media Upload & Insertion ---
+        // --- 3. Media Upload & Insertion (Multi-support) ---
         window.handleMediaUpload = (type) => {
             saveSelection();
             mediaInput.accept = type === 'image' ? 'image/*' : 'video/*';
             mediaInput.onchange = async () => {
-                if (mediaInput.files[0]) {
+                const files = Array.from(mediaInput.files);
+                if (files.length > 0) {
                     overlay.style.display = 'flex';
-                    const url = await uploadFile(mediaInput.files[0]);
-                    overlay.style.display = 'none';
-                    if (url) {
-                        insertAtCursor(type, url);
+                    
+                    for (let i = 0; i < files.length; i++) {
+                        uploadText.innerText = `시각적 조각 전송 중... (${i + 1}/${files.length})`;
+                        const url = await uploadFile(files[i]);
+                        if (url) {
+                            insertAtCursor(type, url, files.length > 1);
+                        }
                     }
+                    
+                    overlay.style.display = 'none';
+                    mediaInput.value = ''; // Reset input
                 }
             };
             mediaInput.click();
         };
 
-        function insertAtCursor(type, url) {
+        function insertAtCursor(type, url, isBatch = false) {
             editor.focus();
             restoreSelection();
 
-            const html = type === 'image' 
-                ? `<img src="${url}" alt="AI ART SORIGRIM">`
-                : `<video controls playsinline src="${url}"></video><p><br></p>`;
+            let html = '';
+            if (type === 'image') {
+                html = `<img src="${url}" alt="AI ART SORIGRIM">`;
+            } else {
+                html = `<video controls playsinline src="${url}"></video><p><br></p>`;
+            }
 
             document.execCommand('insertHTML', false, html);
+            
+            // 다중 업로드 시에는 매번 Selection을 갱신하여 다음 이미지가 그 뒤에 붙도록 함
+            saveSelection();
             updateSEO();
         }
 
