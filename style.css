@@ -42,7 +42,10 @@ body {
   padding: 1.2rem 4rem; backdrop-filter: blur(15px); border-bottom: 1px solid var(--border);
 }
 #global-nav .brand {
-  font-size: 1.6rem; font-weight: 900; color: #FFF; text-decoration: none; transition: 0.3s;
+  font-size: 1.6rem; font-weight: 900; color: var(--primary); /* Fixed color */
+  text-decoration: none; letter-spacing: 0.05em; 
+  text-transform: uppercase; /* Force Uppercase */
+  transition: 0.3s;
 }
 #global-nav.scrolled .brand { color: var(--primary); }
 #global-nav .nav-links { display: flex; gap: 3.5rem; }

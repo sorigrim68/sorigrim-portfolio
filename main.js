@@ -163,21 +163,38 @@ class SorigrimFooter extends HTMLElement {
       <style>
         :host { display: block; padding: 8rem 0; background: #F8F9FA; color: #1A1A1A; font-family: sans-serif; border-top: 1px solid #EEE; }
         .container { max-width: 1400px; margin: 0 auto; padding: 0 4rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4rem; }
-        .brand h2 { font-size: 1.5rem; font-weight: 900; color: #0055FF; margin-bottom: 1rem; }
+        .brand h2 { font-size: 1.5rem; font-weight: 900; color: #0055FF; margin-bottom: 1rem; text-transform: uppercase; }
+        .brand p { font-size: 0.9rem; color: #666; max-width: 350px; }
         .links { display: flex; gap: 5rem; }
         .group h4 { font-size: 0.8rem; font-weight: 800; margin-bottom: 1.5rem; text-transform: uppercase; }
         .group a { display: block; font-size: 0.9rem; color: #666; text-decoration: none; margin-bottom: 0.8rem; }
         .group a:hover { color: #0055FF; }
-        .bottom { width: 100%; margin-top: 6rem; padding-top: 2rem; border-top: 1px solid #EEE; display: flex; justify-content: space-between; font-size: 0.8rem; color: #999; }
+        .bottom { width: 100%; margin-top: 6rem; padding-top: 2rem; border-top: 1px solid #EEE; display: flex; justify-content: space-between; font-size: 0.8rem; color: #999; text-transform: uppercase; }
       </style>
       <div class="container">
-        <div class="brand"><h2>sorigrim</h2><p>전문 생성 비전 포트폴리오 플랫폼입니다.</p></div>
-        <div class="links">
-          <div class="group"><h4>Explore</h4><a href="/">홈으로</a><a href="/portfolio/">아카이브</a></div>
-          <div class="group"><h4>Legal</h4><a href="/legal.html?type=privacy">개인정보처리방침</a><a href="/legal.html?type=terms">이용약관</a></div>
-          <div class="group"><h4>Social</h4>${sns.map(s => `<a href="${s.value}" target="_blank">${s.key}</a>`).join('')}</div>
+        <div class="brand">
+          <h2>SORIGRIM</h2>
+          <p>프롬프트와 알고리즘으로 시각적 미학을 탐구하는 AI 아티스트의 개인 포트폴리오 공간입니다.</p>
         </div>
-        <div class="bottom"><p>&copy; ${new Date().getFullYear()} Sorigrim. All rights reserved.</p></div>
+        <div class="links">
+          <div class="group">
+            <h4>Explore</h4>
+            <a href="/">홈으로</a>
+            <a href="/portfolio/">아카이브</a>
+          </div>
+          <div class="group">
+            <h4>Legal</h4>
+            <a href="/legal.html?type=privacy">개인정보처리방침</a>
+            <a href="/legal.html?type=terms">이용약관</a>
+          </div>
+          <div class="group">
+            <h4>Social</h4>
+            ${sns.map(s => `<a href="${s.value}" target="_blank">${s.key}</a>`).join('')}
+          </div>
+        </div>
+        <div class="bottom">
+          <p>&copy; ${new Date().getFullYear()} SORIGRIM. All rights reserved.</p>
+        </div>
       </div>
     `;
   }
