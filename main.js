@@ -66,27 +66,30 @@ async function initHeroBackground() {
   const container = document.getElementById('hero-video-container');
   if (!container) return;
 
-  const fallbackImage = "/api/assets?name=og-image.jpg";
+  const defaultImage = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop";
 
   try {
     const res = await fetch('/api/settings');
+    if (!res.ok) throw new Error("API Offline");
+    
     const settings = await res.json();
     const heroConfig = settings.find(s => s.key === 'landing_hero_video');
     
-    const url = (heroConfig && heroConfig.value) ? heroConfig.value : fallbackImage;
+    const url = (heroConfig && heroConfig.value) ? heroConfig.value : defaultImage;
     const isVideo = url.toLowerCase().match(/\.(mp4|webm|ogg)$/) || url.includes('video');
 
     if (isVideo) {
-      container.innerHTML = `<video src="${url}" muted loop autoplay playsinline></video>`;
+      container.innerHTML = `<video src="${url}" muted loop autoplay playsinline style="width:100%; height:100%; object-fit:cover; display:block;"></video>`;
       const v = container.querySelector('video');
       v.play().catch(() => {
         document.body.addEventListener('mousedown', () => v.play(), { once: true });
       });
     } else {
-      container.innerHTML = `<img src="${url}" alt="Hero Background">`;
+      container.innerHTML = `<img src="${url}" alt="Hero Background" style="width:100%; height:100%; object-fit:cover; display:block;" onerror="this.src='${defaultImage}'">`;
     }
   } catch (e) {
-    container.innerHTML = `<img src="${fallbackImage}" alt="Hero Fallback">`;
+    console.warn("Hero load failed, using fallback", e);
+    container.innerHTML = `<img src="${defaultImage}" alt="Hero Fallback" style="width:100%; height:100%; object-fit:cover; display:block;">`;
   }
 }
 
