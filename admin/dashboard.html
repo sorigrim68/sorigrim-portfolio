@@ -22,6 +22,11 @@
         .glass-box { background: rgba(255,255,255,0.02); padding: 3rem; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px); }
         input, select { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 1rem; transition: 0.3s; }
         input:focus { border-color: var(--sori-accent); outline: none; }
+
+        .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
+        .asset-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 1rem; text-align: center; }
+        .asset-card img, .asset-card video { width: 100%; aspect-ratio: 1; object-fit: cover; margin-bottom: 1rem; opacity: 0.6; }
+        .asset-card p { font-size: 0.6rem; color: var(--sori-muted); word-break: break-all; margin-bottom: 1rem; }
     </style>
 </head>
 <body class="bg-surface">
@@ -35,22 +40,36 @@
 
     <main class="admin-main container">
         
-        <!-- 1. Global Site Settings (Hero Video) -->
+        <!-- 1. Global Site Settings -->
         <section style="margin-bottom: 10rem;">
             <header class="section-header">
                 <h2>Site Aesthetics.</h2>
             </header>
             <div class="glass-box">
-                <label style="display:block; font-size:0.6rem; color:var(--sori-muted); margin-bottom:1rem; text-transform:uppercase; letter-spacing:0.2em;">Landing Hero Video (MP4)</label>
+                <label style="display:block; font-size:0.6rem; color:var(--sori-muted); margin-bottom:1rem; text-transform:uppercase; letter-spacing:0.2em;">Landing Hero Background (Image or Video)</label>
                 <div style="display: flex; gap: 2rem; align-items: center;">
-                    <input type="text" id="hero-video-url" placeholder="/api/assets?name=..." style="flex: 1;" readonly>
-                    <input type="file" id="hero-upload" style="display: none;" accept="video/mp4">
-                    <button class="btn-premium" style="padding: 1rem 2rem; font-size: 0.6rem;" onclick="document.getElementById('hero-upload').click()">Upload New Video</button>
+                    <input type="text" id="hero-url" placeholder="/api/assets?name=..." style="flex: 1;" readonly>
+                    <input type="file" id="hero-upload" style="display: none;" accept="image/*,video/mp4">
+                    <button class="btn-premium" style="padding: 1rem 2rem; font-size: 0.6rem;" onclick="document.getElementById('hero-upload').click()">Upload New Hero</button>
+                </div>
+                <p style="font-size: 0.6rem; color: var(--sori-muted); margin-top: 1rem;">* Images are recommended for better stability across all devices.</p>
+            </div>
+        </section>
+
+        <!-- 2. Asset Storage Manager -->
+        <section style="margin-bottom: 10rem;">
+            <header class="section-header">
+                <h2>Storage Explorer.</h2>
+            </header>
+            <div class="glass-box">
+                <p style="font-size: 0.7rem; color: var(--sori-muted); margin-bottom: 2rem;">Manage all uploaded fragments in your R2 bucket. Remove unused files to save space.</p>
+                <div id="asset-list" class="asset-grid">
+                    <!-- Assets will be listed here -->
                 </div>
             </div>
         </section>
 
-        <!-- 2. Archive List -->
+        <!-- 3. Archive List -->
         <section style="margin-bottom: 10rem;">
             <header class="section-header">
                 <h2>Archive Control.</h2>
@@ -59,37 +78,23 @@
                 <thead>
                     <tr><th>Thumbnail</th><th>Title</th><th>Category</th><th>Actions</th></tr>
                 </thead>
-                <tbody id="admin-list">
-                    <!-- Dynamic List -->
-                </tbody>
+                <tbody id="admin-list"></tbody>
             </table>
         </section>
 
-        <!-- 3. SNS Management -->
+        <!-- 4. SNS Management -->
         <section>
             <header class="section-header">
-                <h2>Social Channels & Connect.</h2>
+                <h2>Social Channels.</h2>
             </header>
             <form id="sns-form" style="display: flex; gap: 1.5rem; margin-bottom: 3rem; align-items: flex-end; flex-wrap: wrap;" class="glass-box">
-                <div style="flex: 1; min-width: 200px;"><label style="display:block; font-size:0.6rem; color:var(--sori-muted); margin-bottom:0.5rem;">PLATFORM</label>
-                <input type="text" id="sns-key" placeholder="Instagram" style="width:100%;"></div>
-                
-                <div style="flex: 2; min-width: 300px;"><label style="display:block; font-size:0.6rem; color:var(--sori-muted); margin-bottom:0.5rem;">URL</label>
-                <input type="url" id="sns-value" placeholder="https://..." style="width:100%;"></div>
-
-                <div style="flex: 1; min-width: 150px;"><label style="display:block; font-size:0.6rem; color:var(--sori-muted); margin-bottom:0.5rem;">ICON</label>
-                    <div style="display:flex; gap:0.5rem;">
-                        <input type="text" id="sns-icon" placeholder="Icon URL" style="flex:1;" readonly>
-                        <input type="file" id="sns-icon-upload" style="display:none;" accept="image/*">
-                        <button type="button" class="btn-premium" style="padding:0.5rem 1rem; font-size:0.5rem;" onclick="document.getElementById('sns-icon-upload').click()">↑</button>
-                    </div>
-                </div>
-
-                <button type="submit" class="btn-premium" style="padding: 1rem 2rem; font-size: 0.6rem;">Update Channel</button>
+                <div style="flex: 1; min-width: 200px;"><input type="text" id="sns-key" placeholder="Platform Name" style="width:100%;"></div>
+                <div style="flex: 2; min-width: 300px;"><input type="url" id="sns-value" placeholder="URL" style="width:100%;"></div>
+                <button type="submit" class="btn-premium" style="padding: 1rem 2rem; font-size: 0.6rem;">Add Channel</button>
             </form>
             <table class="admin-table">
                 <thead>
-                    <tr><th>Icon</th><th>Platform</th><th>URL</th><th>Actions</th></tr>
+                    <tr><th>Platform</th><th>URL</th><th>Actions</th></tr>
                 </thead>
                 <tbody id="sns-admin-list"></tbody>
             </table>
@@ -106,12 +111,12 @@
             return data.url;
         }
 
-        // Hero Video Management
+        // Hero Management
         async function loadHeroSettings() {
             const res = await fetch('/api/settings');
             const data = await res.json();
-            const hero = data.find(s => s.key === 'landing_hero_video');
-            if (hero) document.getElementById('hero-video-url').value = hero.value;
+            const hero = data.find(s => s.key === 'landing_hero_video'); // Use same key for compatibility
+            if (hero) document.getElementById('hero-url').value = hero.value;
         }
 
         document.getElementById('hero-upload').addEventListener('change', async (e) => {
@@ -124,19 +129,41 @@
                         body: JSON.stringify({ key: 'landing_hero_video', value: url, type: 'config' })
                     });
                     loadHeroSettings();
-                    alert('Hero Video Updated.');
+                    loadAssets(); // Refresh asset list
+                    alert('Hero Background Updated.');
                 }
             }
         });
 
-        // SNS Icon Upload
-        document.getElementById('sns-icon-upload').addEventListener('change', async (e) => {
-            if (e.target.files[0]) {
-                const url = await uploadFile(e.target.files[0]);
-                if (url) document.getElementById('sns-icon').value = url;
-            }
-        });
+        // Asset Explorer
+        async function loadAssets() {
+            const res = await fetch('/api/assets');
+            const assets = await res.json();
+            const list = document.getElementById('asset-list');
+            list.innerHTML = assets.map(asset => {
+                const isVideo = asset.name.toLowerCase().match(/\.(mp4|webm|ogg)$/);
+                const mediaHtml = isVideo 
+                    ? `<video src="/api/assets?name=${asset.name}" muted></video>`
+                    : `<img src="/api/assets?name=${asset.name}" loading="lazy">`;
+                
+                return `
+                    <div class="asset-card">
+                        ${mediaHtml}
+                        <p>${asset.name}</p>
+                        <button class="del-btn" style="font-size:0.5rem; color:#ff4d4d; border:1px solid #ff4d4d; padding:0.3rem 0.6rem;" onclick="deleteAsset('${asset.name}')">Delete</button>
+                    </div>
+                `;
+            }).join('');
+        }
 
+        window.deleteAsset = async (name) => {
+            if (confirm(`Permanently remove ${name}? This cannot be undone.`)) {
+                await fetch(`/api/assets?name=${name}`, { method: 'DELETE' });
+                loadAssets();
+            }
+        };
+
+        // Archive List
         async function loadAdminList() {
             const res = await fetch('/api/portfolio');
             const data = await res.json();
@@ -149,8 +176,7 @@
                     const media = div.querySelector('img, video');
                     if (media) thumbUrl = media.src;
                 }
-
-                const isVideo = thumbUrl && (thumbUrl.match(/\.(mp4|webm|ogg)$/) || thumbUrl.includes('video'));
+                const isVideo = thumbUrl && thumbUrl.toLowerCase().match(/\.(mp4|webm|ogg)$/);
                 const mediaHtml = isVideo 
                     ? `<video src="${thumbUrl}" muted style="width: 60px; height: 60px; object-fit: cover; opacity: 0.6;"></video>`
                     : `<img src="${thumbUrl || ''}" style="width: 60px; height: 60px; object-fit: cover; opacity: 0.6;">`;
@@ -169,13 +195,13 @@
             }).join('');
         }
 
+        // SNS Management
         async function loadSNSAdmin() {
             const res = await fetch('/api/settings');
             const data = await res.json();
             const list = document.getElementById('sns-admin-list');
             list.innerHTML = data.filter(s => s.type === 'sns').map(item => `
                 <tr>
-                    <td><img src="${item.icon || ''}" style="width: 24px; height: 24px; filter: invert(1); opacity: 0.5;"></td>
                     <td style="font-weight: 800; font-size: 0.7rem; letter-spacing: 0.1em;">${item.key}</td>
                     <td style="opacity: 0.5; font-size: 0.8rem;">${item.value}</td>
                     <td class="admin-actions"><button class="del-btn" onclick="deleteSNS(${item.id})">Remove</button></td>
@@ -192,7 +218,6 @@
                 body: JSON.stringify({
                     key: document.getElementById('sns-key').value,
                     value: document.getElementById('sns-value').value,
-                    icon: document.getElementById('sns-icon').value,
                     type: 'sns'
                 })
             });
@@ -205,7 +230,7 @@
                 await fetch(`/api/settings?id=${id}`, { method: 'DELETE' });
                 loadSNSAdmin();
             }
-        }
+        };
 
         window.deleteItem = async (id) => {
             if (confirm('Permanently delete this fragments?')) {
@@ -216,6 +241,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             loadHeroSettings();
+            loadAssets();
             loadAdminList();
             loadSNSAdmin();
         });

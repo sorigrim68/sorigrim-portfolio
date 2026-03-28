@@ -1,6 +1,6 @@
 /**
  * Cloudflare Pages Functions API: Assets (Sorigrim 1.0)
- * Proxies media from R2 bucket.
+ * Proxies media from R2 bucket with List and Delete support.
  */
 
 export async function onRequest(context) {
@@ -8,12 +8,11 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const name = url.searchParams.get('name');
 
-  // POST: Handle File Uploads to R2
+  // 1. POST: Handle File Uploads
   if (request.method === "POST") {
     try {
       const formData = await request.formData();
       const file = formData.get('file');
-
       if (!file) return new Response("No file uploaded", { status: 400 });
 
       const fileName = `${Date.now()}-${file.name}`;
@@ -21,48 +20,40 @@ export async function onRequest(context) {
         httpMetadata: { contentType: file.type },
       });
 
-      return Response.json({ 
-        success: true, 
-        name: fileName, 
-        url: `/api/assets?name=${fileName}` 
-      });
-    } catch (e) {
-      return Response.json({ error: e.message }, { status: 500 });
-    }
+      return Response.json({ success: true, name: fileName, url: `/api/assets?name=${fileName}` });
+    } catch (e) { return Response.json({ error: e.message }, { status: 500 }); }
   }
 
-  // GET: Serve Assets from R2
+  // 2. DELETE: Remove File from R2
+  if (request.method === "DELETE") {
+    if (!name) return new Response("Name required", { status: 400 });
+    try {
+      await env.BUCKET.delete(name);
+      return Response.json({ success: true });
+    } catch (e) { return Response.json({ error: e.message }, { status: 500 }); }
+  }
+
+  // 3. GET: Fetch List or Single Asset
   if (!name) {
-    return new Response("Asset name required", { status: 400 });
+    // List all assets if no name provided
+    try {
+      const list = await env.BUCKET.list();
+      return Response.json(list.objects.map(obj => ({
+        name: obj.key,
+        size: obj.size,
+        uploaded: obj.uploaded
+      })));
+    } catch (e) { return Response.json({ error: e.message }, { status: 500 }); }
   }
 
   try {
     const object = await env.BUCKET.get(name);
-
-    if (object === null) {
-      if (name.toLowerCase().endsWith('.mp4')) {
-          return Response.redirect("https://assets.mixkit.co/videos/preview/mixkit-abstract-flowing-curves-of-light-31758-large.mp4", 302);
-      }
-      return new Response("Object Not Found", { status: 404 });
-    }
+    if (object === null) return new Response("Object Not Found", { status: 404 });
 
     const headers = new Headers();
     object.writeHttpMetadata(headers);
     headers.set("etag", object.httpEtag);
-    headers.set("accept-ranges", "bytes"); // Allow browsers to know range is possible
-    
-    // Support case-insensitive extension check
-    const lowerName = name.toLowerCase();
-    if (lowerName.endsWith('.mp4')) {
-      headers.set("content-type", "video/mp4");
-    } else if (lowerName.endsWith('.webm')) {
-      headers.set("content-type", "video/webm");
-    }
-
-    return new Response(object.body, {
-      headers,
-    });
-  } catch (e) {
-    return new Response(e.message, { status: 500 });
-  }
+    headers.set("cache-control", "public, max-age=31536000");
+    return new Response(object.body, { headers });
+  } catch (e) { return new Response(e.message, { status: 500 }); }
 }

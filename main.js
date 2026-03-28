@@ -4,8 +4,8 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   initPageTransition();
-  // Ensure hero video is initialized even if DOM state is slightly delayed
-  setTimeout(initHeroVideo, 100); 
+  // Ensure hero background is initialized
+  setTimeout(initHeroBackground, 100); 
   loadRecommended();
   if (document.getElementById('portfolio-list')) {
     loadArchive('all');
@@ -18,12 +18,10 @@ function initPageTransition() {
   overlay.id = 'page-transition';
   document.body.appendChild(overlay);
 
-  // Fade out overlay on load
   window.addEventListener('load', () => {
     overlay.classList.add('hidden');
   });
 
-  // Intercept link clicks
   document.querySelectorAll('a').forEach(link => {
     const isInternal = link.hostname === window.location.hostname;
     const isNotHash = !link.hash;
@@ -43,56 +41,39 @@ function initPageTransition() {
   });
 }
 
-async function initHeroVideo() {
+async function initHeroBackground() {
   const container = document.getElementById('hero-video-container');
   if (!container) return;
 
-  const fallbackVideo = "https://assets.mixkit.co/videos/preview/mixkit-abstract-flowing-curves-of-light-31758-large.mp4";
+  const fallbackImage = "/api/assets?name=og-image.jpg";
 
   try {
     const res = await fetch('/api/settings');
     const settings = await res.json();
     const heroConfig = settings.find(s => s.key === 'landing_hero_video');
     
-    const videoUrl = (heroConfig && heroConfig.value) ? heroConfig.value : fallbackVideo;
-    console.log("🎬 Sorigrim Hero Video Init:", videoUrl);
-    
-    // Inject the video tag exactly like the working thumbnails
-    container.innerHTML = `
-      <video src="${videoUrl}" muted loop autoplay playsinline 
-             poster="/api/assets?name=og-image.jpg"
-             style="width:100%; height:100%; object-fit:cover; display:block;">
-      </video>
-    `;
-    
-    const videoEl = container.querySelector('video');
-    
-    videoEl.addEventListener('loadeddata', () => {
-      console.log("✅ Hero Video Data Loaded");
-    });
+    const url = (heroConfig && heroConfig.value) ? heroConfig.value : fallbackImage;
+    const isVideo = url.toLowerCase().match(/\.(mp4|webm|ogg)$/) || url.includes('video');
 
-    videoEl.addEventListener('error', (e) => {
-      console.error("❌ Hero Video Error:", videoEl.error);
-      if (videoUrl !== fallbackVideo) {
-        console.log("🔄 Retrying with fallback...");
-        videoEl.src = fallbackVideo;
-      }
-    });
-
-    // Backup play trigger
-    const playPromise = videoEl.play();
-    if (playPromise !== undefined) {
-      playPromise.catch(() => {
-        console.warn("⚠️ Autoplay prevented. Click anywhere to play.");
-        const retry = () => videoEl.play();
-        document.body.addEventListener('mousedown', retry, { once: true });
-        document.body.addEventListener('touchstart', retry, { once: true });
+    if (isVideo) {
+      container.innerHTML = `
+        <video src="${url}" muted loop autoplay playsinline 
+               style="width:100%; height:100%; object-fit:cover; display:block;">
+        </video>
+      `;
+      const videoEl = container.querySelector('video');
+      videoEl.play().catch(() => {
+        document.body.addEventListener('mousedown', () => videoEl.play(), { once: true });
       });
+    } else {
+      container.innerHTML = `
+        <img src="${url}" style="width:100%; height:100%; object-fit:cover; display:block;">
+      `;
     }
 
   } catch (e) {
-    console.error("❌ Settings Fetch Error:", e);
-    container.innerHTML = `<video src="${fallbackVideo}" muted loop autoplay playsinline style="width:100%; height:100%; object-fit:cover; display:block;"></video>`;
+    console.error("Hero Load Error", e);
+    container.innerHTML = `<img src="${fallbackImage}" style="width:100%; height:100%; object-fit:cover; display:block;">`;
   }
 }
 
