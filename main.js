@@ -44,7 +44,7 @@ function initPageTransition() {
 
 /**
  * DMS Solution 기술 벤치마킹: 
- * 검증된 썸네일 로딩 로직을 그대로 사용하여 히어로 배경 가시성을 100% 보장합니다.
+ * 특정 게시글의 썸네일을 메인 히어로 이미지로 완벽하게 연동합니다.
  */
 async function initHeroBackground() {
   const container = document.getElementById('hero-video-container');
@@ -53,13 +53,11 @@ async function initHeroBackground() {
   const defaultImage = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop";
 
   try {
-    // 썸네일이 잘 나오는 것과 똑같이 portfolio API 호출
-    const res = await fetch('/api/portfolio?category=HERO_CONFIG');
-    const data = await res.json();
+    // 썸네일 로직과 동일하게 특정 카테고리나 히어로 설정을 조회
+    const res = await fetch('/api/portfolio?is_hero=true');
+    const heroPost = await res.json();
     
-    // 가장 최근에 설정된 히어로 정보 가져오기
-    const hero = (data && data.length > 0) ? data[0] : null;
-    const url = hero ? hero.image : defaultImage;
+    const url = (heroPost && heroPost.image) ? heroPost.image : defaultImage;
     const isVideo = url.toLowerCase().match(/\.(mp4|webm|ogg)$/) || url.includes('video');
 
     if (isVideo) {
@@ -69,11 +67,11 @@ async function initHeroBackground() {
         document.body.addEventListener('mousedown', () => v.play(), { once: true });
       });
     } else {
-      // 썸네일 로직과 동일하게 HTML 주입
+      // 검증된 썸네일과 동일한 HTML 주입 방식
       container.innerHTML = `<div class="hero-bg-image" style="background-image: url('${url}'); width:100%; height:100%; background-size:cover; background-position:center; animation: ken-burns 25s ease-in-out infinite alternate;"></div>`;
     }
   } catch (e) {
-    console.warn("Hero fetch failed, using default", e);
+    console.warn("Hero fetch failed, using fallback", e);
     container.innerHTML = `<div class="hero-bg-image" style="background-image: url('${defaultImage}'); width:100%; height:100%; background-size:cover; background-position:center;"></div>`;
   }
 }

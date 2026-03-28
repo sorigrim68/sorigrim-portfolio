@@ -106,9 +106,15 @@
                 <input type="file" id="editor-media-upload" style="display: none;">
             </div>
 
-            <div class="form-group" style="display:flex; align-items:center; gap:1rem; background: var(--bg-light); padding: 2rem; border-radius: 8px;">
-                <input type="checkbox" id="is_recommended" style="width: auto;">
-                <label style="margin-bottom:0;">메인 페이지 '주요 작품선'에 노출</label>
+            <div class="form-group" style="display:flex; flex-direction:column; gap:1rem; background: var(--bg-light); padding: 2rem; border-radius: 8px; border: 1px solid var(--border);">
+                <div style="display:flex; align-items:center; gap:1rem;">
+                    <input type="checkbox" id="is_recommended" style="width: auto;">
+                    <label style="margin-bottom:0;">메인 페이지 '주요 작품선'에 노출</label>
+                </div>
+                <div style="display:flex; align-items:center; gap:1rem; margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border);">
+                    <input type="checkbox" id="is_hero" style="width: auto;">
+                    <label style="margin-bottom:0; color: var(--primary); font-weight:700;">★ 이 게시글의 썸네일을 메인 히어로 이미지로 사용</label>
+                </div>
             </div>
             <button type="submit" class="btn-premium" style="width: 100%; padding: 2rem; font-size: 1.1rem;">작품 저장하기</button>
         </form>
@@ -217,6 +223,7 @@
                 document.getElementById('description').value = data.description || '';
                 editor.innerHTML = data.content || '';
                 document.getElementById('is_recommended').checked = data.is_recommended === 1;
+                document.getElementById('is_hero').checked = data.is_hero === 1;
             });
         }
 
@@ -228,7 +235,8 @@
                 image: thumbInput.value,
                 description: document.getElementById('description').value,
                 content: editor.innerHTML,
-                is_recommended: document.getElementById('is_recommended').checked
+                is_recommended: document.getElementById('is_recommended').checked,
+                is_hero: document.getElementById('is_hero').checked
             };
             
             try {

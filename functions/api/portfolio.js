@@ -9,6 +9,7 @@ export async function onRequest(context) {
   const id = url.searchParams.get('id');
   const category = url.searchParams.get('category');
   const recommended = url.searchParams.get('recommended');
+  const isHeroParam = url.searchParams.get('is_hero');
 
   try {
     // 1. Database Table Sync
@@ -23,12 +24,19 @@ export async function onRequest(context) {
         content TEXT,
         tags TEXT,
         is_recommended INTEGER DEFAULT 0,
+        is_hero INTEGER DEFAULT 0,
         createdAt TEXT
       )
     `).run();
 
     // GET Request handling
     if (request.method === "GET") {
+      // Fetch the special Hero Post
+      if (isHeroParam === 'true') {
+        const hero = await env.DB.prepare("SELECT * FROM sg_posts WHERE is_hero = 1 ORDER BY id DESC LIMIT 1").first();
+        return Response.json(hero || {});
+      }
+
       if (id) {
         const item = await env.DB.prepare("SELECT * FROM sg_posts WHERE id = ?").bind(id).first();
         if (!item) return Response.json({ error: "Item not found" });
@@ -40,12 +48,12 @@ export async function onRequest(context) {
         return Response.json({ ...item, next, prev });
       }
 
-      let query = "SELECT * FROM sg_posts";
+      let query = "SELECT * FROM sg_posts WHERE category != 'HERO_CONFIG'"; // Hide system configs
       let params = [];
       if (recommended === 'true') {
-        query += " WHERE is_recommended = 1";
+        query += " AND is_recommended = 1";
       } else if (category && category !== 'all') {
-        query += " WHERE category = ?";
+        query += " AND category = ?";
         params.push(category);
       }
       query += " ORDER BY id DESC";
@@ -57,11 +65,17 @@ export async function onRequest(context) {
     // POST Request: Handle INSERT and UPDATE
     if (request.method === "POST") {
       const data = await request.json();
+      const isHero = data.is_hero ? 1 : 0;
+
+      // If marking as hero, unmark all others
+      if (isHero === 1) {
+        await env.DB.prepare("UPDATE sg_posts SET is_hero = 0").run();
+      }
 
       if (id) {
         // UPDATE
         await env.DB.prepare(
-          "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ? WHERE id = ?"
+          "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ?, is_hero = ? WHERE id = ?"
         ).bind(
           data.title, 
           data.category, 
@@ -69,13 +83,14 @@ export async function onRequest(context) {
           data.description, 
           data.content || "", 
           data.is_recommended ? 1 : 0, 
+          isHero,
           id
         ).run();
         return Response.json({ success: true, action: "update" });
       } else {
         // INSERT
         await env.DB.prepare(
-          "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?)"
+          "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, is_hero, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
         ).bind(
           data.title, 
           data.category, 
@@ -83,19 +98,19 @@ export async function onRequest(context) {
           data.description, 
           data.content || "", 
           data.is_recommended ? 1 : 0, 
+          isHero,
           new Date().toISOString()
         ).run();
         return Response.json({ success: true, action: "insert" });
       }
     }
 
-    // DELETE Request: Handle deletion
+    // DELETE Request
     if (request.method === "DELETE") {
-      if (!id) return Response.json({ error: "ID required for deletion" }, { status: 400 });
+      if (!id) return Response.json({ error: "ID required" }, { status: 400 });
       await env.DB.prepare("DELETE FROM sg_posts WHERE id = ?").bind(id).run();
-      return Response.json({ success: true, action: "delete" });
+      return Response.json({ success: true });
     }
-
 
   } catch (e) {
     return Response.json({ error: e.message }, { status: 500 });
@@ -103,4 +118,3 @@ export async function onRequest(context) {
 
   return new Response("Method not allowed", { status: 405 });
 }
-// Version 1.0.1 - Force Sync
