@@ -73,7 +73,8 @@ async function initHeroBackground() {
     if (!res.ok) throw new Error("API Offline");
     
     const settings = await res.json();
-    const heroConfig = settings.find(s => s.key === 'landing_hero_video');
+    // 'hero_background' 키를 표준으로 사용 (관리자 센터와 동기화)
+    const heroConfig = settings.find(s => s.key === 'hero_background');
     
     const url = (heroConfig && heroConfig.value) ? heroConfig.value : defaultImage;
     const isVideo = url.toLowerCase().match(/\.(mp4|webm|ogg)$/) || url.includes('video');
