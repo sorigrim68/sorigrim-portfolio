@@ -20,6 +20,7 @@ body {
   font-family: var(--font-main);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden; /* Prevent horizontal scroll */
 }
 
 /* Page Transition */
@@ -97,7 +98,7 @@ body {
 .btn-premium:hover { background: #0044CC; transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,85,255,0.25); }
 
 /* Technical Grid */
-.container { max-width: 1400px; margin: 0 auto; padding: 0 4rem; width: 100%; }
+.container { max-width: 1400px; margin: 0 auto; padding: 0 4rem; width: 100%; box-sizing: border-box; }
 .section-title { font-size: clamp(2rem, 5vw, 3rem); font-weight: 850; letter-spacing: -0.03em; margin-bottom: 1.5rem; }
 .section-desc { color: var(--text-muted); font-size: clamp(1rem, 2vw, 1.2rem); margin-bottom: 5rem; }
 
@@ -124,7 +125,7 @@ body {
 
 @keyframes reveal-up { to { opacity: 1; transform: translateY(0); } }
 
-/* --- Mobile Optimization (The Focus) --- */
+/* --- Mobile Optimization --- */
 
 @media (max-width: 1024px) {
   .container { padding: 0 2.5rem; }

@@ -147,11 +147,18 @@ class SorigrimFooter extends HTMLElement {
         .container { max-width: 1400px; margin: 0 auto; padding: 0 4rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4rem; }
         .brand h2 { font-size: 1.5rem; font-weight: 900; color: #0055FF; margin-bottom: 1rem; text-transform: uppercase; }
         .brand p { font-size: 0.9rem; color: #666; max-width: 350px; }
-        .links { display: flex; gap: 5rem; }
+        .links { display: flex; gap: 5rem; flex-wrap: wrap; }
         .group h4 { font-size: 0.8rem; font-weight: 800; margin-bottom: 1.5rem; text-transform: uppercase; }
         .group a { display: block; font-size: 0.9rem; color: #666; text-decoration: none; margin-bottom: 0.8rem; }
         .group a:hover { color: #0055FF; }
-        .bottom { width: 100%; margin-top: 6rem; padding-top: 2rem; border-top: 1px solid #EEE; display: flex; justify-content: space-between; font-size: 0.8rem; color: #999; text-transform: uppercase; }
+        .bottom { width: 100%; margin-top: 6rem; padding-top: 2rem; border-top: 1px solid #EEE; display: flex; justify-content: space-between; font-size: 0.8rem; color: #999; text-transform: uppercase; flex-wrap: wrap; gap: 1rem; }
+        
+        @media (max-width: 768px) {
+          :host { padding: 4rem 0; }
+          .container { padding: 0 1.5rem; gap: 3rem; }
+          .links { gap: 3rem; }
+          .bottom { margin-top: 3rem; }
+        }
       </style>
       <div class="container">
         <div class="brand">
