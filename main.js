@@ -4,6 +4,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
   initPageTransition();
+  initStickyNav();
   // Ensure hero background is initialized
   setTimeout(initHeroBackground, 100); 
   loadRecommended();
@@ -12,6 +13,19 @@ document.addEventListener('DOMContentLoaded', () => {
     initFilters();
   }
 });
+
+function initStickyNav() {
+  const nav = document.getElementById('global-nav');
+  if (!nav) return;
+
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 50) {
+      nav.classList.add('scrolled');
+    } else {
+      nav.classList.remove('scrolled');
+    }
+  });
+}
 
 function initPageTransition() {
   const overlay = document.createElement('div');
@@ -35,7 +49,7 @@ function initPageTransition() {
         overlay.classList.remove('hidden');
         setTimeout(() => {
           window.location.href = target;
-        }, 800);
+        }, 600);
       });
     }
   });
