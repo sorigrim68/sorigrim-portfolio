@@ -38,16 +38,21 @@ function initPageTransition() {
 }
 
 async function initHeroVideo() {
-  const video = document.querySelector('#hero video source');
-  if (!video) return;
+  const videoEl = document.querySelector('#hero video');
+  if (!videoEl) return;
 
   try {
     const res = await fetch('/api/settings');
     const settings = await res.json();
     const heroConfig = settings.find(s => s.key === 'landing_hero_video');
+    
     if (heroConfig && heroConfig.value) {
-      video.src = heroConfig.value;
-      video.parentElement.load(); // Reload video element
+      // Set src directly on video element for better reliability
+      videoEl.src = heroConfig.value;
+      videoEl.load();
+      videoEl.play().catch(err => {
+        console.warn("Autoplay blocked or load error:", err);
+      });
     }
   } catch (e) {
     console.error("Hero Video Load Error", e);
@@ -72,7 +77,7 @@ async function loadArchive(category = 'all') {
         if (media) thumbUrl = media.src;
       }
 
-      const isVideo = thumbUrl && (thumbUrl.match(/\.(mp4|webm|ogg)$/) || thumbUrl.includes('video'));
+      const isVideo = thumbUrl && (thumbUrl.toLowerCase().match(/\.(mp4|webm|ogg)$/) || thumbUrl.includes('video') || thumbUrl.includes('.mp4'));
       const mediaHtml = isVideo 
         ? `<video src="${thumbUrl}" muted loop autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>`
         : `<img src="${thumbUrl || ''}" alt="${work.title}" loading="lazy">`;
@@ -139,7 +144,7 @@ async function loadRecommended() {
           if (media) thumbUrl = media.src;
         }
 
-        const isVideo = thumbUrl && (thumbUrl.match(/\.(mp4|webm|ogg)$/) || thumbUrl.includes('video'));
+        const isVideo = thumbUrl && (thumbUrl.toLowerCase().match(/\.(mp4|webm|ogg)$/) || thumbUrl.includes('video') || thumbUrl.includes('.mp4'));
         const mediaHtml = isVideo 
           ? `<video src="${thumbUrl}" muted loop autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>`
           : `<img src="${thumbUrl || ''}" alt="${work.title}" loading="lazy">`;
