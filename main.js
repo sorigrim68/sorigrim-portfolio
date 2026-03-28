@@ -44,21 +44,22 @@ function initPageTransition() {
 
 /**
  * DMS Solution 기술 벤치마킹: 
- * 배경을 CSS 변수로 제어하여 렌더링 지연을 없애고 가시성을 100% 보장합니다.
+ * 검증된 썸네일 로딩 로직을 그대로 사용하여 히어로 배경 가시성을 100% 보장합니다.
  */
 async function initHeroBackground() {
-  const heroSection = document.getElementById('hero');
   const container = document.getElementById('hero-video-container');
-  if (!heroSection || !container) return;
+  if (!container) return;
 
   const defaultImage = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop";
 
   try {
-    const res = await fetch('/api/settings');
-    const settings = await res.json();
-    const heroConfig = settings.find(s => s.key === 'hero_background' || s.key === 'landing_hero_video');
+    // 썸네일이 잘 나오는 것과 똑같이 portfolio API 호출
+    const res = await fetch('/api/portfolio?category=HERO_CONFIG');
+    const data = await res.json();
     
-    const url = (heroConfig && heroConfig.value) ? heroConfig.value : defaultImage;
+    // 가장 최근에 설정된 히어로 정보 가져오기
+    const hero = (data && data.length > 0) ? data[0] : null;
+    const url = hero ? hero.image : defaultImage;
     const isVideo = url.toLowerCase().match(/\.(mp4|webm|ogg)$/) || url.includes('video');
 
     if (isVideo) {
@@ -68,10 +69,11 @@ async function initHeroBackground() {
         document.body.addEventListener('mousedown', () => v.play(), { once: true });
       });
     } else {
-      // 기술적 핵심: 인라인 스타일을 통해 브라우저에게 로딩할 이미지를 즉시 알림
+      // 썸네일 로직과 동일하게 HTML 주입
       container.innerHTML = `<div class="hero-bg-image" style="background-image: url('${url}'); width:100%; height:100%; background-size:cover; background-position:center; animation: ken-burns 25s ease-in-out infinite alternate;"></div>`;
     }
   } catch (e) {
+    console.warn("Hero fetch failed, using default", e);
     container.innerHTML = `<div class="hero-bg-image" style="background-image: url('${defaultImage}'); width:100%; height:100%; background-size:cover; background-position:center;"></div>`;
   }
 }

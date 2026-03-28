@@ -111,31 +111,43 @@
             return data.url;
         }
 
-        // Hero Management
+        // Hero Management (Now using the verified Portfolio API)
         async function loadHeroSettings() {
-            const res = await fetch('/api/settings');
+            // Fetch the latest post in 'HERO_CONFIG' category
+            const res = await fetch('/api/portfolio?category=HERO_CONFIG');
             const data = await res.json();
-            // 'hero_background' 키를 표준으로 사용
-            const hero = data.find(s => s.key === 'hero_background'); 
-            if (hero) document.getElementById('hero-url').value = hero.value;
+            if (data && data.length > 0) {
+                const hero = data[0];
+                document.getElementById('hero-url').value = hero.image;
+                window.currentHeroId = hero.id; // Store for updating
+            }
         }
 
         document.getElementById('hero-upload').addEventListener('change', async (e) => {
             if (e.target.files[0]) {
                 const url = await uploadFile(e.target.files[0]);
                 if (url) {
-                    await fetch('/api/settings', {
+                    const data = {
+                        title: 'Main Hero Config',
+                        category: 'HERO_CONFIG',
+                        image: url,
+                        description: 'System generated hero configuration',
+                        content: '',
+                        is_recommended: 0
+                    };
+
+                    // Use the same POST logic as regular posts
+                    const endpoint = window.currentHeroId ? `/api/portfolio?id=${window.currentHeroId}` : '/api/portfolio';
+                    
+                    await fetch(endpoint, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ 
-                            key: 'hero_background', 
-                            value: url, 
-                            type: 'config' 
-                        })
+                        body: JSON.stringify(data)
                     });
+                    
                     await loadHeroSettings();
                     await loadAssets();
-                    alert('히어로 배경이 성공적으로 업데이트되었습니다. 메인 페이지를 확인하세요!');
+                    alert('히어로 이미지가 썸네일 로직으로 안전하게 저장되었습니다!');
                 }
             }
         });
