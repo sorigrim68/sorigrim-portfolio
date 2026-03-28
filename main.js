@@ -62,17 +62,33 @@ async function loadArchive(category = 'all') {
     const res = await fetch(`/api/portfolio${category !== 'all' ? `?category=${category}` : ''}`);
     const works = await res.json();
     
-    grid.innerHTML = works.map((work, i) => `
-      <div class="archive-card reveal" style="transition-delay: ${i * 0.1}s" onclick="navigate('/portfolio/detail.html?id=${work.id}')">
-        <div class="img-box">
-          <img src="${work.image || ''}" alt="${work.title}" loading="lazy">
+    grid.innerHTML = works.map((work, i) => {
+      // Fallback: If no image, try to extract from content
+      let thumbUrl = work.image;
+      if (!thumbUrl && work.content) {
+        const div = document.createElement('div');
+        div.innerHTML = work.content;
+        const media = div.querySelector('img, video');
+        if (media) thumbUrl = media.src;
+      }
+
+      const isVideo = thumbUrl && (thumbUrl.match(/\.(mp4|webm|ogg)$/) || thumbUrl.includes('video'));
+      const mediaHtml = isVideo 
+        ? `<video src="${thumbUrl}" muted loop autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>`
+        : `<img src="${thumbUrl || ''}" alt="${work.title}" loading="lazy">`;
+
+      return `
+        <div class="archive-card reveal" style="transition-delay: ${i * 0.1}s" onclick="navigate('/portfolio/detail.html?id=${work.id}')">
+          <div class="img-box">
+            ${mediaHtml}
+          </div>
+          <div class="card-meta">
+            <span class="tag">${work.category}</span>
+            <h3>${work.title}</h3>
+          </div>
         </div>
-        <div class="card-meta">
-          <span class="tag">${work.category}</span>
-          <h3>${work.title}</h3>
-        </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
     
     // Trigger reveals
     setTimeout(() => {
@@ -113,11 +129,27 @@ async function loadRecommended() {
     const works = await res.json();
     
     if (works && works.length > 0) {
-      grid.innerHTML = works.slice(0, 9).map((work, i) => `
-        <div class="archive-item reveal" style="transition-delay: ${i * 0.1}s" onclick="navigate('/portfolio/detail.html?id=${work.id}')">
-          <img src="${work.image || ''}" alt="${work.title}" loading="lazy">
-        </div>
-      `).join('');
+      grid.innerHTML = works.slice(0, 9).map((work, i) => {
+        // Fallback: If no image, try to extract from content
+        let thumbUrl = work.image;
+        if (!thumbUrl && work.content) {
+          const div = document.createElement('div');
+          div.innerHTML = work.content;
+          const media = div.querySelector('img, video');
+          if (media) thumbUrl = media.src;
+        }
+
+        const isVideo = thumbUrl && (thumbUrl.match(/\.(mp4|webm|ogg)$/) || thumbUrl.includes('video'));
+        const mediaHtml = isVideo 
+          ? `<video src="${thumbUrl}" muted loop autoplay playsinline style="width:100%; height:100%; object-fit:cover;"></video>`
+          : `<img src="${thumbUrl || ''}" alt="${work.title}" loading="lazy">`;
+
+        return `
+          <div class="archive-item reveal" style="transition-delay: ${i * 0.1}s" onclick="navigate('/portfolio/detail.html?id=${work.id}')">
+            ${mediaHtml}
+          </div>
+        `;
+      }).join('');
     } else {
       // Elegant minimalist placeholders
       grid.innerHTML = Array(9).fill(0).map((_, i) => `

@@ -141,17 +141,32 @@
             const res = await fetch('/api/portfolio');
             const data = await res.json();
             const list = document.getElementById('admin-list');
-            list.innerHTML = data.map(item => `
-                <tr>
-                    <td><img src="${item.image}" style="width: 60px; height: 60px; object-fit: cover; opacity: 0.6;"></td>
-                    <td style="font-weight: 600;">${item.title}</td>
-                    <td style="font-size: 0.65rem; font-weight: 900; color: var(--sori-accent); letter-spacing: 0.1em;">${item.category}</td>
-                    <td class="admin-actions">
-                        <a href="editor.html?id=${item.id}">Edit</a>
-                        <button class="del-btn" onclick="deleteItem(${item.id})">Delete</button>
-                    </td>
-                </tr>
-            `).join('');
+            list.innerHTML = data.map(item => {
+                let thumbUrl = item.image;
+                if (!thumbUrl && item.content) {
+                    const div = document.createElement('div');
+                    div.innerHTML = item.content;
+                    const media = div.querySelector('img, video');
+                    if (media) thumbUrl = media.src;
+                }
+
+                const isVideo = thumbUrl && (thumbUrl.match(/\.(mp4|webm|ogg)$/) || thumbUrl.includes('video'));
+                const mediaHtml = isVideo 
+                    ? `<video src="${thumbUrl}" muted style="width: 60px; height: 60px; object-fit: cover; opacity: 0.6;"></video>`
+                    : `<img src="${thumbUrl || ''}" style="width: 60px; height: 60px; object-fit: cover; opacity: 0.6;">`;
+
+                return `
+                    <tr>
+                        <td>${mediaHtml}</td>
+                        <td style="font-weight: 600;">${item.title}</td>
+                        <td style="font-size: 0.65rem; font-weight: 900; color: var(--sori-accent); letter-spacing: 0.1em;">${item.category}</td>
+                        <td class="admin-actions">
+                            <a href="editor.html?id=${item.id}">Edit</a>
+                            <button class="del-btn" onclick="deleteItem(${item.id})">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
         }
 
         async function loadSNSAdmin() {

@@ -40,6 +40,8 @@
         .rich-editor p { margin-bottom: 1.5rem; opacity: 0.8; }
         .rich-editor img, .rich-editor video { max-width: 100%; height: auto; margin: 3rem 0; border-radius: 4px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         
+        #thumb-preview img, #thumb-preview video { width: 100%; height: 100%; object-fit: cover; }
+
         .upload-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 10000; flex-direction: column; gap: 2rem; }
         .upload-overlay .spinner { width: 40px; height: 40px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--sori-accent); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -67,11 +69,20 @@
             </select></div>
             
             <div class="form-group">
-                <label>Manual Thumbnail (Optional)</label>
-                <div style="display: flex; gap: 1rem; align-items: center;">
-                    <input type="url" id="image" placeholder="Will auto-extract from content if empty">
-                    <input type="file" id="thumb-upload" style="display: none;" accept="image/*,video/*">
-                    <button type="button" class="btn-premium" style="padding: 0.8rem 1.5rem; font-size: 0.6rem;" onclick="document.getElementById('thumb-upload').click()">Upload</button>
+                <label>Vision Thumbnail</label>
+                <div style="display: flex; gap: 2rem; align-items: flex-start; background: rgba(255,255,255,0.02); padding: 2rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div id="thumb-preview" style="width: 150px; aspect-ratio: 1; background: rgba(0,0,0,0.3); border: 1px dashed rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                        <span style="font-size: 0.6rem; color: var(--sori-muted); text-transform: uppercase;">No Media</span>
+                    </div>
+                    <div style="flex: 1;">
+                        <input type="url" id="image" placeholder="Paste URL or upload below..." style="margin-bottom: 1rem;">
+                        <div style="display: flex; gap: 1rem;">
+                            <input type="file" id="thumb-upload" style="display: none;" accept="image/*,video/*">
+                            <button type="button" class="btn-premium" style="padding: 0.8rem 1.5rem; font-size: 0.6rem;" onclick="document.getElementById('thumb-upload').click()">Upload Fragment</button>
+                            <button type="button" class="btn-premium" style="padding: 0.8rem 1.5rem; font-size: 0.6rem; background: transparent; border: 1px solid rgba(255,255,255,0.2);" onclick="autoExtractThumb()">Auto-Extract</button>
+                        </div>
+                        <p style="font-size: 0.6rem; color: var(--sori-muted); margin-top: 1rem; letter-spacing: 0.05em;">* Thumbnails are essential for the Archive grid.</p>
+                    </div>
                 </div>
             </div>
 
@@ -117,6 +128,8 @@
         const editId = urlParams.get('id');
         const editor = document.getElementById('content-editor');
         const overlay = document.getElementById('upload-overlay');
+        const thumbInput = document.getElementById('image');
+        const thumbPreview = document.getElementById('thumb-preview');
 
         window.execCmd = (cmd, val = null) => {
             document.execCommand(cmd, false, val);
@@ -162,7 +175,43 @@
             }
         }
 
-        // Auto-extract Thumbnail
+        // Thumbnail Preview Handler
+        function updateThumbPreview(url) {
+            if (!url) {
+                thumbPreview.innerHTML = `<span style="font-size: 0.6rem; color: var(--sori-muted); text-transform: uppercase;">No Media</span>`;
+                return;
+            }
+            if (url.match(/\.(mp4|webm|ogg)$/) || url.includes('video')) {
+                thumbPreview.innerHTML = `<video src="${url}" muted loop autoplay playsinline></video>`;
+            } else {
+                thumbPreview.innerHTML = `<img src="${url}" alt="Preview">`;
+            }
+        }
+
+        thumbInput.addEventListener('input', (e) => updateThumbPreview(e.target.value));
+
+        document.getElementById('thumb-upload').onchange = async (e) => {
+            if (e.target.files[0]) {
+                overlay.style.display = 'flex';
+                const url = await uploadFile(e.target.files[0]);
+                overlay.style.display = 'none';
+                if (url) {
+                    thumbInput.value = url;
+                    updateThumbPreview(url);
+                }
+            }
+        };
+
+        window.autoExtractThumb = () => {
+            const thumb = extractThumbnail(editor.innerHTML);
+            if (thumb) {
+                thumbInput.value = thumb;
+                updateThumbPreview(thumb);
+            } else {
+                alert("No media found in vision body.");
+            }
+        };
+
         function extractThumbnail(html) {
             const div = document.createElement('div');
             div.innerHTML = html;
@@ -177,7 +226,8 @@
             fetch(`/api/portfolio?id=${editId}`).then(r => r.json()).then(data => {
                 document.getElementById('title').value = data.title;
                 document.getElementById('category').value = data.category;
-                document.getElementById('image').value = data.image || '';
+                thumbInput.value = data.image || '';
+                updateThumbPreview(data.image);
                 document.getElementById('description').value = data.description || '';
                 editor.innerHTML = data.content || '';
                 document.getElementById('is_recommended').checked = data.is_recommended === 1;
@@ -187,7 +237,7 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            let thumb = document.getElementById('image').value;
+            let thumb = thumbInput.value;
             if (!thumb) {
                 thumb = extractThumbnail(editor.innerHTML) || '';
             }
