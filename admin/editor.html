@@ -3,136 +3,217 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>sorigrim | 글 작성 및 수정</title>
+    <title>SORIGRIM | SEO Premium Editor</title>
     <link rel="stylesheet" href="/style.css">
     <style>
-        .editor-container { padding: 8rem 0; max-width: 1000px; }
-        .form-group { margin-bottom: 3rem; }
-        .form-group label { display: block; font-size: 0.85rem; font-weight: 800; color: var(--text-muted); margin-bottom: 1rem; }
+        .editor-layout { display: grid; grid-template-columns: 1fr 350px; gap: 2rem; padding: 8rem 0; align-items: start; }
+        
+        /* 메인 에디터 영역 */
+        .editor-main { background: white; padding: 3rem; border: 1px solid var(--border); border-radius: 8px; }
+        .form-group { margin-bottom: 2.5rem; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 800; color: var(--text-muted); margin-bottom: 0.8rem; text-transform: uppercase; }
         .form-group input, .form-group select, .form-group textarea {
-            width: 100%; padding: 1.2rem; background: var(--bg-light); border: 1px solid var(--border);
+            width: 100%; padding: 1rem; background: var(--bg-light); border: 1px solid var(--border);
             color: var(--text-main); font-family: inherit; font-size: 1rem; border-radius: 4px;
         }
-        .form-group input:focus { outline: none; border-color: var(--primary); }
+        
+        /* SEO 사이드바 영역 */
+        .editor-sidebar { position: sticky; top: 120px; display: flex; flex-direction: column; gap: 1.5rem; }
+        .sidebar-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; }
+        .sidebar-card h4 { font-size: 0.9rem; font-weight: 800; margin-bottom: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.8rem; }
+        
+        /* SEO 진단 아이템 */
+        .seo-check { display: flex; align-items: center; gap: 0.8rem; font-size: 0.85rem; margin-bottom: 0.8rem; color: #555; }
+        .seo-check .status { width: 10px; height: 10px; border-radius: 50%; background: #ddd; }
+        .seo-check.pass .status { background: #28a745; }
+        .seo-check.warn .status { background: #ffc107; }
+        .seo-check.fail .status { background: #dc3545; }
 
-        .editor-card { background: white; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+        /* 구글 미리보기 */
+        .serp-preview { background: #fff; padding: 1rem; border: 1px solid #ddd; border-radius: 8px; font-family: arial, sans-serif; }
+        .serp-url { color: #202124; font-size: 14px; margin-bottom: 4px; }
+        .serp-title { color: #1a0dab; font-size: 20px; margin-bottom: 4px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .serp-desc { color: #4d5156; font-size: 14px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+        /* 리치 에디터 툴바 */
         .editor-toolbar {
-            display: flex; gap: 0.5rem; padding: 1rem; background: var(--bg-light); 
-            border-bottom: 1px solid var(--border); flex-wrap: wrap;
+            display: flex; gap: 0.5rem; padding: 0.8rem; background: var(--bg-light); 
+            border: 1px solid var(--border); border-bottom: none; border-radius: 4px 4px 0 0; flex-wrap: wrap;
         }
-        .editor-toolbar .group { display: flex; gap: 0.3rem; border-right: 1px solid var(--border); padding-right: 0.5rem; margin-right: 0.5rem; }
-        .editor-toolbar .group:last-child { border-right: none; }
-        
-        .editor-toolbar button {
-            background: none; border: 1px solid transparent; color: var(--text-muted);
-            padding: 0.5rem 0.8rem; font-size: 0.75rem; font-weight: 700; cursor: pointer; border-radius: 4px; transition: 0.2s;
-        }
-        .editor-toolbar button:hover { color: var(--primary); background: white; }
-
         .rich-editor {
-            min-height: 600px; padding: 4rem; color: var(--text-main); font-family: var(--font-main); 
-            font-size: 1.1rem; line-height: 1.8; outline: none;
+            min-height: 500px; padding: 2.5rem; border: 1px solid var(--border); border-radius: 0 0 4px 4px;
+            outline: none; font-size: 1.1rem; line-height: 1.8;
         }
-        .rich-editor h2 { font-size: 2.5rem; margin: 3rem 0 1.5rem; font-weight: 800; }
-        .rich-editor img, .rich-editor video { max-width: 100%; height: auto; margin: 3rem 0; border-radius: 4px; }
-        
-        #thumb-preview img, #thumb-preview video { width: 100%; height: 100%; object-fit: cover; }
+        .rich-editor h2 { font-size: 2rem; margin: 2.5rem 0 1.2rem; font-weight: 800; }
+        .rich-editor img { max-width: 100%; border-radius: 4px; margin: 2rem 0; }
 
+        #save-btn { width: 100%; padding: 1.5rem; font-size: 1.1rem; font-weight: 800; margin-top: 2rem; }
+        
         .upload-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: none; align-items: center; justify-content: center; z-index: 10000; flex-direction: column; gap: 2rem; }
-        .upload-overlay .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        .spinner { width: 40px; height: 40px; border: 3px solid #eee; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
     <div id="upload-overlay" class="upload-overlay">
         <div class="spinner"></div>
-        <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary);">파일을 업로드 중입니다...</div>
+        <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary);">시각적 조각을 전송 중...</div>
     </div>
 
-    <nav id="global-nav">
-        <a href="/" class="brand">sorigrim</a>
+    <nav id="global-nav" class="scrolled">
+        <a href="/" class="brand">SORIGRIM</a>
         <a href="dashboard.html" style="font-size: 0.85rem; color: var(--text-muted); text-decoration: none;">← 관리 홈으로</a>
     </nav>
 
-    <main class="container editor-container">
-        <form id="editor-form">
-            <div class="form-group"><label>제목</label><input type="text" id="title" placeholder="작품 제목을 입력하세요..." required></div>
-            <div class="form-group"><label>카테고리</label><select id="category">
-                <option value="PHOTO WORK">사진 작업 (PHOTO)</option>
-                <option value="VIDEO WORK">영상 작업 (VIDEO)</option>
-                <option value="PROMPT SHARE">프롬프트 공유</option>
-                <option value="AI NEWS">AI 뉴스</option>
-            </select></div>
-            
-            <div class="form-group">
-                <label>작품 썸네일</label>
-                <div style="display: flex; gap: 2rem; align-items: flex-start; background: var(--bg-light); padding: 2rem; border-radius: 8px; border: 1px solid var(--border);">
-                    <div id="thumb-preview" style="width: 150px; aspect-ratio: 1; background: white; border: 1px dashed var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden;">
-                        <span style="font-size: 0.75rem; color: var(--text-muted);">미디어 없음</span>
+    <main class="container">
+        <div class="editor-layout">
+            <!-- 왼쪽: 에디팅 메인 -->
+            <div class="editor-main">
+                <form id="editor-form">
+                    <div class="form-group">
+                        <label>콘텐츠 제목 (H1)</label>
+                        <input type="text" id="title" placeholder="검색에 노출될 매력적인 제목을 입력하세요..." required>
                     </div>
-                    <div style="flex: 1;">
-                        <input type="url" id="image" placeholder="직접 URL을 입력하거나 아래 버튼으로 업로드하세요..." style="margin-bottom: 1rem; background: white;">
-                        <div style="display: flex; gap: 1rem;">
-                            <input type="file" id="thumb-upload" style="display: none;" accept="image/*,video/*">
-                            <button type="button" class="btn-premium" style="padding: 0.8rem 1.5rem; font-size: 0.75rem;" onclick="document.getElementById('thumb-upload').click()">파일 업로드</button>
-                            <button type="button" class="btn-premium" style="padding: 0.8rem 1.5rem; font-size: 0.75rem; background: white; color: var(--primary); border: 1px solid var(--primary);" onclick="autoExtractThumb()">본문에서 추출</button>
+
+                    <div class="form-group">
+                        <label>카테고리 설정</label>
+                        <select id="category">
+                            <option value="AI IMAGE">AI IMAGE</option>
+                            <option value="AI VIDEO">AI VIDEO</option>
+                            <option value="PROMPT">PROMPT SHARE</option>
+                            <option value="AI NEWS">AI NEWS</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>작품 본문 (SEO 최적화 에디터)</label>
+                        <div class="editor-toolbar">
+                            <button type="button" onclick="execCmd('formatBlock', 'H2')">소제목(H2)</button>
+                            <button type="button" onclick="execCmd('formatBlock', 'P')">일반문단</button>
+                            <button type="button" onclick="execCmd('bold')"><b>굵게</b></button>
+                            <button type="button" onclick="insertMedia('image')">이미지 추가</button>
+                            <button type="button" onclick="insertMedia('video')">영상 추가</button>
                         </div>
-                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem;">* 아카이브 목록에 표시될 대표 이미지나 영상입니다.</p>
+                        <div id="content-editor" class="rich-editor" contenteditable="true" spellcheck="false"></div>
                     </div>
-                </div>
+
+                    <div class="form-group">
+                        <label>대표 이미지 (Thumbnail)</label>
+                        <div style="display: flex; gap: 1.5rem; align-items: flex-start; background: var(--bg-light); padding: 1.5rem; border-radius: 4px;">
+                            <div id="thumb-preview" style="width: 120px; aspect-ratio: 1; background: white; border: 1px dashed var(--border); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                <span style="font-size: 0.7rem; color: #999;">No Media</span>
+                            </div>
+                            <div style="flex: 1;">
+                                <input type="url" id="image" placeholder="이미지 주소를 입력하거나 업로드하세요..." style="margin-bottom: 0.8rem; background: white;">
+                                <input type="file" id="thumb-upload" style="display: none;" accept="image/*,video/*">
+                                <button type="button" class="btn-premium" style="padding: 0.6rem 1.2rem; font-size: 0.75rem;" onclick="document.getElementById('thumb-upload').click()">파일 업로드</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group" style="background: var(--bg-light); padding: 1.5rem; border-radius: 4px;">
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <input type="checkbox" id="is_recommended" style="width: auto;">
+                            <label style="margin-bottom:0;">메인 페이지 추천 작품으로 노출</label>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:1rem; margin-top:1rem; padding-top:1rem; border-top:1px solid #ddd;">
+                            <input type="checkbox" id="is_hero" style="width: auto;">
+                            <label style="margin-bottom:0; color: var(--primary); font-weight:700;">메인 히어로 배경 이미지로 설정</label>
+                        </div>
+                    </div>
+
+                    <button type="submit" id="save-btn" class="btn-premium">콘텐츠 저장 및 SEO 적용</button>
+                </form>
             </div>
 
-            <div class="form-group"><label>짧은 소개글</label><textarea id="description" rows="2" placeholder="작품에 대한 간단한 설명을 입력하세요..."></textarea></div>
-            
-            <div class="form-group">
-                <label>본문 내용 (리치 에디터)</label>
-                <div class="editor-card">
-                    <div class="editor-toolbar">
-                        <div class="group">
-                            <button type="button" onclick="execCmd('formatBlock', 'H2')">제목</button>
-                            <button type="button" onclick="execCmd('formatBlock', 'P')">본문</button>
-                        </div>
-                        <div class="group">
-                            <button type="button" onclick="execCmd('bold')"><b>가</b></button>
-                            <button type="button" onclick="execCmd('italic')"><i>가</i></button>
-                        </div>
-                        <div class="group">
-                            <button type="button" onclick="insertMedia('image')">+ 이미지 추가</button>
-                            <button type="button" onclick="insertMedia('video')">+ 영상 추가</button>
-                        </div>
+            <!-- 오른쪽: SEO 어시스턴트 -->
+            <div class="editor-sidebar">
+                <div class="sidebar-card">
+                    <h4>SERP 미리보기</h4>
+                    <div class="serp-preview">
+                        <div class="serp-url">https://sorigrim.com › ...</div>
+                        <div id="preview-title" class="serp-title">제목을 입력하세요</div>
+                        <div id="preview-desc" class="serp-desc">본문 내용을 작성하면 검색 엔진에 노출될 요약 문구가 여기에 표시됩니다.</div>
                     </div>
-                    <div id="content-editor" class="rich-editor" contenteditable="true" spellcheck="false"></div>
                 </div>
-                <input type="file" id="editor-media-upload" style="display: none;">
-            </div>
 
-            <div class="form-group" style="display:flex; flex-direction:column; gap:1rem; background: var(--bg-light); padding: 2rem; border-radius: 8px; border: 1px solid var(--border);">
-                <div style="display:flex; align-items:center; gap:1rem;">
-                    <input type="checkbox" id="is_recommended" style="width: auto;">
-                    <label style="margin-bottom:0;">메인 페이지 '주요 작품선'에 노출</label>
+                <div class="sidebar-card">
+                    <h4>콘텐츠 점수 진단</h4>
+                    <div id="seo-score-list">
+                        <div id="check-length" class="seo-check"><div class="status"></div> 본문 글자 수 (최소 300자)</div>
+                        <div id="check-h2" class="seo-check"><div class="status"></div> 소제목(H2) 사용 여부</div>
+                        <div id="check-alt" class="seo-check"><div class="status"></div> 이미지 대체 텍스트(Alt)</div>
+                        <div id="check-media" class="seo-check"><div class="status"></div> 시각적 미디어 포함</div>
+                    </div>
+                    <div id="word-count" style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem; font-weight: 700;">현재 글자 수: 0자</div>
                 </div>
-                <div style="display:flex; align-items:center; gap:1rem; margin-top:1rem; padding-top:1rem; border-top:1px solid var(--border);">
-                    <input type="checkbox" id="is_hero" style="width: auto;">
-                    <label style="margin-bottom:0; color: var(--primary); font-weight:700;">★ 이 게시글의 썸네일을 메인 히어로 이미지로 사용</label>
+
+                <div class="sidebar-card" style="background: var(--primary); color: white;">
+                    <h4 style="color: white; border-color: rgba(255,255,255,0.2);">SEO Tip</h4>
+                    <p style="font-size: 0.8rem; line-height: 1.6; opacity: 0.9;">H2 소제목을 활용하여 글의 구조를 나누면 검색 엔진이 내용을 더 잘 이해합니다. 주요 키워드를 문장 앞부분에 배치하세요.</p>
                 </div>
             </div>
-            <button type="submit" id="save-btn" class="btn-premium" style="width: 100%; padding: 2rem; font-size: 1.1rem;">작품 저장하기</button>
-        </form>
+        </div>
     </main>
+
+    <input type="file" id="editor-media-upload" style="display: none;">
 
     <script type="module">
         const form = document.getElementById('editor-form');
         const saveBtn = document.getElementById('save-btn');
-        const urlParams = new URLSearchParams(window.location.search);
-        const editId = urlParams.get('id');
         const editor = document.getElementById('content-editor');
         const overlay = document.getElementById('upload-overlay');
         const thumbInput = document.getElementById('image');
         const thumbPreview = document.getElementById('thumb-preview');
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('id');
 
+        // --- SEO Real-time Analysis ---
+        function updateSEO() {
+            const text = editor.innerText;
+            const html = editor.innerHTML;
+            const title = document.getElementById('title').value;
+            
+            // 1. Title Preview
+            document.getElementById('preview-title').textContent = title || "제목을 입력하세요";
+            
+            // 2. Word Count
+            const count = text.trim().length;
+            document.getElementById('word-count').textContent = `현재 글자 수: ${count}자`;
+            toggleCheck('check-length', count >= 300 ? 'pass' : (count > 0 ? 'warn' : 'fail'));
+
+            // 3. H2 check
+            toggleCheck('check-h2', html.includes('<h2') ? 'pass' : 'fail');
+
+            // 4. Media check
+            toggleCheck('check-media', (html.includes('<img') || html.includes('<video')) ? 'pass' : 'fail');
+
+            // 5. Alt check
+            if (html.includes('<img')) {
+                toggleCheck('check-alt', html.includes('alt=') && !html.includes('alt=""') ? 'pass' : 'warn');
+            } else {
+                toggleCheck('check-alt', 'default');
+            }
+
+            // 6. Description Preview (First 150 chars of text)
+            document.getElementById('preview-desc').textContent = text.slice(0, 150) + (text.length > 150 ? '...' : '');
+        }
+
+        function toggleCheck(id, status) {
+            const el = document.getElementById(id);
+            el.classList.remove('pass', 'warn', 'fail');
+            if (status !== 'default') el.classList.add(status);
+        }
+
+        editor.addEventListener('input', updateSEO);
+        document.getElementById('title').addEventListener('input', updateSEO);
+
+        // --- Editor Commands ---
         window.execCmd = (cmd, val = null) => {
             document.execCommand(cmd, false, val);
             editor.focus();
+            updateSEO();
         };
 
         window.insertMedia = (type) => {
@@ -145,11 +226,12 @@
                     overlay.style.display = 'none';
                     if (url) {
                         if (type === 'image') {
-                            document.execCommand('insertHTML', false, `<img src="${url}" alt="작품 이미지">`);
+                            const alt = prompt("이미지에 대한 SEO 설명(Alt text)을 입력하세요:", "");
+                            document.execCommand('insertHTML', false, `<img src="${url}" alt="${alt || 'SORIGRIM AI ART'}">`);
                         } else {
-                            const video = `<video controls playsinline src="${url}" style="max-width:100%"></video><p><br></p>`;
-                            document.execCommand('insertHTML', false, video);
+                            document.execCommand('insertHTML', false, `<video controls playsinline src="${url}" style="max-width:100%"></video><p><br></p>`);
                         }
+                        updateSEO();
                     }
                 }
             };
@@ -163,87 +245,50 @@
                 const res = await fetch('/api/assets', { method: 'POST', body: formData });
                 const data = await res.json();
                 return data.url;
-            } catch (e) {
-                alert('파일 업로드에 실패했습니다.');
-                return null;
-            }
+            } catch (e) { return null; }
         }
 
-        function updateThumbPreview(url) {
-            if (!url) {
-                thumbPreview.innerHTML = `<span style="font-size: 0.75rem; color: var(--text-muted);">미디어 없음</span>`;
-                return;
-            }
-            if (url.match(/\.(mp4|webm|ogg)$/) || url.includes('video')) {
-                thumbPreview.innerHTML = `<video src="${url}" muted loop autoplay playsinline></video>`;
-            } else {
-                thumbPreview.innerHTML = `<img src="${url}" alt="미리보기">`;
-            }
-        }
-
-        thumbInput.addEventListener('input', (e) => updateThumbPreview(e.target.value));
-
-        document.getElementById('thumb-upload').onchange = async (e) => {
-            if (e.target.files[0]) {
-                overlay.style.display = 'flex';
-                const url = await uploadFile(e.target.files[0]);
-                overlay.style.display = 'none';
-                if (url) {
-                    thumbInput.value = url;
-                    updateThumbPreview(url);
-                }
-            }
-        };
-
-        window.autoExtractThumb = () => {
-            const thumb = extractThumbnail(editor.innerHTML);
-            if (thumb) {
-                thumbInput.value = thumb;
-                updateThumbPreview(thumb);
-            } else {
-                alert("본문에 삽입된 이미지나 영상이 없습니다.");
-            }
-        };
-
-        function extractThumbnail(html) {
-            const div = document.createElement('div');
-            div.innerHTML = html;
-            const img = div.querySelector('img');
-            if (img) return img.src;
-            const video = div.querySelector('video');
-            if (video) return video.src;
-            return null;
-        }
-
+        // --- Data Loading ---
         if (editId) {
             fetch(`/api/portfolio?id=${editId}`).then(r => r.json()).then(data => {
                 document.getElementById('title').value = data.title;
                 document.getElementById('category').value = data.category;
                 thumbInput.value = data.image || '';
                 updateThumbPreview(data.image);
-                document.getElementById('description').value = data.description || '';
                 editor.innerHTML = data.content || '';
                 document.getElementById('is_recommended').checked = data.is_recommended === 1;
                 document.getElementById('is_hero').checked = data.is_hero === 1;
+                updateSEO();
             });
         }
 
+        function updateThumbPreview(url) {
+            if (!url) { thumbPreview.innerHTML = 'No Media'; return; }
+            thumbPreview.innerHTML = url.match(/\.(mp4|webm)$/) 
+                ? `<video src="${url}" muted></video>` 
+                : `<img src="${url}">`;
+        }
+
+        document.getElementById('thumb-upload').onchange = async (e) => {
+            if (e.target.files[0]) {
+                overlay.style.display = 'flex';
+                const url = await uploadFile(e.target.files[0]);
+                overlay.style.display = 'none';
+                if (url) { thumbInput.value = url; updateThumbPreview(url); }
+            }
+        };
+
+        // --- Save Handler ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             saveBtn.disabled = true;
-            saveBtn.innerText = '저장 중...';
-
-            let finalThumb = thumbInput.value;
-            if (!finalThumb) {
-                finalThumb = extractThumbnail(editor.innerHTML) || '';
-            }
+            saveBtn.innerText = 'SEO 데이터 동기화 중...';
 
             const data = {
                 title: document.getElementById('title').value,
                 category: document.getElementById('category').value,
-                image: finalThumb,
-                description: document.getElementById('description').value,
+                image: thumbInput.value,
+                description: editor.innerText.slice(0, 200), // Auto-generate desc for DB
                 content: editor.innerHTML,
                 is_recommended: document.getElementById('is_recommended').checked,
                 is_hero: document.getElementById('is_hero').checked
@@ -256,17 +301,13 @@
                     body: JSON.stringify(data)
                 });
                 if (res.ok) {
-                    alert('성공적으로 저장되었습니다.');
+                    alert('성공적으로 저장 및 SEO 최적화가 완료되었습니다.');
                     window.location.href = 'dashboard.html';
                 } else {
-                    const errData = await res.json();
-                    alert('저장 실패: ' + (errData.error || '알 수 없는 오류'));
                     saveBtn.disabled = false;
                     saveBtn.innerText = '작품 저장하기';
                 }
             } catch (err) {
-                console.error("Save Error:", err);
-                alert('서버 연결에 실패했습니다.');
                 saveBtn.disabled = false;
                 saveBtn.innerText = '작품 저장하기';
             }
