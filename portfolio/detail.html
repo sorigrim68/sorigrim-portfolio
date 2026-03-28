@@ -87,21 +87,21 @@
                     <nav class="post-nav">
                         ${work.prev ? `
                             <a href="/portfolio/detail.html?id=${work.prev.id}" class="nav-item prev">
-                                <span class="nav-label">Previous</span>
+                                <span class="nav-label">이전 작품</span>
                                 <div class="nav-title">${work.prev.title}</div>
                             </a>
                         ` : '<div></div>'}
                         
                         ${work.next ? `
                             <a href="/portfolio/detail.html?id=${work.next.id}" class="nav-item next">
-                                <span class="nav-label">Next</span>
+                                <span class="nav-label">다음 작품</span>
                                 <div class="nav-title">${work.next.title}</div>
                             </a>
                         ` : '<div></div>'}
                     </nav>
 
                     <div style="margin-top: 10rem; text-align: center;">
-                        <a href="/portfolio/" class="btn-premium">Return to Archive</a>
+                        <a href="/portfolio/" class="btn-premium">아카이브로 돌아가기</a>
                     </div>
                 </div>
             `;

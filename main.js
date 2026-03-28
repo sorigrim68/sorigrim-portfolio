@@ -278,22 +278,22 @@ class SorigrimFooter extends HTMLElement {
       <div class="container">
         <div class="brand-section">
           <h2>sorigrim</h2>
-          <p>Professional portfolio platform refining the boundary between prompt and perception with technical precision.</p>
+          <p>프롬프트와 지각 사이의 경계를 기술적 정교함으로 정제하는 전문 생성 비전 포트폴리오 플랫폼입니다.</p>
         </div>
 
         <div class="links-section">
           <div class="link-group">
-            <h4>Explore</h4>
-            <a href="/">Main Home</a>
-            <a href="/portfolio/">Archive</a>
+            <h4>탐색</h4>
+            <a href="/">메인 홈</a>
+            <a href="/portfolio/">아카이브</a>
           </div>
           <div class="link-group">
-            <h4>Legal</h4>
-            <a href="/legal.html?type=privacy">Privacy Policy</a>
-            <a href="/legal.html?type=terms">Terms of Service</a>
+            <h4>법적 고지</h4>
+            <a href="/legal.html?type=privacy">개인정보처리방침</a>
+            <a href="/legal.html?type=terms">이용약관</a>
           </div>
           <div class="link-group">
-            <h4>Connect</h4>
+            <h4>소셜</h4>
             ${sns.map(s => `<a href="${s.value}" target="_blank">${s.key}</a>`).join('')}
           </div>
         </div>

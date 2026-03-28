@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sorigrim | CMS</title>
+    <title>sorigrim | 관리자 센터</title>
     <link rel="stylesheet" href="/style.css">
     <style>
         .admin-main { padding: 8rem 4rem; }
@@ -13,88 +13,88 @@
         .admin-table td { font-size: 0.85rem; vertical-align: middle; }
         .admin-actions { display: flex; gap: 1.5rem; }
         .admin-actions a, .admin-actions button { background: none; border: none; color: var(--sori-muted); cursor: pointer; font-weight: 800; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; transition: 0.3s; }
-        .admin-actions a:hover { color: var(--sori-fg); }
+        .admin-actions a:hover { color: var(--primary); }
         .admin-actions .del-btn:hover { color: #ff4d4d; }
 
-        .section-header { margin-bottom: 3rem; border-left: 2px solid var(--sori-accent); padding-left: 2rem; }
-        .section-header h2 { font-family: var(--font-editorial); font-size: 2.5rem; font-style: italic; font-weight: 400; opacity: 0.8; }
+        .section-header { margin-bottom: 3rem; border-left: 2px solid var(--primary); padding-left: 2rem; }
+        .section-header h2 { font-size: 2rem; font-weight: 800; opacity: 0.8; }
         
-        .glass-box { background: rgba(255,255,255,0.02); padding: 3rem; border: 1px solid rgba(255,255,255,0.05); backdrop-filter: blur(10px); }
-        input, select { background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 1rem; transition: 0.3s; }
-        input:focus { border-color: var(--sori-accent); outline: none; }
+        .glass-box { background: var(--bg-light); padding: 3rem; border: 1px solid var(--border); border-radius: 8px; }
+        input, select { background: white; border: 1px solid var(--border); color: var(--text-main); padding: 1rem; transition: 0.3s; border-radius: 4px; }
+        input:focus { border-color: var(--primary); outline: none; }
 
         .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
-        .asset-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); padding: 1rem; text-align: center; }
-        .asset-card img, .asset-card video { width: 100%; aspect-ratio: 1; object-fit: cover; margin-bottom: 1rem; opacity: 0.6; }
-        .asset-card p { font-size: 0.6rem; color: var(--sori-muted); word-break: break-all; margin-bottom: 1rem; }
+        .asset-card { background: white; border: 1px solid var(--border); padding: 1rem; text-align: center; border-radius: 4px; }
+        .asset-card img, .asset-card video { width: 100%; aspect-ratio: 1; object-fit: cover; margin-bottom: 1rem; }
+        .asset-card p { font-size: 0.6rem; color: var(--text-muted); word-break: break-all; margin-bottom: 1rem; }
     </style>
 </head>
 <body class="bg-surface">
     <nav id="global-nav">
         <a href="/" class="brand">sorigrim</a>
         <div class="nav-links">
-            <a href="/admin/dashboard.html">CMS</a>
-            <a href="/admin/editor.html" class="btn-premium" style="padding: 0.6rem 1.5rem; font-size: 0.6rem;">New Post</a>
+            <a href="/admin/dashboard.html">관리 홈</a>
+            <a href="/admin/editor.html" class="btn-premium" style="padding: 0.6rem 1.5rem; font-size: 0.6rem;">새 글 작성</a>
         </div>
     </nav>
 
     <main class="admin-main container">
         
-        <!-- 1. Global Site Settings -->
+        <!-- 1. 사이트 디자인 설정 -->
         <section style="margin-bottom: 10rem;">
             <header class="section-header">
-                <h2>Site Aesthetics.</h2>
+                <h2>사이트 미학 설정.</h2>
             </header>
             <div class="glass-box">
-                <label style="display:block; font-size:0.6rem; color:var(--sori-muted); margin-bottom:1rem; text-transform:uppercase; letter-spacing:0.2em;">Landing Hero Background (Image or Video)</label>
+                <label style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:1rem; font-weight:700;">랜딩 히어로 배경 (이미지 또는 영상)</label>
                 <div style="display: flex; gap: 2rem; align-items: center;">
                     <input type="text" id="hero-url" placeholder="/api/assets?name=..." style="flex: 1;" readonly>
                     <input type="file" id="hero-upload" style="display: none;" accept="image/*,video/mp4">
-                    <button class="btn-premium" style="padding: 1rem 2rem; font-size: 0.6rem;" onclick="document.getElementById('hero-upload').click()">Upload New Hero</button>
+                    <button class="btn-premium" style="padding: 1rem 2rem; font-size: 0.6rem;" onclick="document.getElementById('hero-upload').click()">새 배경 업로드</button>
                 </div>
-                <p style="font-size: 0.6rem; color: var(--sori-muted); margin-top: 1rem;">* Images are recommended for better stability across all devices.</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem;">* 모든 기기에서 안정적인 로딩을 위해 이미지를 권장합니다.</p>
             </div>
         </section>
 
-        <!-- 2. Asset Storage Manager -->
+        <!-- 2. 에셋 매니저 -->
         <section style="margin-bottom: 10rem;">
             <header class="section-header">
-                <h2>Storage Explorer.</h2>
+                <h2>스토리지 탐색기.</h2>
             </header>
             <div class="glass-box">
-                <p style="font-size: 0.7rem; color: var(--sori-muted); margin-bottom: 2rem;">Manage all uploaded fragments in your R2 bucket. Remove unused files to save space.</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 2rem;">R2 버킷에 업로드된 모든 파일을 관리합니다. 사용하지 않는 파일을 삭제하여 용량을 절약하세요.</p>
                 <div id="asset-list" class="asset-grid">
-                    <!-- Assets will be listed here -->
+                    <!-- 자산 목록 -->
                 </div>
             </div>
         </section>
 
-        <!-- 3. Archive List -->
+        <!-- 3. 아카이브 관리 -->
         <section style="margin-bottom: 10rem;">
             <header class="section-header">
-                <h2>Archive Control.</h2>
+                <h2>아카이브 컨트롤.</h2>
             </header>
             <table class="admin-table">
                 <thead>
-                    <tr><th>Thumbnail</th><th>Title</th><th>Category</th><th>Actions</th></tr>
+                    <tr><th>썸네일</th><th>제목</th><th>카테고리</th><th>관리</th></tr>
                 </thead>
                 <tbody id="admin-list"></tbody>
             </table>
         </section>
 
-        <!-- 4. SNS Management -->
+        <!-- 4. SNS 관리 -->
         <section>
             <header class="section-header">
-                <h2>Social Channels.</h2>
+                <h2>소셜 채널 관리.</h2>
             </header>
             <form id="sns-form" style="display: flex; gap: 1.5rem; margin-bottom: 3rem; align-items: flex-end; flex-wrap: wrap;" class="glass-box">
-                <div style="flex: 1; min-width: 200px;"><input type="text" id="sns-key" placeholder="Platform Name" style="width:100%;"></div>
-                <div style="flex: 2; min-width: 300px;"><input type="url" id="sns-value" placeholder="URL" style="width:100%;"></div>
-                <button type="submit" class="btn-premium" style="padding: 1rem 2rem; font-size: 0.6rem;">Add Channel</button>
+                <div style="flex: 1; min-width: 200px;"><input type="text" id="sns-key" placeholder="플랫폼 이름 (예: Instagram)" style="width:100%;"></div>
+                <div style="flex: 2; min-width: 300px;"><input type="url" id="sns-value" placeholder="연결 URL (https://...)" style="width:100%;"></div>
+                <button type="submit" class="btn-premium" style="padding: 1rem 2rem; font-size: 0.6rem;">채널 추가</button>
             </form>
             <table class="admin-table">
                 <thead>
-                    <tr><th>Platform</th><th>URL</th><th>Actions</th></tr>
+                    <tr><th>플랫폼</th><th>URL</th><th>관리</th></tr>
                 </thead>
                 <tbody id="sns-admin-list"></tbody>
             </table>
@@ -115,7 +115,7 @@
         async function loadHeroSettings() {
             const res = await fetch('/api/settings');
             const data = await res.json();
-            const hero = data.find(s => s.key === 'landing_hero_video'); // Use same key for compatibility
+            const hero = data.find(s => s.key === 'landing_hero_video'); 
             if (hero) document.getElementById('hero-url').value = hero.value;
         }
 
@@ -129,8 +129,8 @@
                         body: JSON.stringify({ key: 'landing_hero_video', value: url, type: 'config' })
                     });
                     loadHeroSettings();
-                    loadAssets(); // Refresh asset list
-                    alert('Hero Background Updated.');
+                    loadAssets();
+                    alert('히어로 배경이 업데이트되었습니다.');
                 }
             }
         });
@@ -150,14 +150,14 @@
                     <div class="asset-card">
                         ${mediaHtml}
                         <p>${asset.name}</p>
-                        <button class="del-btn" style="font-size:0.5rem; color:#ff4d4d; border:1px solid #ff4d4d; padding:0.3rem 0.6rem;" onclick="deleteAsset('${asset.name}')">Delete</button>
+                        <button class="del-btn" style="font-size:0.6rem; color:#ff4d4d; border:1px solid #ff4d4d; padding:0.3rem 0.6rem; margin-top:0.5rem;" onclick="deleteAsset('${asset.name}')">삭제</button>
                     </div>
                 `;
             }).join('');
         }
 
         window.deleteAsset = async (name) => {
-            if (confirm(`Permanently remove ${name}? This cannot be undone.`)) {
+            if (confirm(`${name} 파일을 영구 삭제하시겠습니까?`)) {
                 await fetch(`/api/assets?name=${name}`, { method: 'DELETE' });
                 loadAssets();
             }
@@ -178,17 +178,17 @@
                 }
                 const isVideo = thumbUrl && thumbUrl.toLowerCase().match(/\.(mp4|webm|ogg)$/);
                 const mediaHtml = isVideo 
-                    ? `<video src="${thumbUrl}" muted style="width: 60px; height: 60px; object-fit: cover; opacity: 0.6;"></video>`
-                    : `<img src="${thumbUrl || ''}" style="width: 60px; height: 60px; object-fit: cover; opacity: 0.6;">`;
+                    ? `<video src="${thumbUrl}" muted style="width: 60px; height: 60px; object-fit: cover; opacity: 0.8;"></video>`
+                    : `<img src="${thumbUrl || ''}" style="width: 60px; height: 60px; object-fit: cover;">`;
 
                 return `
                     <tr>
                         <td>${mediaHtml}</td>
-                        <td style="font-weight: 600;">${item.title}</td>
-                        <td style="font-size: 0.65rem; font-weight: 900; color: var(--sori-accent); letter-spacing: 0.1em;">${item.category}</td>
+                        <td style="font-weight: 700;">${item.title}</td>
+                        <td style="font-size: 0.75rem; font-weight: 800; color: var(--primary);">${item.category}</td>
                         <td class="admin-actions">
-                            <a href="editor.html?id=${item.id}">Edit</a>
-                            <button class="del-btn" onclick="deleteItem(${item.id})">Delete</button>
+                            <a href="editor.html?id=${item.id}">수정</a>
+                            <button class="del-btn" onclick="deleteItem(${item.id})">삭제</button>
                         </td>
                     </tr>
                 `;
@@ -202,9 +202,9 @@
             const list = document.getElementById('sns-admin-list');
             list.innerHTML = data.filter(s => s.type === 'sns').map(item => `
                 <tr>
-                    <td style="font-weight: 800; font-size: 0.7rem; letter-spacing: 0.1em;">${item.key}</td>
-                    <td style="opacity: 0.5; font-size: 0.8rem;">${item.value}</td>
-                    <td class="admin-actions"><button class="del-btn" onclick="deleteSNS(${item.id})">Remove</button></td>
+                    <td style="font-weight: 800; font-size: 0.85rem;">${item.key}</td>
+                    <td style="color: var(--text-muted); font-size: 0.85rem;">${item.value}</td>
+                    <td class="admin-actions"><button class="del-btn" onclick="deleteSNS(${item.id})">제거</button></td>
                 </tr>
             `).join('');
         }
@@ -226,14 +226,14 @@
         });
 
         window.deleteSNS = async (id) => {
-            if (confirm('Remove this channel?')) {
+            if (confirm('이 채널을 삭제하시겠습니까?')) {
                 await fetch(`/api/settings?id=${id}`, { method: 'DELETE' });
                 loadSNSAdmin();
             }
         };
 
         window.deleteItem = async (id) => {
-            if (confirm('Permanently delete this fragments?')) {
+            if (confirm('이 게시글을 영구 삭제하시겠습니까?')) {
                 await fetch(`/api/portfolio?id=${id}`, { method: 'DELETE' });
                 loadAdminList();
             }
