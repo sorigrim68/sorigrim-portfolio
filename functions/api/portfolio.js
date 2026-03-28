@@ -12,7 +12,7 @@ export async function onRequest(context) {
   const isHeroParam = url.searchParams.get('is_hero');
 
   try {
-    // 1. Database Table Sync (Ensure all columns exist)
+    // 1. Database Table Sync & Migration
     await env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS sg_posts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,6 +28,13 @@ export async function onRequest(context) {
         createdAt TEXT
       )
     `).run();
+
+    // Migration: Add is_hero column if it doesn't exist
+    try {
+      await env.DB.prepare("ALTER TABLE sg_posts ADD COLUMN is_hero INTEGER DEFAULT 0").run();
+    } catch (e) {
+      // Column already exists, ignore error
+    }
 
     // GET Request handling
     if (request.method === "GET") {
