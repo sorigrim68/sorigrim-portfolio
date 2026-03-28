@@ -1,6 +1,6 @@
 /**
  * Cloudflare Pages Functions API: Assets (Sorigrim 1.0)
- * Proxies media from R2 bucket.
+ * Proxies media from R2 bucket with Range Request support for videos.
  */
 
 export async function onRequest(context) {
@@ -13,7 +13,6 @@ export async function onRequest(context) {
     try {
       const formData = await request.formData();
       const file = formData.get('file');
-
       if (!file) return new Response("No file uploaded", { status: 400 });
 
       const fileName = `${Date.now()}-${file.name}`;
@@ -32,18 +31,17 @@ export async function onRequest(context) {
   }
 
   // GET: Serve Assets from R2
-  if (!name) {
-    return new Response("Asset name required", { status: 400 });
-  }
+  if (!name) return new Response("Asset name required", { status: 400 });
 
   try {
-    const object = await env.BUCKET.get(name);
+    // Handle Range Headers for Video Streaming
+    const range = request.headers.get("range");
+    const getOptions = range ? { range: request.headers } : {};
+    
+    const object = await env.BUCKET.get(name, getOptions);
 
     if (object === null) {
-      // Fallback to a placeholder if the object is missing in R2
-      // For now, return a 404 or a reliable external placeholder if it's an image
       if (name.endsWith('.mp4')) {
-          // If it's a video and missing, maybe return a static image placeholder or a known public video
           return Response.redirect("https://assets.mixkit.co/videos/preview/mixkit-abstract-flowing-curves-of-light-31758-large.mp4", 302);
       }
       return new Response("Object Not Found", { status: 404 });
@@ -52,15 +50,14 @@ export async function onRequest(context) {
     const headers = new Headers();
     object.writeHttpMetadata(headers);
     headers.set("etag", object.httpEtag);
-    
-    // Explicitly set content-type for videos to ensure playback
-    if (name.endsWith('.mp4')) {
-      headers.set("content-type", "video/mp4");
-      headers.set("accept-ranges", "bytes");
-    }
+    headers.set("accept-ranges", "bytes");
+
+    // Important for video playback status codes
+    const status = range ? 206 : 200;
 
     return new Response(object.body, {
       headers,
+      status
     });
   } catch (e) {
     return new Response(e.message, { status: 500 });
