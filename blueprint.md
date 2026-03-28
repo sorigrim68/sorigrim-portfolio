@@ -1,15 +1,20 @@
-# **sorigrim 1.0 — Project Blueprint**
+# **sorigrim 2.0 — Technical Professional Evolution**
 
 ## **1. Project Overview**
-**sorigrim**은 "Prompt와 Perception 사이의 경계를 정제하는 인공지능 생성 시네마틱 비전"을 컨셉으로 한 프리미엄 포트폴리오 플랫폼입니다. 고도의 시각적 연출과 최신 웹 표준 기술(Modern CSS, Web Components)을 결합하여, 단순한 갤러리를 넘어선 하나의 '디지털 경험'을 제공하는 것을 목표로 합니다.
+**sorigrim**은 기존의 시네마틱한 감성을 유지하되, **DMS Solution**의 전문적이고 정돈된 디자인 언어를 결합하여 "기술과 예술이 결합된 전문 포트폴리오 플랫폼"으로 진화합니다. 
 
-## **2. Architecture & Tech Stack**
-*   **Frontend:** Framework-less HTML5, Modern CSS (Cascade Layers, Container Queries, oklch), Vanilla JS (ES Modules).
-*   **Web Components:** `<sg-footer>` 등 재사용 가능한 UI 요소를 캡슐화하여 사용.
-*   **Backend:** Cloudflare Pages Functions (API).
-*   **Database:** Cloudflare D1 (SQLite) - 포트폴리오 메타데이터 저장.
-*   **Storage:** Cloudflare R2 - 미디어(이미지, 비디오) 자산 호스팅.
-*   **Styling:** 시네마틱한 분위기를 위해 Grain 텍스처, 깊이 있는 그림자, 유려한 애니메이션(`reveal-up`) 적용.
+## **2. Design Identity (New)**
+*   **Concept:** Clean, Technical, Professional, Reliable.
+*   **Colors:** 
+    - Base: `#FFFFFF` (Pure White), `#F8F9FA` (Light Gray)
+    - Point: `#0055FF` (DMS Blue), `#1A1A1A` (Deep Black)
+*   **Typography:** Pretendard (Main Sans-serif), 굵고 명확한 레이아웃.
+*   **Layout:** 정돈된 그리드, 넓은 여백, 섹션별 명확한 구분.
+
+## **3. Key Implementation Tasks**
+*   **Main Page:** 화이트 테마 전환, 히어로 섹션 이미지/텍스트 수평/수직 정렬 최적화.
+*   **Archive:** 카드 디자인을 더 슬림하고 전문적인 느낌으로 변경 (Border, Subtle Shadow).
+*   **Tone & Manner:** '시네마틱 그레인' 제거 후 '플랫하고 정교한' 디자인 요소 적용.
 
 ## **3. Implementation Details (Current Status)**
 *   **Main Page (`/`):** 히어로 섹션 비디오를 관리자에서 직접 업로드하고 동적으로 재생하는 기능 구현 완료.

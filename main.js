@@ -86,7 +86,6 @@ async function loadArchive(category = 'all') {
     const works = await res.json();
     
     grid.innerHTML = works.map((work, i) => {
-      // Fallback: If no image, try to extract from content
       let thumbUrl = work.image;
       if (!thumbUrl && work.content) {
         const div = document.createElement('div');
@@ -101,7 +100,7 @@ async function loadArchive(category = 'all') {
         : `<img src="${thumbUrl || ''}" alt="${work.title}" loading="lazy">`;
 
       return `
-        <div class="archive-card reveal" style="transition-delay: ${i * 0.1}s" onclick="navigate('/portfolio/detail.html?id=${work.id}')">
+        <div class="archive-card reveal" style="transition-delay: ${i * 0.05}s" onclick="navigate('/portfolio/detail.html?id=${work.id}')">
           <div class="img-box">
             ${mediaHtml}
           </div>
@@ -113,7 +112,6 @@ async function loadArchive(category = 'all') {
       `;
     }).join('');
     
-    // Trigger reveals
     setTimeout(() => {
       document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
     }, 100);
@@ -129,7 +127,7 @@ window.navigate = (url) => {
   if (overlay) overlay.classList.remove('hidden');
   setTimeout(() => {
     window.location.href = url;
-  }, 800);
+  }, 600);
 };
 
 function initFilters() {
@@ -152,8 +150,7 @@ async function loadRecommended() {
     const works = await res.json();
     
     if (works && works.length > 0) {
-      grid.innerHTML = works.slice(0, 9).map((work, i) => {
-        // Fallback: If no image, try to extract from content
+      grid.innerHTML = works.slice(0, 6).map((work, i) => {
         let thumbUrl = work.image;
         if (!thumbUrl && work.content) {
           const div = document.createElement('div');
@@ -168,19 +165,19 @@ async function loadRecommended() {
           : `<img src="${thumbUrl || ''}" alt="${work.title}" loading="lazy">`;
 
         return `
-          <div class="archive-item reveal" style="transition-delay: ${i * 0.1}s" onclick="navigate('/portfolio/detail.html?id=${work.id}')">
-            ${mediaHtml}
+          <div class="archive-card reveal" style="transition-delay: ${i * 0.05}s" onclick="navigate('/portfolio/detail.html?id=${work.id}')">
+            <div class="img-box">
+              ${mediaHtml}
+            </div>
+            <div class="card-meta">
+              <span class="tag">${work.category}</span>
+              <h3>${work.title}</h3>
+            </div>
           </div>
         `;
       }).join('');
-    } else {
-      // Elegant minimalist placeholders
-      grid.innerHTML = Array(9).fill(0).map((_, i) => `
-        <div class="archive-item reveal" style="background: rgba(255,255,255,0.02); transition-delay: ${i * 0.1}s"></div>
-      `).join('');
     }
     
-    // Re-trigger observer for new items
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
         if (entry.isIntersecting) entry.target.classList.add('active');
@@ -189,7 +186,7 @@ async function loadRecommended() {
     document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
   } catch (e) {
-    console.error("Archive Grid Error", e);
+    console.error("Recommended Grid Error", e);
   }
 }
 

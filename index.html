@@ -3,27 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>sorigrim — Genesis of Generative Vision</title>
-    <meta name="description" content="sorigrim: Refining the boundary between prompt and perception. A cinematic AI vision portfolio.">
+    <title>sorigrim — Professional Generative Vision</title>
+    <meta name="description" content="sorigrim: Professional portfolio for cinematic AI vision and generative fragments.">
     
-    <!-- Open Graph / Facebook -->
+    <!-- Open Graph -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://sorigrim.com/">
-    <meta property="og:title" content="sorigrim — Genesis of Generative Vision">
-    <meta property="og:description" content="Refining the boundary between prompt and perception. A cinematic AI vision portfolio.">
+    <meta property="og:title" content="sorigrim — Professional Generative Vision">
+    <meta property="og:description" content="Professional portfolio for cinematic AI vision.">
     <meta property="og:image" content="https://sorigrim.com/api/assets?name=og-image.jpg">
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://sorigrim.com/">
-    <meta property="twitter:title" content="sorigrim — Genesis of Generative Vision">
-    <meta property="twitter:description" content="Refining the boundary between prompt and perception. A cinematic AI vision portfolio.">
-    <meta property="twitter:image" content="https://sorigrim.com/api/assets?name=og-image.jpg">
 
     <link rel="stylesheet" href="/style.css">
 </head>
 <body>
-    <!-- Global Navigation -->
     <nav id="global-nav">
       <a href="/" class="brand">sorigrim</a>
       <div class="nav-links">
@@ -32,24 +24,23 @@
     </nav>
 
     <main>
-        <!-- New Layout: Video Top, Content Below -->
         <section id="hero">
             <div class="hero-media" id="hero-video-container">
-                <!-- Video will be injected here exactly like thumbnails -->
+                <!-- Video or Image injected via main.js -->
             </div>
             <div class="hero-content">
-                <h1>The Genesis of Generative Vision.</h1>
-                <p>Refining the boundary between prompt and perception.</p>
-                <a href="/portfolio/" class="btn-premium">Enter Archive</a>
+                <h1 class="reveal">Pioneering the<br>Generative Horizon.</h1>
+                <p class="reveal">Refining the boundary between prompt and perception with technical precision and cinematic vision.</p>
+                <a href="/portfolio/" class="btn-premium reveal">View Full Archive</a>
             </div>
         </section>
 
-        <!-- Recommended Selection -->
-        <section id="recommended" class="py-xl">
-            <div class="container" style="margin-bottom: 6rem;">
-                <h2 class="reveal">Curated Echoes.</h2>
+        <section id="recommended" class="py-xl" style="background: var(--bg-light);">
+            <div class="container" style="margin-bottom: 5rem;">
+                <h2 class="reveal" style="font-size: 2.5rem; font-weight: 800; letter-spacing: -0.03em;">Featured Selections.</h2>
+                <p class="reveal" style="color: var(--text-muted); margin-top: 1rem;">Curated fragments showcasing our latest vision developments.</p>
             </div>
-            <div id="recommended-grid" class="grid-archive">
+            <div id="recommended-grid" class="grid-archive container">
                 <!-- Dynamically injected via main.js -->
             </div>
         </section>
@@ -59,7 +50,6 @@
 
     <script defer src="/main.js" type="module"></script>
     <script>
-        // Simple Intersection Observer for Reveals
         document.addEventListener('DOMContentLoaded', () => {
             const observer = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
