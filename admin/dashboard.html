@@ -3,16 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>sorigrim | 관리자 센터</title>
+    <title>SORIGRIM | 관리자 센터</title>
     <link rel="stylesheet" href="/style.css">
     <style>
         .admin-main { padding: 8rem 4rem; }
         .admin-table { width: 100%; border-collapse: collapse; margin-top: 4rem; background: rgba(255,255,255,0.01); }
         .admin-table th, .admin-table td { padding: 1.5rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .admin-table th { font-size: 0.65rem; text-transform: uppercase; color: var(--sori-muted); letter-spacing: 0.25em; font-weight: 800; }
+        .admin-table th { font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.25em; font-weight: 800; }
         .admin-table td { font-size: 0.85rem; vertical-align: middle; }
         .admin-actions { display: flex; gap: 1.5rem; }
-        .admin-actions a, .admin-actions button { background: none; border: none; color: var(--sori-muted); cursor: pointer; font-weight: 800; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.1em; transition: 0.3s; }
+        .admin-actions a, .admin-actions button { background: none; border: none; color: var(--sori-muted); cursor: pointer; font-weight: 800; font-size: 0.65rem; text-transform: uppercase; transition: 0.3s; }
         .admin-actions a:hover { color: var(--primary); }
         .admin-actions .del-btn:hover { color: #ff4d4d; }
 
@@ -30,8 +30,8 @@
     </style>
 </head>
 <body class="bg-surface">
-    <nav id="global-nav">
-        <a href="/" class="brand">sorigrim</a>
+    <nav id="global-nav" class="scrolled">
+        <a href="/" class="brand">SORIGRIM</a>
         <div class="nav-links">
             <a href="/admin/dashboard.html">관리 홈</a>
             <a href="/admin/editor.html" class="btn-premium" style="padding: 0.6rem 1.5rem; font-size: 0.6rem;">새 글 작성</a>
@@ -40,19 +40,19 @@
 
     <main class="admin-main container">
         
-        <!-- 1. 사이트 디자인 설정 -->
+        <!-- 1. 카테고리(게시판) 관리 -->
         <section style="margin-bottom: 10rem;">
             <header class="section-header">
-                <h2>사이트 미학 설정.</h2>
+                <h2>카테고리 관리.</h2>
             </header>
             <div class="glass-box">
-                <label style="display:block; font-size:0.75rem; color:var(--text-muted); margin-bottom:1rem; font-weight:700;">랜딩 히어로 배경 (이미지 또는 영상)</label>
-                <div style="display: flex; gap: 2rem; align-items: center;">
-                    <input type="text" id="hero-url" placeholder="/api/assets?name=..." style="flex: 1;" readonly>
-                    <input type="file" id="hero-upload" style="display: none;" accept="image/*,video/mp4">
-                    <button class="btn-premium" style="padding: 1rem 2rem; font-size: 0.6rem;" onclick="document.getElementById('hero-upload').click()">새 배경 업로드</button>
+                <form id="category-form" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
+                    <input type="text" id="cat-name" placeholder="새 카테고리 이름 (예: AI ART)" style="flex: 1;" required>
+                    <button type="submit" class="btn-premium" style="padding: 1rem 3rem;">추가</button>
+                </form>
+                <div id="category-list-ui" style="display: flex; flex-wrap: wrap; gap: 1rem;">
+                    <!-- 카테고리 버튼들이 여기에 표시됨 -->
                 </div>
-                <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 1rem;">* 모든 기기에서 안정적인 로딩을 위해 이미지를 권장합니다.</p>
             </div>
         </section>
 
@@ -72,7 +72,7 @@
         <!-- 3. 아카이브 관리 -->
         <section style="margin-bottom: 10rem;">
             <header class="section-header">
-                <h2>아카이브 컨트롤.</h2>
+                <h2>전체 게시글 관리.</h2>
             </header>
             <table class="admin-table">
                 <thead>
@@ -88,8 +88,8 @@
                 <h2>소셜 채널 관리.</h2>
             </header>
             <form id="sns-form" style="display: flex; gap: 1.5rem; margin-bottom: 3rem; align-items: flex-end; flex-wrap: wrap;" class="glass-box">
-                <div style="flex: 1; min-width: 200px;"><input type="text" id="sns-key" placeholder="플랫폼 이름 (예: Instagram)" style="width:100%;"></div>
-                <div style="flex: 2; min-width: 300px;"><input type="url" id="sns-value" placeholder="연결 URL (https://...)" style="width:100%;"></div>
+                <div style="flex: 1; min-width: 200px;"><input type="text" id="sns-key" placeholder="플랫폼 이름" style="width:100%;"></div>
+                <div style="flex: 2; min-width: 300px;"><input type="url" id="sns-value" placeholder="URL (https://...)" style="width:100%;"></div>
                 <button type="submit" class="btn-premium" style="padding: 1rem 2rem; font-size: 0.6rem;">채널 추가</button>
             </form>
             <table class="admin-table">
@@ -102,57 +102,40 @@
     </main>
 
     <script type="module">
-        // Helper: Upload
-        async function uploadFile(file) {
-            const formData = new FormData();
-            formData.append('file', file);
-            const res = await fetch('/api/assets', { method: 'POST', body: formData });
+        // --- 1. Category Logic ---
+        async function loadCategories() {
+            const res = await fetch('/api/categories');
             const data = await res.json();
-            return data.url;
+            const container = document.getElementById('category-list-ui');
+            container.innerHTML = data.map(cat => `
+                <div style="background:white; border:1px solid var(--border); padding:0.8rem 1.5rem; border-radius:30px; display:flex; align-items:center; gap:1rem;">
+                    <span style="font-weight:700; font-size:0.9rem;">${cat.name}</span>
+                    <button onclick="deleteCategory(${cat.id})" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-weight:900;">×</button>
+                </div>
+            `).join('');
         }
 
-        // Hero Management (Now using the verified Portfolio API)
-        async function loadHeroSettings() {
-            // Fetch the latest post in 'HERO_CONFIG' category
-            const res = await fetch('/api/portfolio?category=HERO_CONFIG');
-            const data = await res.json();
-            if (data && data.length > 0) {
-                const hero = data[0];
-                document.getElementById('hero-url').value = hero.image;
-                window.currentHeroId = hero.id; // Store for updating
-            }
-        }
-
-        document.getElementById('hero-upload').addEventListener('change', async (e) => {
-            if (e.target.files[0]) {
-                const url = await uploadFile(e.target.files[0]);
-                if (url) {
-                    const data = {
-                        title: 'Main Hero Config',
-                        category: 'HERO_CONFIG',
-                        image: url,
-                        description: 'System generated hero configuration',
-                        content: '',
-                        is_recommended: 0
-                    };
-
-                    // Use the same POST logic as regular posts
-                    const endpoint = window.currentHeroId ? `/api/portfolio?id=${window.currentHeroId}` : '/api/portfolio';
-                    
-                    await fetch(endpoint, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(data)
-                    });
-                    
-                    await loadHeroSettings();
-                    await loadAssets();
-                    alert('히어로 이미지가 썸네일 로직으로 안전하게 저장되었습니다!');
-                }
-            }
+        const catForm = document.getElementById('category-form');
+        catForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('cat-name').value;
+            await fetch('/api/categories', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name })
+            });
+            catForm.reset();
+            loadCategories();
         });
 
-        // Asset Explorer
+        window.deleteCategory = async (id) => {
+            if (confirm('이 카테고리를 삭제하시겠습니까? 관련 글들의 카테고리 정보가 유실될 수 있습니다.')) {
+                await fetch(`/api/categories?id=${id}`, { method: 'DELETE' });
+                loadCategories();
+            }
+        };
+
+        // --- 2. Asset Logic ---
         async function loadAssets() {
             const res = await fetch('/api/assets');
             const assets = await res.json();
@@ -162,25 +145,18 @@
                 const mediaHtml = isVideo 
                     ? `<video src="/api/assets?name=${asset.name}" muted></video>`
                     : `<img src="/api/assets?name=${asset.name}" loading="lazy">`;
-                
-                return `
-                    <div class="asset-card">
-                        ${mediaHtml}
-                        <p>${asset.name}</p>
-                        <button class="del-btn" style="font-size:0.6rem; color:#ff4d4d; border:1px solid #ff4d4d; padding:0.3rem 0.6rem; margin-top:0.5rem;" onclick="deleteAsset('${asset.name}')">삭제</button>
-                    </div>
-                `;
+                return `<div class="asset-card">${mediaHtml}<p>${asset.name}</p><button class="del-btn" onclick="deleteAsset('${asset.name}')">삭제</button></div>`;
             }).join('');
         }
 
         window.deleteAsset = async (name) => {
-            if (confirm(`${name} 파일을 영구 삭제하시겠습니까?`)) {
+            if (confirm(`${name} 파일을 삭제하시겠습니까?`)) {
                 await fetch(`/api/assets?name=${name}`, { method: 'DELETE' });
                 loadAssets();
             }
         };
 
-        // Archive List
+        // --- 3. Post List Logic ---
         async function loadAdminList() {
             const res = await fetch('/api/portfolio');
             const data = await res.json();
@@ -195,13 +171,13 @@
                 }
                 const isVideo = thumbUrl && thumbUrl.toLowerCase().match(/\.(mp4|webm|ogg)$/);
                 const mediaHtml = isVideo 
-                    ? `<video src="${thumbUrl}" muted style="width: 60px; height: 60px; object-fit: cover; opacity: 0.8;"></video>`
+                    ? `<video src="${thumbUrl}" muted style="width: 60px; height: 60px; object-fit: cover;"></video>`
                     : `<img src="${thumbUrl || ''}" style="width: 60px; height: 60px; object-fit: cover;">`;
 
                 return `
                     <tr>
                         <td>${mediaHtml}</td>
-                        <td style="font-weight: 700;">${item.title}</td>
+                        <td style="font-weight: 700;">${item.title} ${item.is_hero ? '<span style="color:var(--primary)">[HERO]</span>' : ''}</td>
                         <td style="font-size: 0.75rem; font-weight: 800; color: var(--primary);">${item.category}</td>
                         <td class="admin-actions">
                             <a href="editor.html?id=${item.id}">수정</a>
@@ -212,15 +188,22 @@
             }).join('');
         }
 
-        // SNS Management
+        window.deleteItem = async (id) => {
+            if (confirm('게시글을 삭제하시겠습니까?')) {
+                await fetch(`/api/portfolio?id=${id}`, { method: 'DELETE' });
+                loadAdminList();
+            }
+        };
+
+        // --- 4. SNS Logic ---
         async function loadSNSAdmin() {
             const res = await fetch('/api/settings');
             const data = await res.json();
             const list = document.getElementById('sns-admin-list');
             list.innerHTML = data.filter(s => s.type === 'sns').map(item => `
                 <tr>
-                    <td style="font-weight: 800; font-size: 0.85rem;">${item.key}</td>
-                    <td style="color: var(--text-muted); font-size: 0.85rem;">${item.value}</td>
+                    <td style="font-weight: 800;">${item.key}</td>
+                    <td style="color: var(--text-muted);">${item.value}</td>
                     <td class="admin-actions"><button class="del-btn" onclick="deleteSNS(${item.id})">제거</button></td>
                 </tr>
             `).join('');
@@ -243,21 +226,14 @@
         });
 
         window.deleteSNS = async (id) => {
-            if (confirm('이 채널을 삭제하시겠습니까?')) {
+            if (confirm('삭제하시겠습니까?')) {
                 await fetch(`/api/settings?id=${id}`, { method: 'DELETE' });
                 loadSNSAdmin();
             }
         };
 
-        window.deleteItem = async (id) => {
-            if (confirm('이 게시글을 영구 삭제하시겠습니까?')) {
-                await fetch(`/api/portfolio?id=${id}`, { method: 'DELETE' });
-                loadAdminList();
-            }
-        };
-
         document.addEventListener('DOMContentLoaded', () => {
-            loadHeroSettings();
+            loadCategories();
             loadAssets();
             loadAdminList();
             loadSNSAdmin();
