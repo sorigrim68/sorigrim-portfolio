@@ -91,14 +91,16 @@ async function loadRecommended() {
   const grid = document.getElementById('recommended-grid');
   if (!grid) return;
   try {
-    const res = await fetch('/api/portfolio?recommended=true');
+    // 추천 필터(recommended=true) 대신 전체 목록에서 최신 6개를 가져옴
+    const res = await fetch('/api/portfolio');
     const works = await res.json();
     if (works && works.length > 0) {
       grid.innerHTML = works.slice(0, 6).map((work, i) => renderTechnicalCard(work, i)).join('');
       triggerReveals();
     }
-  } catch (e) { console.error(e); }
+  } catch (e) { console.error("Recommended Load Error", e); }
 }
+
 
 function renderTechnicalCard(work, index) {
   let thumbUrl = work.image;
