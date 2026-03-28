@@ -4,55 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>아카이브 — sorigrim</title>
-    <meta name="description" content="생성된 시네마틱 비전의 엄선된 아카이브를 탐색하십시오.">
-    
-    <!-- Open Graph -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://sorigrim.com/portfolio/">
-    <meta property="og:title" content="아카이브 — sorigrim">
-    <meta property="og:description" content="생성된 시네마틱 비전의 엄선된 아카이브.">
-    <meta property="og:image" content="https://sorigrim.com/api/assets?name=og-image-archive.jpg">
-
     <link rel="stylesheet" href="/style.css">
     <style>
-        .archive-header { padding: 10rem 0 5rem; background: var(--bg-light); border-bottom: 1px solid var(--border); }
-        .filter-nav { display: flex; justify-content: center; gap: 2rem; margin: 4rem 0 8rem; }
+        .archive-header { padding: 12rem 0 6rem; background: var(--bg-light); border-bottom: 1px solid var(--border); }
+        .filter-nav { display: flex; justify-content: center; gap: 1.5rem; margin: 5rem 0 8rem; flex-wrap: wrap; }
         .filter-nav button {
-            background: none; border: none; color: var(--text-muted);
-            font-size: 0.85rem; font-weight: 700; text-transform: uppercase;
-            letter-spacing: 0.1em; cursor: pointer; transition: 0.3s;
-            padding: 0.5rem 1.5rem; border-radius: 20px;
+            background: white; border: 1px solid var(--border); color: var(--text-muted);
+            font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: 0.3s;
+            padding: 0.8rem 2.5rem; border-radius: 30px;
         }
-        .filter-nav button.active { color: white; background: var(--primary); }
-        .filter-nav button:hover:not(.active) { color: var(--primary); }
+        .filter-nav button.active { color: white; background: var(--primary); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,85,255,0.15); }
+        .filter-nav button:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
     </style>
 </head>
 <body>
     <nav id="global-nav">
         <a href="/" class="brand">sorigrim</a>
         <div class="nav-links">
-            <a href="/portfolio/" style="color: var(--primary);">아카이브</a>
+            <a href="/portfolio/">아카이브</a>
         </div>
     </nav>
 
     <main>
         <header class="archive-header">
             <div class="container">
-                <h1 class="reveal" style="font-size: 3.5rem; font-weight: 800;">선택된 프래그먼트.</h1>
-                <p class="reveal" style="color: var(--text-muted); margin-top: 1rem;">우리가 탐구해온 시각적 언어의 기록들입니다.</p>
+                <h1 class="reveal section-title">Selected Fragments.</h1>
+                <p class="reveal section-desc">우리가 탐구해온 시각적 언어와 기술적 시도들을 기록합니다.</p>
             </div>
         </header>
 
         <nav class="filter-nav reveal container">
-            <button class="active" data-filter="all">전체</button>
-            <button data-filter="PHOTO WORK">사진 작업</button>
-            <button data-filter="VIDEO WORK">영상 작업</button>
-            <button data-filter="PROMPT SHARE">프롬프트 공유</button>
-            <button data-filter="AI NEWS">AI 뉴스</button>
+            <button class="active" data-filter="all">전체보기</button>
+            <button data-filter="PHOTO WORK">PHOTO</button>
+            <button data-filter="VIDEO WORK">VIDEO</button>
+            <button data-filter="PROMPT SHARE">PROMPT</button>
+            <button data-filter="AI NEWS">NEWS</button>
         </nav>
 
         <section id="portfolio-list" class="grid-archive container py-xl" style="padding-top: 0;">
-            <!-- main.js에 의해 동적으로 삽입됨 -->
+            <!-- main.js에 의해 로드됨 -->
         </section>
     </main>
 
@@ -61,9 +51,12 @@
     <script defer src="/main.js" type="module"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
-            }, 100);
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) entry.target.classList.add('active');
+                });
+            }, { threshold: 0.1 });
+            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
         });
     </script>
 </body>
