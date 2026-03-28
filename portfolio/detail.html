@@ -3,45 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fragment — sorigrim</title>
+    <title>Fragment — SORIGRIM</title>
+    <meta id="meta-description" name="description" content="Cinematic AI vision fragment.">
     <link rel="stylesheet" href="/style.css">
     <style>
-        .detail-view { padding-bottom: 15rem; }
+        .detail-view { padding-bottom: 10rem; }
         .detail-hero { 
             width: 100%; height: 60vh; position: relative; overflow: hidden; background: #000;
             display: flex; align-items: center; justify-content: center;
         }
         .detail-hero img, .detail-hero video { width: 100%; height: 100%; object-fit: cover; }
         
-        .detail-header { padding: 8rem 0 5rem; border-bottom: 1px solid var(--border); }
-        .detail-header .tag { color: var(--primary); font-weight: 800; font-size: 0.9rem; margin-bottom: 1.5rem; display: block; }
-        .detail-header h1 { font-size: 4rem; font-weight: 850; letter-spacing: -0.04em; margin-bottom: 2rem; color: var(--secondary); }
-        .detail-header .desc { font-size: 1.4rem; color: var(--text-muted); line-height: 1.6; max-width: 800px; }
+        .detail-header { padding: 6rem 0 4rem; border-bottom: 1px solid var(--border); }
+        .detail-header .tag { color: var(--primary); font-weight: 800; font-size: 0.85rem; margin-bottom: 1rem; display: block; text-transform: uppercase; }
+        .detail-header h1 { font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 850; letter-spacing: -0.04em; margin-bottom: 1.5rem; color: var(--secondary); line-height: 1.1; }
+        .detail-header .desc { font-size: clamp(1.1rem, 2vw, 1.4rem); color: var(--text-muted); line-height: 1.6; max-width: 800px; }
 
-        .detail-body { padding: 8rem 0; max-width: 900px; margin: 0 auto; }
-        .rich-text { font-size: 1.2rem; line-height: 2; color: #333; font-weight: 400; }
-        .rich-text h2 { font-size: 2.2rem; font-weight: 800; margin: 5rem 0 2rem; color: var(--secondary); }
-        .rich-text img, .rich-text video { max-width: 100%; height: auto; margin: 4rem 0; border-radius: 8px; box-shadow: 0 30px 60px rgba(0,0,0,0.1); }
+        .detail-body { padding: 6rem 0; max-width: 900px; margin: 0 auto; }
+        .rich-text { font-size: 1.1rem; line-height: 1.8; color: #333; }
+        .rich-text h2 { font-size: 1.8rem; font-weight: 800; margin: 4rem 0 1.5rem; color: var(--secondary); }
+        .rich-text img, .rich-text video { max-width: 100%; height: auto; margin: 2.5rem 0; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
 
         .post-nav {
-            margin-top: 10rem; padding-top: 5rem; border-top: 1px solid var(--border);
-            display: flex; justify-content: space-between; gap: 4rem;
+            margin-top: 8rem; padding-top: 4rem; border-top: 1px solid var(--border);
+            display: flex; justify-content: space-between; gap: 2rem;
         }
-        .nav-item { flex: 1; text-decoration: none; color: inherit; transition: 0.3s; }
+        .nav-item { flex: 1; text-decoration: none; color: inherit; transition: 0.3s; min-width: 0; }
         .nav-item:hover { color: var(--primary); transform: translateY(-5px); }
-        .nav-label { font-size: 0.8rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 1rem; display: block; }
-        .nav-title { font-size: 1.5rem; font-weight: 700; line-height: 1.3; }
+        .nav-label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.8rem; display: block; }
+        .nav-title { font-size: 1.2rem; font-weight: 700; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .nav-item.next { text-align: right; }
 
         @media (max-width: 768px) {
-            .detail-header h1 { font-size: 2.5rem; }
-            .post-nav { flex-direction: column; gap: 3rem; }
+            .detail-view { padding-bottom: 6rem; }
+            .detail-hero { height: 40vh; }
+            .detail-header { padding: 4rem 0 3rem; }
+            .detail-body { padding: 4rem 0; }
+            .post-nav { flex-direction: column; gap: 2.5rem; margin-top: 5rem; }
+            .nav-title { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
         }
     </style>
 </head>
 <body>
-    <nav id="global-nav">
-        <a href="/" class="brand">sorigrim</a>
+    <nav id="global-nav" class="scrolled">
+        <a href="/" class="brand">SORIGRIM</a>
         <div class="nav-links">
             <a href="/portfolio/">아카이브</a>
         </div>
@@ -61,11 +66,11 @@
             const res = await fetch(`/api/portfolio?id=${id}`);
             const work = await res.json();
             
-            document.title = `${work.title} — sorigrim`;
+            document.title = `${work.title} — SORIGRIM`;
 
             document.getElementById('detail-target').innerHTML = `
                 <div class="detail-hero reveal">
-                    ${work.image && work.image.match(/\.(mp4|webm)$/) 
+                    ${work.image && work.image.toLowerCase().match(/\.(mp4|webm)$/) 
                         ? `<video src="${work.image}" muted loop autoplay playsinline></video>`
                         : `<img src="${work.image || ''}" alt="${work.title}">`
                     }
@@ -83,21 +88,21 @@
                         <nav class="post-nav">
                             ${work.prev ? `
                                 <a href="/portfolio/detail.html?id=${work.prev.id}" class="nav-item prev">
-                                    <span class="nav-label">Previous Vision</span>
+                                    <span class="nav-label">이전 작품</span>
                                     <div class="nav-title">${work.prev.title}</div>
                                 </a>
                             ` : '<div></div>'}
                             
                             ${work.next ? `
                                 <a href="/portfolio/detail.html?id=${work.next.id}" class="nav-item next">
-                                    <span class="nav-label">Next Vision</span>
+                                    <span class="nav-label">다음 작품</span>
                                     <div class="nav-title">${work.next.title}</div>
                                 </a>
                             ` : '<div></div>'}
                         </nav>
 
-                        <div style="margin-top: 10rem; text-align: center;">
-                            <a href="/portfolio/" class="btn-premium">아카이브 전체보기</a>
+                        <div style="margin-top: 8rem; text-align: center;">
+                            <a href="/portfolio/" class="btn-premium">목록으로 돌아가기</a>
                         </div>
                     </div>
                 </div>

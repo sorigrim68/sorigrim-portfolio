@@ -8,14 +8,19 @@
     <link rel="stylesheet" href="/style.css">
     <style>
         .archive-header { padding: 12rem 0 6rem; background: var(--bg-light); border-bottom: 1px solid var(--border); }
-        .filter-nav { display: flex; justify-content: center; gap: 1rem; margin: 5rem 0 8rem; flex-wrap: wrap; }
+        .filter-nav { display: flex; justify-content: center; gap: 0.8rem; margin: 4rem 0 6rem; flex-wrap: wrap; }
         .filter-nav button {
             background: white; border: 1px solid var(--border); color: var(--text-muted);
-            font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: 0.3s;
-            padding: 0.8rem 2rem; border-radius: 30px;
+            font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: 0.3s;
+            padding: 0.7rem 1.8rem; border-radius: 30px; white-space: nowrap;
         }
         .filter-nav button.active { color: white; background: var(--primary); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,85,255,0.15); }
-        .filter-nav button:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+        
+        @media (max-width: 768px) {
+            .archive-header { padding: 8rem 0 4rem; }
+            .filter-nav { margin: 3rem 0 4rem; gap: 0.5rem; }
+            .filter-nav button { padding: 0.6rem 1.2rem; font-size: 0.8rem; }
+        }
     </style>
 </head>
 <body>
@@ -34,14 +39,12 @@
             </div>
         </header>
 
-        <!-- 동적으로 로드되는 필터 내비게이션 -->
         <nav id="dynamic-filter-nav" class="filter-nav reveal container">
             <button class="active" data-filter="all">전체보기</button>
-            <!-- 카테고리 버튼들이 여기에 자동으로 생성됩니다 -->
         </nav>
 
         <section id="portfolio-list" class="grid-archive container py-xl" style="padding-top: 0;">
-            <!-- main.js에 의해 작품들이 로드됩니다 -->
+            <!-- main.js 로드 -->
         </section>
     </main>
 
@@ -49,35 +52,24 @@
 
     <script defer src="/main.js" type="module"></script>
     <script type="module">
-        // --- 동적 카테고리 메뉴 생성 로직 ---
         async function initDynamicFilters() {
             try {
                 const res = await fetch('/api/categories');
                 const cats = await res.json();
                 const nav = document.getElementById('dynamic-filter-nav');
-                
-                // 기본 '전체보기' 버튼 유지하고 뒤에 추가
                 cats.forEach(cat => {
                     const btn = document.createElement('button');
                     btn.textContent = cat.name;
                     btn.setAttribute('data-filter', cat.name);
                     btn.onclick = () => {
-                        // 모든 버튼 비활성화 후 클릭한 버튼 활성화
                         nav.querySelectorAll('button').forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
-                        
-                        // main.js의 loadArchive 함수 호출 (전역 window 객체에 바인딩된 경우)
-                        if (window.loadArchiveInternal) {
-                            window.loadArchiveInternal(cat.name);
-                        }
+                        if (window.loadArchiveInternal) window.loadArchiveInternal(cat.name);
                     };
                     nav.appendChild(btn);
                 });
-            } catch (e) {
-                console.error("Failed to load dynamic filters", e);
-            }
+            } catch (e) {}
         }
-
         document.addEventListener('DOMContentLoaded', initDynamicFilters);
     </script>
 </body>
