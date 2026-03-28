@@ -5,7 +5,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   initPageTransition();
   // Ensure hero video is initialized even if DOM state is slightly delayed
-  setTimeout(initHeroVideo, 50); 
+  setTimeout(initHeroVideo, 100); 
   loadRecommended();
   if (document.getElementById('portfolio-list')) {
     loadArchive('all');
@@ -45,10 +45,7 @@ function initPageTransition() {
 
 async function initHeroVideo() {
   const videoEl = document.getElementById('hero-video');
-  if (!videoEl) {
-    console.warn("Hero video element not found");
-    return;
-  }
+  if (!videoEl) return;
 
   const fallbackVideo = "https://assets.mixkit.co/videos/preview/mixkit-abstract-flowing-curves-of-light-31758-large.mp4";
 
@@ -59,21 +56,20 @@ async function initHeroVideo() {
     
     const videoUrl = (heroConfig && heroConfig.value) ? heroConfig.value : fallbackVideo;
     
-    // Core attributes for cross-browser autoplay
     videoEl.muted = true;
     videoEl.defaultMuted = true;
     videoEl.autoplay = true;
     videoEl.loop = true;
     videoEl.setAttribute('playsinline', '');
     
-    console.log("Setting hero video source to:", videoUrl);
+    // Explicit load and play
     videoEl.src = videoUrl;
+    videoEl.load();
     
-    // Explicitly handle play state
     const playPromise = videoEl.play();
     if (playPromise !== undefined) {
       playPromise.catch(error => {
-        console.warn("Autoplay was prevented. Retrying on interaction.", error);
+        console.warn("Hero video autoplay failed, retrying on interaction.");
         document.body.addEventListener('click', () => videoEl.play(), { once: true });
       });
     }
@@ -81,6 +77,7 @@ async function initHeroVideo() {
   } catch (e) {
     console.error("Hero Video Load Error", e);
     videoEl.src = fallbackVideo;
+    videoEl.load();
   }
 }
 
