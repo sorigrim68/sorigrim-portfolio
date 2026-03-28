@@ -24,7 +24,12 @@ function initPageTransition() {
 
   // Intercept link clicks
   document.querySelectorAll('a').forEach(link => {
-    if (link.hostname === window.location.hostname && !link.hash && link.target !== '_blank') {
+    const isInternal = link.hostname === window.location.hostname;
+    const isNotHash = !link.hash;
+    const isNotBlank = link.target !== '_blank';
+    const isNotAdmin = !link.pathname.startsWith('/admin/');
+
+    if (isInternal && isNotHash && isNotBlank && isNotAdmin) {
       link.addEventListener('click', e => {
         e.preventDefault();
         const target = link.href;
