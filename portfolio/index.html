@@ -8,18 +8,18 @@
     <link rel="stylesheet" href="/style.css">
     <style>
         .archive-header { padding: 12rem 0 6rem; background: var(--bg-light); border-bottom: 1px solid var(--border); }
-        .filter-nav { display: flex; justify-content: center; gap: 1.5rem; margin: 5rem 0 8rem; flex-wrap: wrap; }
+        .filter-nav { display: flex; justify-content: center; gap: 1rem; margin: 5rem 0 8rem; flex-wrap: wrap; }
         .filter-nav button {
             background: white; border: 1px solid var(--border); color: var(--text-muted);
             font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: 0.3s;
-            padding: 0.8rem 2.5rem; border-radius: 30px;
+            padding: 0.8rem 2rem; border-radius: 30px;
         }
         .filter-nav button.active { color: white; background: var(--primary); border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,85,255,0.15); }
         .filter-nav button:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
     </style>
 </head>
 <body>
-    <nav id="global-nav">
+    <nav id="global-nav" class="scrolled">
         <a href="/" class="brand">SORIGRIM</a>
         <div class="nav-links">
             <a href="/portfolio/">아카이브</a>
@@ -30,35 +30,55 @@
         <header class="archive-header">
             <div class="container">
                 <h1 class="reveal section-title">Artistic Fragments.</h1>
-                <p class="reveal section-desc">AI와 프롬프트를 통해 탐구해온 시각적 조각들의 기록입니다.</p>
+                <p class="reveal section-desc">관리자님이 구성한 카테고리별 AI 시각적 탐구의 기록들입니다.</p>
             </div>
         </header>
 
-        <nav class="filter-nav reveal container">
+        <!-- 동적으로 로드되는 필터 내비게이션 -->
+        <nav id="dynamic-filter-nav" class="filter-nav reveal container">
             <button class="active" data-filter="all">전체보기</button>
-            <button data-filter="PHOTO WORK">AI IMAGE</button>
-            <button data-filter="VIDEO WORK">AI VIDEO</button>
-            <button data-filter="PROMPT SHARE">PROMPT</button>
-            <button data-filter="AI NEWS">AI NEWS</button>
+            <!-- 카테고리 버튼들이 여기에 자동으로 생성됩니다 -->
         </nav>
 
         <section id="portfolio-list" class="grid-archive container py-xl" style="padding-top: 0;">
-            <!-- main.js에 의해 로드됨 -->
+            <!-- main.js에 의해 작품들이 로드됩니다 -->
         </section>
     </main>
 
     <sg-footer></sg-footer>
 
     <script defer src="/main.js" type="module"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) entry.target.classList.add('active');
+    <script type="module">
+        // --- 동적 카테고리 메뉴 생성 로직 ---
+        async function initDynamicFilters() {
+            try {
+                const res = await fetch('/api/categories');
+                const cats = await res.json();
+                const nav = document.getElementById('dynamic-filter-nav');
+                
+                // 기본 '전체보기' 버튼 유지하고 뒤에 추가
+                cats.forEach(cat => {
+                    const btn = document.createElement('button');
+                    btn.textContent = cat.name;
+                    btn.setAttribute('data-filter', cat.name);
+                    btn.onclick = () => {
+                        // 모든 버튼 비활성화 후 클릭한 버튼 활성화
+                        nav.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        
+                        // main.js의 loadArchive 함수 호출 (전역 window 객체에 바인딩된 경우)
+                        if (window.loadArchiveInternal) {
+                            window.loadArchiveInternal(cat.name);
+                        }
+                    };
+                    nav.appendChild(btn);
                 });
-            }, { threshold: 0.1 });
-            document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
-        });
+            } catch (e) {
+                console.error("Failed to load dynamic filters", e);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', initDynamicFilters);
     </script>
 </body>
 </html>

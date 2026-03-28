@@ -1,17 +1,16 @@
 /**
- * sorigrim 2.0 - Technical Premium Engine
+ * SORIGRIM 2.0 - Technical Premium Engine
  */
 
 document.addEventListener('DOMContentLoaded', () => {
   initPageTransition();
   initStickyNav();
-  // Execute hero initialization immediately
-  initHeroBackground(); 
+  setTimeout(initHeroBackground, 100); 
   loadRecommended();
   
   if (document.getElementById('portfolio-list')) {
-    loadArchive('all');
-    initFilters();
+    // 초기 로딩 (전체보기)
+    loadArchiveInternal('all');
   }
 });
 
@@ -42,24 +41,15 @@ function initPageTransition() {
   });
 }
 
-/**
- * DMS Solution 기술 벤치마킹: 
- * 특정 게시글의 썸네일을 메인 히어로 이미지로 완벽하게 연동합니다.
- */
 async function initHeroBackground() {
   const container = document.getElementById('hero-video-container');
   if (!container) return;
-
   const defaultImage = "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop";
-
   try {
-    // 썸네일 로직과 동일하게 특정 카테고리나 히어로 설정을 조회
     const res = await fetch('/api/portfolio?is_hero=true');
     const heroPost = await res.json();
-    
     const url = (heroPost && heroPost.image) ? heroPost.image : defaultImage;
     const isVideo = url.toLowerCase().match(/\.(mp4|webm|ogg)$/) || url.includes('video');
-
     if (isVideo) {
       container.innerHTML = `<video src="${url}" muted loop autoplay playsinline style="width:100%; height:100%; object-fit:cover; display:block;"></video>`;
       const v = container.querySelector('video');
@@ -67,40 +57,47 @@ async function initHeroBackground() {
         document.body.addEventListener('mousedown', () => v.play(), { once: true });
       });
     } else {
-      // 검증된 썸네일과 동일한 HTML 주입 방식
       container.innerHTML = `<div class="hero-bg-image" style="background-image: url('${url}'); width:100%; height:100%; background-size:cover; background-position:center; animation: ken-burns 25s ease-in-out infinite alternate;"></div>`;
     }
   } catch (e) {
-    console.warn("Hero fetch failed, using fallback", e);
     container.innerHTML = `<div class="hero-bg-image" style="background-image: url('${defaultImage}'); width:100%; height:100%; background-size:cover; background-position:center;"></div>`;
   }
 }
 
-async function loadArchive(category = 'all') {
+// --- 핵심: 전역에서 접근 가능한 아카이브 로드 함수 ---
+window.loadArchiveInternal = async function(category = 'all') {
   const grid = document.getElementById('portfolio-list');
   if (!grid) return;
+  
   try {
-    const res = await fetch(`/api/portfolio${category !== 'all' ? `?category=${category}` : ''}`);
+    const url = `/api/portfolio${category !== 'all' ? `?category=${category}` : ''}`;
+    const res = await fetch(url);
     const works = await res.json();
+    
     grid.innerHTML = works.map((work, i) => renderTechnicalCard(work, i)).join('');
-    triggerReveals();
-  } catch (e) { console.error(e); }
-}
+    
+    setTimeout(() => {
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
+    }, 100);
+  } catch (e) {
+    console.error("Archive Load Error", e);
+  }
+};
 
 async function loadRecommended() {
   const grid = document.getElementById('recommended-grid');
   if (!grid) return;
   try {
-    // 최신순으로 상위 9개의 작품을 가져옵니다.
     const res = await fetch('/api/portfolio');
     const works = await res.json();
     if (works && works.length > 0) {
       grid.innerHTML = works.slice(0, 9).map((work, i) => renderTechnicalCard(work, i)).join('');
-      triggerReveals();
+      setTimeout(() => {
+        document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
+      }, 100);
     }
   } catch (e) { console.error("Recommended Load Error", e); }
 }
-
 
 function renderTechnicalCard(work, index) {
   let thumbUrl = work.image;
@@ -126,28 +123,11 @@ function renderTechnicalCard(work, index) {
   `;
 }
 
-function triggerReveals() {
-  setTimeout(() => {
-    document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
-  }, 100);
-}
-
 window.navigate = (url) => {
   const overlay = document.getElementById('page-transition');
   if (overlay) overlay.classList.remove('hidden');
   setTimeout(() => { window.location.href = url; }, 500);
 };
-
-function initFilters() {
-  const buttons = document.querySelectorAll('.filter-nav button');
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      buttons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      loadArchive(btn.dataset.filter);
-    });
-  });
-}
 
 class SorigrimFooter extends HTMLElement {
   constructor() { super(); this.attachShadow({ mode: 'open' }); }
