@@ -18,13 +18,16 @@ function initStickyNav() {
   const nav = document.getElementById('global-nav');
   if (!nav) return;
 
-  window.addEventListener('scroll', () => {
-    if (window.scrollY > 50) {
+  const handleScroll = () => {
+    if (window.scrollY > 100) {
       nav.classList.add('scrolled');
     } else {
       nav.classList.remove('scrolled');
     }
-  });
+  };
+
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  handleScroll(); // Initial check
 }
 
 function initPageTransition() {
