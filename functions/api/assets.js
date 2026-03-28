@@ -40,7 +40,7 @@ export async function onRequest(context) {
     const object = await env.BUCKET.get(name);
 
     if (object === null) {
-      if (name.endsWith('.mp4')) {
+      if (name.toLowerCase().endsWith('.mp4')) {
           return Response.redirect("https://assets.mixkit.co/videos/preview/mixkit-abstract-flowing-curves-of-light-31758-large.mp4", 302);
       }
       return new Response("Object Not Found", { status: 404 });
@@ -49,9 +49,14 @@ export async function onRequest(context) {
     const headers = new Headers();
     object.writeHttpMetadata(headers);
     headers.set("etag", object.httpEtag);
+    headers.set("accept-ranges", "bytes"); // Allow browsers to know range is possible
     
-    if (name.endsWith('.mp4')) {
+    // Support case-insensitive extension check
+    const lowerName = name.toLowerCase();
+    if (lowerName.endsWith('.mp4')) {
       headers.set("content-type", "video/mp4");
+    } else if (lowerName.endsWith('.webm')) {
+      headers.set("content-type", "video/webm");
     }
 
     return new Response(object.body, {

@@ -55,18 +55,35 @@ async function initHeroVideo() {
     const heroConfig = settings.find(s => s.key === 'landing_hero_video');
     
     const videoUrl = (heroConfig && heroConfig.value) ? heroConfig.value : fallbackVideo;
+    console.log("🎬 Sorigrim Hero Video Init:", videoUrl);
     
     // Inject the video tag exactly like the working thumbnails
     container.innerHTML = `
       <video src="${videoUrl}" muted loop autoplay playsinline 
+             poster="/api/assets?name=og-image.jpg"
              style="width:100%; height:100%; object-fit:cover; display:block;">
       </video>
     `;
     
-    // Backup play trigger
     const videoEl = container.querySelector('video');
-    if (videoEl) {
-      videoEl.play().catch(() => {
+    
+    videoEl.addEventListener('loadeddata', () => {
+      console.log("✅ Hero Video Data Loaded");
+    });
+
+    videoEl.addEventListener('error', (e) => {
+      console.error("❌ Hero Video Error:", videoEl.error);
+      if (videoUrl !== fallbackVideo) {
+        console.log("🔄 Retrying with fallback...");
+        videoEl.src = fallbackVideo;
+      }
+    });
+
+    // Backup play trigger
+    const playPromise = videoEl.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(() => {
+        console.warn("⚠️ Autoplay prevented. Click anywhere to play.");
         const retry = () => videoEl.play();
         document.body.addEventListener('mousedown', retry, { once: true });
         document.body.addEventListener('touchstart', retry, { once: true });
@@ -74,12 +91,8 @@ async function initHeroVideo() {
     }
 
   } catch (e) {
-    console.error("Hero Video Load Error", e);
-    container.innerHTML = `
-      <video src="${fallbackVideo}" muted loop autoplay playsinline 
-             style="width:100%; height:100%; object-fit:cover; display:block;">
-      </video>
-    `;
+    console.error("❌ Settings Fetch Error:", e);
+    container.innerHTML = `<video src="${fallbackVideo}" muted loop autoplay playsinline style="width:100%; height:100%; object-fit:cover; display:block;"></video>`;
   }
 }
 
