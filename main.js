@@ -56,23 +56,17 @@ async function initHeroVideo() {
     
     const videoUrl = (heroConfig && heroConfig.value) ? heroConfig.value : fallbackVideo;
     
-    // Explicitly reset and force attributes
-    videoEl.muted = true;
-    videoEl.defaultMuted = true;
-    videoEl.autoplay = true;
-    videoEl.loop = true;
-    videoEl.setAttribute('muted', '');
-    videoEl.setAttribute('loop', '');
-    videoEl.setAttribute('autoplay', '');
-    videoEl.setAttribute('playsinline', '');
+    if (videoEl.src !== videoUrl) {
+      videoEl.src = videoUrl;
+      videoEl.load();
+    }
     
-    videoEl.src = videoUrl;
-    videoEl.load();
+    videoEl.muted = true;
+    videoEl.loop = true;
     
     const playPromise = videoEl.play();
     if (playPromise !== undefined) {
-      playPromise.catch(error => {
-        console.warn("Hero video autoplay failed, retrying on interaction.");
+      playPromise.catch(() => {
         const retry = () => videoEl.play();
         document.body.addEventListener('mousedown', retry, { once: true });
         document.body.addEventListener('touchstart', retry, { once: true });
@@ -80,7 +74,6 @@ async function initHeroVideo() {
     }
 
   } catch (e) {
-    console.error("Hero Video Load Error", e);
     videoEl.src = fallbackVideo;
     videoEl.load();
   }

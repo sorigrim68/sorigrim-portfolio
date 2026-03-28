@@ -1,6 +1,6 @@
 /**
  * Cloudflare Pages Functions API: Assets (Sorigrim 1.0)
- * Proxies media from R2 bucket with Range Request support for videos.
+ * Proxies media from R2 bucket.
  */
 
 export async function onRequest(context) {
@@ -13,6 +13,7 @@ export async function onRequest(context) {
     try {
       const formData = await request.formData();
       const file = formData.get('file');
+
       if (!file) return new Response("No file uploaded", { status: 400 });
 
       const fileName = `${Date.now()}-${file.name}`;
@@ -31,14 +32,12 @@ export async function onRequest(context) {
   }
 
   // GET: Serve Assets from R2
-  if (!name) return new Response("Asset name required", { status: 400 });
+  if (!name) {
+    return new Response("Asset name required", { status: 400 });
+  }
 
   try {
-    // Handle Range Headers for Video Streaming
-    const range = request.headers.get("range");
-    const getOptions = range ? { range: request.headers } : {};
-    
-    const object = await env.BUCKET.get(name, getOptions);
+    const object = await env.BUCKET.get(name);
 
     if (object === null) {
       if (name.endsWith('.mp4')) {
@@ -50,14 +49,13 @@ export async function onRequest(context) {
     const headers = new Headers();
     object.writeHttpMetadata(headers);
     headers.set("etag", object.httpEtag);
-    headers.set("accept-ranges", "bytes");
-
-    // Important for video playback status codes
-    const status = range ? 206 : 200;
+    
+    if (name.endsWith('.mp4')) {
+      headers.set("content-type", "video/mp4");
+    }
 
     return new Response(object.body, {
       headers,
-      status
     });
   } catch (e) {
     return new Response(e.message, { status: 500 });
