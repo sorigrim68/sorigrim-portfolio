@@ -39,7 +39,7 @@
         .usage-bar { width: 100%; height: 8px; background: #EEE; border-radius: 4px; overflow: hidden; margin: 1rem 0; }
         .usage-fill { height: 100%; background: var(--primary); transition: 0.5s; }
 
-        .sort-btn { padding: 4px 8px; background: #EEE; border: 1px solid #DDD; cursor: pointer; font-size: 0.7rem; border-radius: 4px; }
+        .sort-btn { padding: 4px 12px; background: #EEE; border: 1px solid #DDD; cursor: pointer; font-size: 0.7rem; border-radius: 4px; font-weight: 700; }
         .sort-btn:hover { background: #DDD; }
     </style>
 </head>
@@ -100,7 +100,7 @@
                 </div>
                 <div style="background: white; padding: 2.5rem; border-radius: 8px; border: 1px solid var(--border);">
                     <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform:uppercase;">D1 Database Usage</h4>
-                    <div id="d1-usage-text" style="font-size: 1.8rem; font-weight: 900; margin: 1rem 0;">데이터 분석 중...</div>
+                    <div id="d1-usage-text" style="font-size: 1.8rem; font-weight: 900; margin: 1rem 0;">데이터베이스 정상</div>
                     <div class="usage-bar"><div id="d1-usage-fill" class="usage-fill" style="width: 1%;"></div></div>
                     <p id="d1-counts" style="font-size: 0.75rem; color: var(--text-muted);">게시글 0개 | 카테고리 0개</p>
                 </div>
@@ -134,7 +134,7 @@
             </table>
         </section>
 
-        <!-- 6. 방문 통계 분석 (가장 마지막) -->
+        <!-- 6. 방문 통계 분석 -->
         <section>
             <header class="section-header">
                 <h2>06. 방문 통계 분석.</h2>
@@ -169,12 +169,12 @@
             const res = await fetch('/api/categories');
             categoriesData = await res.json();
             
-            // 관리 UI
             const container = document.getElementById('category-list-ui');
             container.innerHTML = categoriesData.map((cat, idx) => `
                 <div style="background:white; border:1px solid var(--border); padding:1rem 2rem; border-radius:8px; display:flex; align-items:center; justify-content:space-between;">
                     <span style="font-weight:800; font-size:1rem; color:var(--text-main);">${cat.name}</span>
                     <div style="display:flex; gap:0.5rem; align-items:center;">
+                        <button class="sort-btn" onclick="renameCategory(${cat.id}, '${cat.name}')">이름 수정</button>
                         <button class="sort-btn" onclick="moveCategory(${idx}, -1)">▲</button>
                         <button class="sort-btn" onclick="moveCategory(${idx}, 1)">▼</button>
                         <button onclick="deleteCategory(${cat.id})" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-weight:900; margin-left:1rem;">삭제</button>
@@ -182,28 +182,37 @@
                 </div>
             `).join('');
 
-            // 선택 UI
             document.getElementById('board-selector-ui').innerHTML = categoriesData.map(cat => `
                 <button class="board-btn ${currentBoard === cat.name ? 'active' : ''}" onclick="selectBoard('${cat.name}')">${cat.name}</button>
             `).join('');
         }
 
+        window.renameCategory = async (id, oldName) => {
+            const newName = prompt('게시판 이름을 수정합니다:', oldName);
+            if (newName && newName !== oldName) {
+                const res = await fetch(`/api/categories?id=${id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: newName })
+                });
+                if (res.ok) {
+                    if (currentBoard === oldName) currentBoard = newName;
+                    await loadCategories();
+                } else {
+                    alert('이미 존재하는 이름이거나 오류가 발생했습니다.');
+                }
+            }
+        };
+
         window.moveCategory = async (idx, dir) => {
             const targetIdx = idx + dir;
             if (targetIdx < 0 || targetIdx >= categoriesData.length) return;
-            
             const items = [...categoriesData];
             const temp = items[idx];
             items[idx] = items[targetIdx];
             items[targetIdx] = temp;
-
-            // 순서값 업데이트
             const updatePayload = items.map((item, i) => ({ id: item.id, sort_order: i }));
-            await fetch('/api/categories', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ items: updatePayload })
-            });
+            await fetch('/api/categories', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: updatePayload }) });
             await loadCategories();
         };
 
@@ -242,11 +251,7 @@
                 }
                 const isVideo = thumbUrl && thumbUrl.toLowerCase().match(/\.(mp4|webm|ogg)$/);
                 const mediaHtml = isVideo ? `<video src="${thumbUrl}" muted style="width: 60px; height: 60px; object-fit: cover;"></video>` : `<img src="${thumbUrl || ''}" style="width: 60px; height: 60px; object-fit: cover;">`;
-                
-                const statusHtml = item.is_published 
-                    ? '<span style="color:#28a745; font-weight:800;">[게시중]</span>' 
-                    : '<span style="color:#ffc107; font-weight:800;">[임시저장]</span>';
-
+                const statusHtml = item.is_published ? '<span style="color:#28a745; font-weight:800;">[게시중]</span>' : '<span style="color:#ffc107; font-weight:800;">[임시저장]</span>';
                 return `<tr><td>${mediaHtml}</td><td>${statusHtml}</td><td style="font-weight:700;">${item.title} ${item.is_hero ? '<span style="color:var(--primary)">[HERO]</span>' : ''} ${item.is_recommended ? '<span style="color:#28a745">[추천]</span>' : ''}</td><td class="admin-actions"><a href="editor.html?id=${item.id}">수정</a><button class="del-btn" onclick="deleteItem(${item.id})">삭제</button></td></tr>`;
             }).join('');
         }
@@ -270,12 +275,10 @@
                 document.getElementById('today-unique').innerText = todayStat ? todayStat.count.toLocaleString() : '0';
                 document.getElementById('top-pages-list').innerHTML = data.analytics.topPages.map(p => `<tr><td style="padding:0.8rem 0; border-bottom:1px solid var(--border); font-weight:700;">${p.page}</td><td style="padding:0.8rem 0; border-bottom:1px solid var(--border); text-align:right; color:var(--primary); font-weight:800;">${p.count.toLocaleString()} views</td></tr>`).join('');
                 document.getElementById('top-referrers-list').innerHTML = data.analytics.topReferrers.length > 0 ? data.analytics.topReferrers.map(r => `<tr><td style="padding:0.8rem 0; border-bottom:1px solid var(--border); font-weight:700; word-break:break-all;">${r.referrer}</td><td style="padding:0.8rem 0; border-bottom:1px solid var(--border); text-align:right; color:#28a745; font-weight:800;">${r.count.toLocaleString()} visits</td></tr>`).join('') : '<tr><td colspan="2" style="text-align:center; padding:2rem; color:#999;">직접 유입</td></tr>';
-
                 const usedMB = (data.storage.r2.used / (1024 * 1024)).toFixed(2);
                 document.getElementById('r2-usage-text').innerText = `${usedMB} MB / 10 GB`;
                 document.getElementById('r2-usage-fill').style.width = `${Math.min(100, (data.storage.r2.used / data.storage.r2.limit) * 100)}%`;
                 document.getElementById('r2-count').innerText = `총 ${data.storage.r2.count}개의 파일 보관 중`;
-                document.getElementById('d1-usage-text').innerText = `데이터베이스 정상`;
                 document.getElementById('d1-counts').innerText = `게시글 ${data.storage.d1.posts}개 | 카테고리 ${data.storage.d1.categories}개 | 통계로그 ${data.storage.d1.statsRows}줄`;
                 document.getElementById('d1-usage-fill').style.width = `${Math.min(100, (data.storage.d1.posts * 100 / 1000))}%`;
             } catch (e) {}
