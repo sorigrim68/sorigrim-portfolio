@@ -136,7 +136,10 @@ async function trackVisit() {
     fetch('/api/stats', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ page: window.location.pathname })
+      body: JSON.stringify({ 
+        page: window.location.pathname,
+        referrer: document.referrer 
+      })
     });
   } catch (e) {}
 }

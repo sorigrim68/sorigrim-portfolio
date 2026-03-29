@@ -55,6 +55,14 @@
                     <div id="today-unique" style="font-size: 2.5rem; font-weight: 900; color: #28a745;">0</div>
                 </div>
                 <div style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid var(--border); grid-column: 1 / -1;">
+                    <h4 style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem;">유입 경로 분석 (Top Referral)</h4>
+                    <table style="width: 100%; font-size: 0.85rem;">
+                        <tbody id="top-referrers-list">
+                            <!-- 유입 경로 목록 -->
+                        </tbody>
+                    </table>
+                </div>
+                <div style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid var(--border); grid-column: 1 / -1;">
                     <h4 style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem;">인기 페이지 (Top 10)</h4>
                     <table style="width: 100%; font-size: 0.85rem;">
                         <tbody id="top-pages-list">
@@ -277,6 +285,14 @@
                         <td style="padding: 0.8rem 0; border-bottom: 1px solid var(--border); text-align: right; color: var(--primary); font-weight: 800;">${p.count.toLocaleString()} views</td>
                     </tr>
                 `).join('');
+
+                const topRefList = document.getElementById('top-referrers-list');
+                topRefList.innerHTML = data.topReferrers.length > 0 ? data.topReferrers.map(r => `
+                    <tr>
+                        <td style="padding: 0.8rem 0; border-bottom: 1px solid var(--border); font-weight: 700; word-break: break-all;">${r.referrer}</td>
+                        <td style="padding: 0.8rem 0; border-bottom: 1px solid var(--border); text-align: right; color: #28a745; font-weight: 800;">${r.count.toLocaleString()} visits</td>
+                    </tr>
+                `).join('') : '<tr><td colspan="2" style="text-align:center; padding:2rem; color:#999;">직접 유입 또는 데이터 없음</td></tr>';
             } catch (e) { console.error("Stats Load Error", e); }
         }
 

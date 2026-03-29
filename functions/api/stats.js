@@ -16,34 +16,35 @@ export async function onRequest(context) {
         ip_hash TEXT,
         userAgent TEXT,
         page TEXT,
+        referrer TEXT,
         createdAt DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `).run();
 
-    // 2. Track Visitor (POST or simply on any GET hit to stats if called from main.js)
+    // Migration: Add referrer column if it doesn't exist
+    try {
+      await env.DB.prepare("ALTER TABLE sg_stats ADD COLUMN referrer TEXT").run();
+    } catch (e) {}
+
+    // 2. Track Visitor
     if (request.method === "POST") {
       const data = await request.json();
       const ip = request.headers.get("cf-connecting-ip") || "unknown";
-      // Simple hash for privacy
       const ipHash = btoa(ip).slice(0, 16);
       const today = new Date().toISOString().split('T')[0];
 
       await env.DB.prepare(
-        "INSERT INTO sg_stats (date, ip_hash, userAgent, page) VALUES (?, ?, ?, ?)"
-      ).bind(today, ipHash, request.headers.get("user-agent"), data.page || "/").run();
+        "INSERT INTO sg_stats (date, ip_hash, userAgent, page, referrer) VALUES (?, ?, ?, ?, ?)"
+      ).bind(today, ipHash, request.headers.get("user-agent"), data.page || "/", data.referrer || "").run();
 
       return Response.json({ success: true });
     }
 
     // 3. GET Stats
     if (request.method === "GET") {
-      // Daily Unique Visitors (Last 30 days)
+      // Daily Unique Visitors
       const dailyUnique = await env.DB.prepare(`
-        SELECT date, COUNT(DISTINCT ip_hash) as count 
-        FROM sg_stats 
-        GROUP BY date 
-        ORDER BY date DESC 
-        LIMIT 30
+        SELECT date, COUNT(DISTINCT ip_hash) as count FROM sg_stats GROUP BY date ORDER BY date DESC LIMIT 30
       `).all();
 
       // Total Page Views
@@ -51,9 +52,15 @@ export async function onRequest(context) {
       
       // Top Pages
       const topPages = await env.DB.prepare(`
-        SELECT page, COUNT(*) as count 
+        SELECT page, COUNT(*) as count FROM sg_stats GROUP BY page ORDER BY count DESC LIMIT 10
+      `).all();
+
+      // Top Referrers (New!)
+      const topReferrers = await env.DB.prepare(`
+        SELECT referrer, COUNT(*) as count 
         FROM sg_stats 
-        GROUP BY page 
+        WHERE referrer != '' AND referrer NOT LIKE '%sorigrim.com%'
+        GROUP BY referrer 
         ORDER BY count DESC 
         LIMIT 10
       `).all();
@@ -61,7 +68,8 @@ export async function onRequest(context) {
       return Response.json({
         dailyUnique: dailyUnique.results,
         totalViews: totalViews.count,
-        topPages: topPages.results
+        topPages: topPages.results,
+        topReferrers: topReferrers.results
       });
     }
 
