@@ -97,32 +97,20 @@ async function loadRecommendedByBoard() {
   if (!container) return;
 
   try {
-    // 1. 모든 카테고리 가져오기
     const catRes = await fetch('/api/categories');
     const categories = await catRes.json();
-
-    // 2. 모든 글 가져오기
     const postRes = await fetch('/api/portfolio');
     const allPosts = await postRes.json();
 
     let finalHtml = '';
-
     categories.forEach(cat => {
-      // 해당 카테고리의 글들 필터링
       const boardPosts = allPosts.filter(p => p.category === cat.name);
-      
-      if (boardPosts.length === 0) return; // 글이 없으면 노출 안함
-
-      // 정렬 로직: 추천글(is_recommended=1) 우선, 그 다음 최신순(id DESC)
+      if (boardPosts.length === 0) return; 
       const sortedPosts = boardPosts.sort((a, b) => {
         if (b.is_recommended !== a.is_recommended) return b.is_recommended - a.is_recommended;
         return b.id - a.id;
       });
-
-      // 최대 4개 선택
       const top4 = sortedPosts.slice(0, 4);
-
-      // 섹션 렌더링
       finalHtml += `
         <div class="board-section" style="margin-bottom: 6rem; width: 100%;">
           <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:2rem; border-bottom:1px solid var(--border); padding-bottom:1rem;">
@@ -135,16 +123,11 @@ async function loadRecommendedByBoard() {
         </div>
       `;
     });
-
     container.innerHTML = finalHtml;
-    
     setTimeout(() => {
       document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
     }, 100);
-
-  } catch (e) {
-    console.error("Recommended Board Load Error", e);
-  }
+  } catch (e) { console.error("Recommended Board Load Error", e); }
 }
 
 function renderTechnicalCard(work, index) {
@@ -197,38 +180,58 @@ async function trackVisit() {
 class SorigrimFooter extends HTMLElement {
   constructor() { super(); this.attachShadow({ mode: 'open' }); }
   connectedCallback() { this.render(); }
-  async fetchSNS() {
+  async fetchSettings() {
     try {
       const res = await fetch('/api/settings');
-      const settings = await res.json();
-      return settings.filter(s => s.type === 'sns');
+      return await res.json();
     } catch (e) { return []; }
   }
   async render() {
-    const sns = await this.fetchSNS();
+    const settings = await this.fetchSettings();
+    const sns = settings.filter(s => s.type === 'sns');
+    
+    const pName = settings.find(s => s.key === 'profile_name')?.value || "Creative Technologist. SORIGRIM.";
+    const pBio1 = settings.find(s => s.key === 'profile_bio_1')?.value || "프롬프트와 알고리즘으로 시각적 미학을 탐구하는 AI 아티스트입니다.";
+    const pImg = settings.find(s => s.key === 'profile_image')?.value || "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2574&auto=format&fit=crop";
+
     this.shadowRoot.innerHTML = `
       <style>
-        :host { display: block; padding: 8rem 0; background: #F8F9FA; color: #1A1A1A; font-family: sans-serif; border-top: 1px solid #EEE; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 0 4rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4rem; }
+        :host { display: block; background: #F8F9FA; color: #1A1A1A; font-family: sans-serif; border-top: 1px solid #EEE; }
+        .profile-section { padding: 8rem 4rem; max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 120px 1fr; gap: 3rem; align-items: center; border-bottom: 1px solid #EEE; }
+        .profile-section img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; filter: grayscale(20%); }
+        .profile-info h3 { font-size: 1.8rem; font-weight: 900; margin-bottom: 1rem; color: #0055FF; line-height: 1.2; }
+        .profile-info p { font-size: 1rem; color: #666; max-width: 800px; line-height: 1.6; }
+        .profile-info a { display: inline-block; margin-top: 1.5rem; font-size: 0.85rem; font-weight: 800; color: #0055FF; text-decoration: none; border-bottom: 2px solid #0055FF; padding-bottom: 2px; }
+
+        .footer-main { padding: 6rem 4rem; max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4rem; }
         .brand h2 { font-size: 1.5rem; font-weight: 900; color: #0055FF; margin-bottom: 1rem; text-transform: uppercase; }
-        .brand p { font-size: 0.9rem; color: #666; max-width: 350px; }
         .links { display: flex; gap: 5rem; flex-wrap: wrap; }
         .group h4 { font-size: 0.8rem; font-weight: 800; margin-bottom: 1.5rem; text-transform: uppercase; }
         .group a { display: block; font-size: 0.9rem; color: #666; text-decoration: none; margin-bottom: 0.8rem; }
         .group a:hover { color: #0055FF; }
-        .bottom { width: 100%; margin-top: 6rem; padding-top: 2rem; border-top: 1px solid #EEE; display: flex; justify-content: space-between; font-size: 0.8rem; color: #999; text-transform: uppercase; flex-wrap: wrap; gap: 1rem; }
+        .bottom { width: 100%; padding: 2rem 4rem; border-top: 1px solid #EEE; display: flex; justify-content: space-between; font-size: 0.8rem; color: #999; text-transform: uppercase; }
         
         @media (max-width: 768px) {
-          :host { padding: 4rem 0; }
-          .container { padding: 0 1.5rem; gap: 3rem; }
-          .links { gap: 3rem; }
-          .bottom { margin-top: 3rem; }
+          .profile-section { padding: 4rem 1.5rem; grid-template-columns: 1fr; text-align: center; gap: 2rem; }
+          .profile-section img { margin: 0 auto; }
+          .footer-main { padding: 4rem 1.5rem; }
+          .bottom { padding: 2rem 1.5rem; }
         }
       </style>
-      <div class="container">
+      
+      <div class="profile-section">
+        <img src="${pImg}" alt="Profile">
+        <div class="profile-info">
+          <h3>${pName.replace(/\n/g, ' ')}</h3>
+          <p>${pBio1}</p>
+          <a href="/about.html">LEARN MORE ABOUT SORIGRIM →</a>
+        </div>
+      </div>
+
+      <div class="footer-main">
         <div class="brand">
           <h2>SORIGRIM</h2>
-          <p>프롬프트와 알고리즘으로 시각적 미학을 탐구하는 AI 아티스트의 개인 포트폴리오 공간입니다.</p>
+          <p style="font-size:0.9rem; color:#666; max-width:350px;">프롬프트와 알고리즘으로 시각적 미학을 탐구하는 AI 아티스트의 개인 포트폴리오 공간입니다.</p>
         </div>
         <div class="links">
           <div class="group">
@@ -246,9 +249,9 @@ class SorigrimFooter extends HTMLElement {
             ${sns.map(s => `<a href="${s.value}" target="_blank">${s.key}</a>`).join('')}
           </div>
         </div>
-        <div class="bottom">
-          <p>&copy; ${new Date().getFullYear()} SORIGRIM. All rights reserved.</p>
-        </div>
+      </div>
+      <div class="bottom">
+        <p>&copy; ${new Date().getFullYear()} SORIGRIM. All rights reserved.</p>
       </div>
     `;
   }

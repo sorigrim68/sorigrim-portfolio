@@ -30,7 +30,6 @@
     <nav id="global-nav" class="scrolled">
         <a href="/" class="brand">SORIGRIM</a>
         <div class="nav-links">
-            <a href="/about.html">About</a>
             <a href="/portfolio/">아카이브</a>
         </div>
     </nav>
@@ -89,14 +88,13 @@
                 const img = settings.find(s => s.key === 'profile_image')?.value;
 
                 if (name) document.getElementById('profile-name').innerHTML = name.replace(/\n/g, '<br>');
-                if (bio1) document.getElementById('profile-bio_1').innerText = bio1;
-                if (bio2) document.getElementById('profile-bio_2').innerText = bio2;
+                if (bio1) document.getElementById('profile-bio-1').innerText = bio1;
+                if (bio2) document.getElementById('profile-bio-2').innerText = bio2;
                 if (img) document.getElementById('profile-image').src = img;
             } catch (e) {}
         }
         document.addEventListener('DOMContentLoaded', () => {
             loadProfile();
-            // Reveal animation handled by main.js observer
         });
     </script>
 </body>
