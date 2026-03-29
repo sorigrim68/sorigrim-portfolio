@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initPageTransition();
   initStickyNav();
   setTimeout(initHeroBackground, 100); 
-  loadRecommended();
+  loadRecommendedByBoard(); // 게시판별 추천 로드
   trackVisit(); // 방문 통계 트래킹
   
   if (document.getElementById('portfolio-list')) {
@@ -85,19 +85,63 @@ window.loadArchiveInternal = async function(category = 'all') {
   }
 };
 
-async function loadRecommended() {
-  const grid = document.getElementById('recommended-grid');
-  if (!grid) return;
+/**
+ * 게시판별로 글을 가져와서 추천글이 있으면 추천글 위주로, 없으면 최신글 위주로 4개씩 노출
+ */
+async function loadRecommendedByBoard() {
+  const container = document.getElementById('recommended-grid');
+  if (!container) return;
+
   try {
-    const res = await fetch('/api/portfolio?recommended=true');
-    const works = await res.json();
-    if (works && works.length > 0) {
-      grid.innerHTML = works.slice(0, 15).map((work, i) => renderTechnicalCard(work, i)).join('');
-      setTimeout(() => {
-        document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
-      }, 100);
-    }
-  } catch (e) { console.error("Recommended Load Error", e); }
+    // 1. 모든 카테고리 가져오기
+    const catRes = await fetch('/api/categories');
+    const categories = await catRes.json();
+
+    // 2. 모든 글 가져오기 (메모리상에서 분류하는 것이 여러번 API 호출보다 효율적일 수 있음)
+    const postRes = await fetch('/api/portfolio');
+    const allPosts = await postRes.json();
+
+    let finalHtml = '';
+
+    categories.forEach(cat => {
+      // 해당 카테고리의 글들 필터링
+      const boardPosts = allPosts.filter(p => p.category === cat.name);
+      
+      if (boardPosts.length === 0) return; // 글이 없으면 노출 안함
+
+      // 정렬 로직: 추천글(is_recommended=1) 우선, 그 다음 최신순(id DESC)
+      const sortedPosts = boardPosts.sort((a, b) => {
+        if (b.is_recommended !== a.is_recommended) return b.is_recommended - a.is_recommended;
+        return b.id - a.id;
+      });
+
+      // 최대 4개 선택
+      const top4 = sortedPosts.slice(0, 4);
+
+      // 섹션 렌더링
+      finalHtml += `
+        <div class="board-section" style="margin-bottom: 6rem; width: 100%;">
+          <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:2rem; border-bottom:1px solid var(--border); padding-bottom:1rem;">
+            <h3 class="reveal" style="font-size:1.5rem; font-weight:900; color:var(--text-main); text-transform:uppercase; letter-spacing:-0.02em;">${cat.name}.</h3>
+            <a href="/portfolio/index.html?category=${encodeURIComponent(cat.name)}" style="font-size:0.8rem; font-weight:800; color:var(--primary); text-decoration:none;">VIEW ALL →</a>
+          </div>
+          <div class="grid-archive">
+            ${top4.map((work, i) => renderTechnicalCard(work, i)).join('')}
+          </div>
+        </div>
+      `;
+    });
+
+    container.innerHTML = finalHtml;
+    container.classList.remove('grid-archive'); // 이제 하위에서 그리드를 가짐
+    
+    setTimeout(() => {
+      document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
+    }, 100);
+
+  } catch (e) {
+    console.error("Recommended Board Load Error", e);
+  }
 }
 
 function renderTechnicalCard(work, index) {
@@ -117,7 +161,10 @@ function renderTechnicalCard(work, index) {
     <div class="archive-card reveal" style="transition-delay: ${index * 0.05}s" onclick="navigate('/portfolio/detail.html?id=${work.id}')">
       <div class="img-box">${mediaHtml}</div>
       <div class="card-meta">
-        <span class="tag">${work.category}</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+          <span class="tag">${work.category}</span>
+          ${work.is_recommended ? '<span style="font-size:0.6rem; font-weight:900; color:#28a745; background:#e8f5e9; padding:2px 6px; border-radius:4px;">FEATURED</span>' : ''}
+        </div>
         <h3>${work.title}</h3>
       </div>
     </div>
