@@ -20,8 +20,8 @@
         .section-header h2 { font-size: 2rem; font-weight: 900; opacity: 0.9; }
         
         .glass-box { background: var(--bg-light); padding: 3rem; border: 1px solid var(--border); border-radius: 8px; }
-        input, select { background: white; border: 1px solid var(--border); color: var(--text-main); padding: 1rem; transition: 0.3s; border-radius: 4px; }
-        input:focus { border-color: var(--primary); outline: none; }
+        input, select, textarea { background: white; border: 1px solid var(--border); color: var(--text-main); padding: 1rem; transition: 0.3s; border-radius: 4px; font-family: inherit; }
+        input:focus, textarea:focus { border-color: var(--primary); outline: none; }
 
         .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
         .asset-card { background: white; border: 1px solid var(--border); padding: 1rem; text-align: center; border-radius: 4px; }
@@ -86,10 +86,40 @@
             </div>
         </section>
 
-        <!-- 3. 저장소 현황 -->
+        <!-- 3. 프로필 관리 (신규) -->
         <section style="margin-bottom: 10rem;">
             <header class="section-header">
-                <h2>03. 스토리지 현황.</h2>
+                <h2>03. 프로필(About) 관리.</h2>
+            </header>
+            <div class="glass-box">
+                <form id="profile-form" style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <label style="font-size:0.8rem; font-weight:800; color:var(--text-muted);">이름/타이틀</label>
+                            <textarea id="p-name" rows="2" placeholder="Creative Technologist. SORIGRIM."></textarea>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <label style="font-size:0.8rem; font-weight:800; color:var(--text-muted);">프로필 이미지 URL</label>
+                            <input type="url" id="p-image" placeholder="https://...">
+                        </div>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                        <label style="font-size:0.8rem; font-weight:800; color:var(--text-muted);">자기소개 문단 1</label>
+                        <textarea id="p-bio1" rows="3" placeholder="메인 소개글..."></textarea>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                        <label style="font-size:0.8rem; font-weight:800; color:var(--text-muted);">자기소개 문단 2</label>
+                        <textarea id="p-bio2" rows="3" placeholder="추가 소개글..."></textarea>
+                    </div>
+                    <button type="submit" class="btn-premium" style="width: 200px; padding: 1rem;">프로필 저장</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- 4. 저장소 현황 -->
+        <section style="margin-bottom: 10rem;">
+            <header class="section-header">
+                <h2>04. 스토리지 현황.</h2>
             </header>
             <div class="glass-box" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
                 <div style="background: white; padding: 2.5rem; border-radius: 8px; border: 1px solid var(--border);">
@@ -107,10 +137,10 @@
             </div>
         </section>
 
-        <!-- 4. 스토리지 탐색기 -->
+        <!-- 5. 스토리지 탐색기 -->
         <section style="margin-bottom: 10rem;">
             <header class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <h2>04. 스토리지 탐색기.</h2>
+                <h2>05. 스토리지 탐색기.</h2>
                 <button id="toggle-assets-btn" class="btn-premium" style="padding: 0.6rem 1.5rem; font-size: 0.8rem; background: var(--bg-light); color: var(--text-main); border: 1px solid var(--border);">펼치기</button>
             </header>
             <div id="asset-container" class="glass-box" style="display: none;">
@@ -118,10 +148,10 @@
             </div>
         </section>
 
-        <!-- 5. SNS 관리 -->
+        <!-- 6. SNS 관리 -->
         <section style="margin-bottom: 10rem;">
             <header class="section-header">
-                <h2>05. 소셜 채널 관리.</h2>
+                <h2>06. 소셜 채널 관리.</h2>
             </header>
             <form id="sns-form" style="display: flex; gap: 1.5rem; margin-bottom: 3rem; align-items: flex-end; flex-wrap: wrap;" class="glass-box">
                 <div style="flex: 1; min-width: 200px;"><input type="text" id="sns-key" placeholder="플랫폼 이름" style="width:100%;"></div>
@@ -134,10 +164,10 @@
             </table>
         </section>
 
-        <!-- 6. 방문 통계 분석 -->
+        <!-- 7. 방문 통계 분석 -->
         <section>
             <header class="section-header">
-                <h2>06. 방문 통계 분석.</h2>
+                <h2>07. 방문 통계 분석.</h2>
             </header>
             <div class="glass-box" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
                 <div style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid var(--border);">
@@ -168,7 +198,6 @@
         async function loadCategories() {
             const res = await fetch('/api/categories');
             categoriesData = await res.json();
-            
             const container = document.getElementById('category-list-ui');
             container.innerHTML = categoriesData.map((cat, idx) => `
                 <div style="background:white; border:1px solid var(--border); padding:1rem 2rem; border-radius:8px; display:flex; align-items:center; justify-content:space-between;">
@@ -181,7 +210,6 @@
                     </div>
                 </div>
             `).join('');
-
             document.getElementById('board-selector-ui').innerHTML = categoriesData.map(cat => `
                 <button class="board-btn ${currentBoard === cat.name ? 'active' : ''}" onclick="selectBoard('${cat.name}')">${cat.name}</button>
             `).join('');
@@ -190,51 +218,31 @@
         window.renameCategory = async (id, oldName) => {
             const newName = prompt('게시판 이름을 수정합니다:', oldName);
             if (newName && newName !== oldName) {
-                const res = await fetch(`/api/categories?id=${id}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ name: newName })
-                });
-                if (res.ok) {
-                    if (currentBoard === oldName) currentBoard = newName;
-                    await loadCategories();
-                } else {
-                    alert('이미 존재하는 이름이거나 오류가 발생했습니다.');
-                }
+                const res = await fetch(`/api/categories?id=${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: newName }) });
+                if (res.ok) { if (currentBoard === oldName) currentBoard = newName; await loadCategories(); }
             }
         };
 
         window.moveCategory = async (idx, dir) => {
-            const targetIdx = idx + dir;
-            if (targetIdx < 0 || targetIdx >= categoriesData.length) return;
-            const items = [...categoriesData];
-            const temp = items[idx];
-            items[idx] = items[targetIdx];
-            items[targetIdx] = temp;
+            const targetIdx = idx + dir; if (targetIdx < 0 || targetIdx >= categoriesData.length) return;
+            const items = [...categoriesData]; const temp = items[idx]; items[idx] = items[targetIdx]; items[targetIdx] = temp;
             const updatePayload = items.map((item, i) => ({ id: item.id, sort_order: i }));
             await fetch('/api/categories', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ items: updatePayload }) });
             await loadCategories();
         };
 
         window.selectBoard = (name) => {
-            currentBoard = name;
-            document.querySelectorAll('.board-btn').forEach(btn => btn.classList.toggle('active', btn.innerText === name));
+            currentBoard = name; document.querySelectorAll('.board-btn').forEach(btn => btn.classList.toggle('active', btn.innerText === name));
             loadAdminList(name);
         };
 
         const catForm = document.getElementById('category-form');
         catForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await fetch('/api/categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: document.getElementById('cat-name').value }) });
+            e.preventDefault(); await fetch('/api/categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: document.getElementById('cat-name').value }) });
             catForm.reset(); await loadCategories();
         });
 
-        window.deleteCategory = async (id) => {
-            if (confirm('게시판을 삭제하시겠습니까?')) {
-                await fetch(`/api/categories?id=${id}`, { method: 'DELETE' });
-                await loadCategories();
-            }
-        };
+        window.deleteCategory = async (id) => { if (confirm('게시판을 삭제하시겠습니까?')) { await fetch(`/api/categories?id=${id}`, { method: 'DELETE' }); await loadCategories(); } };
 
         // --- 2. Post List Logic ---
         async function loadAdminList(category) {
@@ -245,10 +253,7 @@
             if (data.length === 0) { list.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:4rem; color:#999;">'${category}'에 등록된 글이 없습니다.</td></tr>`; return; }
             list.innerHTML = data.map(item => {
                 let thumbUrl = item.image;
-                if (!thumbUrl && item.content) {
-                    const div = document.createElement('div'); div.innerHTML = item.content;
-                    const media = div.querySelector('img, video'); if (media) thumbUrl = media.src;
-                }
+                if (!thumbUrl && item.content) { const div = document.createElement('div'); div.innerHTML = item.content; const media = div.querySelector('img, video'); if (media) thumbUrl = media.src; }
                 const isVideo = thumbUrl && thumbUrl.toLowerCase().match(/\.(mp4|webm|ogg)$/);
                 const mediaHtml = isVideo ? `<video src="${thumbUrl}" muted style="width: 60px; height: 60px; object-fit: cover;"></video>` : `<img src="${thumbUrl || ''}" style="width: 60px; height: 60px; object-fit: cover;">`;
                 const statusHtml = item.is_published ? '<span style="color:#28a745; font-weight:800;">[게시중]</span>' : '<span style="color:#ffc107; font-weight:800;">[임시저장]</span>';
@@ -256,19 +261,40 @@
             }).join('');
         }
 
-        window.deleteItem = async (id) => {
-            if (confirm('게시글을 삭제하시겠습니까?')) {
-                await fetch(`/api/portfolio?id=${id}`, { method: 'DELETE' });
-                if (currentBoard) loadAdminList(currentBoard);
-                loadStats();
-            }
-        };
+        window.deleteItem = async (id) => { if (confirm('게시글을 삭제하시겠습니까?')) { await fetch(`/api/portfolio?id=${id}`, { method: 'DELETE' }); if (currentBoard) loadAdminList(currentBoard); loadStats(); } };
 
-        // --- 3. Stats & Storage Logic ---
+        // --- 3. Profile Management Logic ---
+        const profileForm = document.getElementById('profile-form');
+        async function loadProfileAdmin() {
+            try {
+                const res = await fetch('/api/settings');
+                const settings = await res.json();
+                const getVal = (key) => settings.find(s => s.key === key)?.value || '';
+                document.getElementById('p-name').value = getVal('profile_name');
+                document.getElementById('p-bio1').value = getVal('profile_bio_1');
+                document.getElementById('p-bio2').value = getVal('profile_bio_2');
+                document.getElementById('p-image').value = getVal('profile_image');
+            } catch (e) {}
+        }
+
+        profileForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const keys = ['profile_name', 'profile_bio_1', 'profile_bio_2', 'profile_image'];
+            for (const key of keys) {
+                const val = document.getElementById(`p-${key.replace('profile_', '')}`).value;
+                await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ key, value: val, type: 'profile' })
+                });
+            }
+            alert('프로필이 성공적으로 저장되었습니다.');
+        });
+
+        // --- 4. Stats & Assets Logic ---
         async function loadStats() {
             try {
-                const res = await fetch('/api/stats');
-                const data = await res.json();
+                const res = await fetch('/api/stats'); const data = await res.json();
                 document.getElementById('total-views').innerText = data.analytics.totalViews.toLocaleString();
                 const todayStr = new Date().toISOString().split('T')[0];
                 const todayStat = data.analytics.dailyUnique.find(d => d.date === todayStr);
@@ -284,10 +310,8 @@
             } catch (e) {}
         }
 
-        // --- 4. Assets & SNS Logic ---
         async function loadAssets() {
-            const res = await fetch('/api/assets');
-            const assets = await res.json();
+            const res = await fetch('/api/assets'); const assets = await res.json();
             document.getElementById('asset-list').innerHTML = assets.map(asset => {
                 const isVideo = asset.name.toLowerCase().match(/\.(mp4|webm|ogg)$/);
                 const mediaHtml = isVideo ? `<video src="/api/assets?name=${asset.name}" muted></video>` : `<img src="/api/assets?name=${asset.name}" loading="lazy">`;
@@ -296,20 +320,18 @@
         }
         window.deleteAsset = async (name) => { if (confirm(`${name} 파일을 삭제하시겠습니까?`)) { await fetch(`/api/assets?name=${name}`, { method: 'DELETE' }); loadAssets(); loadStats(); } };
         async function loadSNSAdmin() {
-            const res = await fetch('/api/settings');
-            const data = await res.json();
+            const res = await fetch('/api/settings'); const data = await res.json();
             document.getElementById('sns-admin-list').innerHTML = data.filter(s => s.type === 'sns').map(item => `<tr><td style="font-weight:800;">${item.key}</td><td style="color:var(--text-muted);">${item.value}</td><td class="admin-actions"><button class="del-btn" onclick="deleteSNS(${item.id})">제거</button></td></tr>`).join('');
         }
         const snsForm = document.getElementById('sns-form');
         snsForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: document.getElementById('sns-key').value, value: document.getElementById('sns-value').value, type: 'sns' }) });
+            e.preventDefault(); await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: document.getElementById('sns-key').value, value: document.getElementById('sns-value').value, type: 'sns' }) });
             snsForm.reset(); loadSNSAdmin();
         });
         window.deleteSNS = async (id) => { if (confirm('삭제하시겠습니까?')) { await fetch(`/api/settings?id=${id}`, { method: 'DELETE' }); loadSNSAdmin(); } };
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadCategories(); loadAssets(); loadSNSAdmin(); loadStats();
+            loadCategories(); loadAssets(); loadSNSAdmin(); loadStats(); loadProfileAdmin();
             const toggleBtn = document.getElementById('toggle-assets-btn');
             const assetContainer = document.getElementById('asset-container');
             toggleBtn.addEventListener('click', () => {

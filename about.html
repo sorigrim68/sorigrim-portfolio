@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABOUT — SORIGRIM</title>
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        .about-header { padding: 15rem 0 8rem; background: var(--bg-white); }
+        .about-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 6rem; align-items: start; }
+        .profile-img-container { position: sticky; top: 120px; }
+        .profile-img { width: 100%; aspect-ratio: 4/5; object-fit: cover; border-radius: 4px; filter: grayscale(10%); box-shadow: 0 30px 60px rgba(0,0,0,0.1); }
+        
+        .bio-content h2 { font-size: 3.5rem; font-weight: 900; line-height: 1.1; margin-bottom: 3rem; letter-spacing: -0.03em; }
+        .bio-content p { font-size: 1.15rem; color: var(--text-muted); margin-bottom: 2rem; line-height: 1.8; }
+        .expertise { margin-top: 6rem; }
+        .expertise h3 { font-size: 0.8rem; font-weight: 800; color: var(--primary); text-transform: uppercase; margin-bottom: 2rem; border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
+        .exp-list { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+        .exp-item h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.5rem; }
+        .exp-item p { font-size: 0.9rem; margin-bottom: 0; }
+
+        @media (max-width: 1024px) {
+            .about-grid { grid-template-columns: 1fr; gap: 4rem; }
+            .profile-img-container { position: static; max-width: 500px; }
+            .bio-content h2 { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav id="global-nav" class="scrolled">
+        <a href="/" class="brand">SORIGRIM</a>
+        <div class="nav-links">
+            <a href="/about.html">About</a>
+            <a href="/portfolio/">아카이브</a>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="about-header">
+            <div class="about-grid">
+                <div class="profile-img-container reveal">
+                    <img id="profile-image" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=2574&auto=format&fit=crop" alt="SORIGRIM Profile" class="profile-img">
+                </div>
+                <div class="bio-content">
+                    <h2 class="reveal" id="profile-name">Creative Technologist.<br>SORIGRIM.</h2>
+                    <div class="reveal">
+                        <p id="profile-bio-1">프롬프트와 알고리즘으로 시각적 미학을 탐구하는 AI 아티스트입니다. 기술과 예술이 만나는 접점에서 새로운 형태의 시각적 언어를 창조하는 것에 집중하고 있습니다.</p>
+                        <p id="profile-bio-2">단순한 이미지 생성을 넘어, AI가 가진 잠재력을 예술적 도구로 정제하여 더욱 깊이 있는 서사와 감정을 전달하고자 노력합니다. 시네마틱한 비전과 고도로 정밀한 프롬프트 엔지니어링을 통해 상상을 구체화합니다.</p>
+                    </div>
+
+                    <div class="expertise reveal">
+                        <h3>Main Expertise.</h3>
+                        <div class="exp-list">
+                            <div class="exp-item">
+                                <h4>AI Image Synthesis</h4>
+                                <p>Midjourney, Stable Diffusion을 활용한 초고화질 시각 예술 구현.</p>
+                            </div>
+                            <div class="exp-item">
+                                <h4>Prompt Engineering</h4>
+                                <p>정교한 언어 설계를 통한 AI 모델의 창의적 통제와 최적화.</p>
+                            </div>
+                            <div class="exp-item">
+                                <h4>Cinematic Direction</h4>
+                                <p>빛과 질감, 구도의 미학을 반영한 영화적 감성의 영상 및 이미지 제작.</p>
+                            </div>
+                            <div class="exp-item">
+                                <h4>Creative Strategy</h4>
+                                <p>AI 기술을 브랜드나 프로젝트의 핵심 가치와 연결하는 창의적 전략 수립.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <sg-footer></sg-footer>
+
+    <script defer src="/main.js" type="module"></script>
+    <script type="module">
+        async function loadProfile() {
+            try {
+                const res = await fetch('/api/settings');
+                const settings = await res.json();
+                
+                const name = settings.find(s => s.key === 'profile_name')?.value;
+                const bio1 = settings.find(s => s.key === 'profile_bio_1')?.value;
+                const bio2 = settings.find(s => s.key === 'profile_bio_2')?.value;
+                const img = settings.find(s => s.key === 'profile_image')?.value;
+
+                if (name) document.getElementById('profile-name').innerHTML = name.replace(/\n/g, '<br>');
+                if (bio1) document.getElementById('profile-bio_1').innerText = bio1;
+                if (bio2) document.getElementById('profile-bio_2').innerText = bio2;
+                if (img) document.getElementById('profile-image').src = img;
+            } catch (e) {}
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProfile();
+            // Reveal animation handled by main.js observer
+        });
+    </script>
+</body>
+</html>
