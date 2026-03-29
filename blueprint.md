@@ -17,12 +17,9 @@
 *   **Asset Explorer:** R2 스토리지의 모든 파일을 직접 관리(삭제)할 수 있는 대시보드 기능 추가.
 *   **Full Localization:** 사이트의 모든 UI 및 법적 고지 페이지를 한국어로 완벽 현지화.
 
-## **4. Completed Phases (March 2026)**
-
-### **Phase 7: Professional Editor UX Enhancement**
-*   **Result:** 에디터 툴바 고정(Sticky) 및 본문 영역 독립 스크롤 구현으로 긴 콘텐츠 작성 편의성 증대.
-*   **Result:** 글꼴 선택, 글자 크기, 색상 지정, 정렬, 링크 삽입 등 전문가용 편집 기능 대폭 강화.
-*   **Result:** `editor-wrapper` 구조 도입으로 UI 안정성 및 디자인 완성도 향상.
+### **Phase 8: Admin Dashboard Optimization & Automated Deployment**
+*   **Result:** 스토리지 탐색기(Asset Explorer)를 기본 '접힘' 상태로 변경하고 펼치기 기능을 추가하여 관리자 대시보드 가시성 최적화.
+*   **Result:** Git Push 연동을 통한 실시간 클라우드플레어 페이지 배포(Automated Deployment) 워크플로우 확립.
 
 ## **5. Verification & Testing**
 1.  게시글 수정 시 `is_hero` 체크를 통해 메인 배경이 즉시 변경되는지 확인.
