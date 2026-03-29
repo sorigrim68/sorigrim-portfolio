@@ -29,7 +29,7 @@
                 <div class="search-container reveal">
                     <input type="text" id="search-input" class="search-input" placeholder="제목이나 태그로 검색하세요...">
                 </div>
-                <nav id="dynamic-filter-nav" class="filter-nav reveal"><button class="active" data-filter="all">전체보기</button></nav>
+                <nav id="dynamic-filter-nav" class="filter-nav reveal"></nav>
                 <div id="tag-cloud" class="tag-cloud reveal"></div>
             </div>
         </header>
@@ -56,12 +56,30 @@
         async function loadCategories() {
             const res = await fetch('/api/categories'); const cats = await res.json();
             const nav = document.getElementById('dynamic-filter-nav');
+            nav.innerHTML = ''; // 초기화 후 다시 생성
+
+            // 1. '전체보기' 버튼 생성
+            const allBtn = document.createElement('button');
+            allBtn.textContent = '전체보기';
+            if (currentCategory === 'all') allBtn.classList.add('active');
+            allBtn.onclick = () => {
+                nav.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                allBtn.classList.add('active');
+                currentCategory = 'all';
+                updateList();
+            };
+            nav.appendChild(allBtn);
+
+            // 2. 카테고리별 버튼 생성
             cats.forEach(cat => {
-                const btn = document.createElement('button'); btn.textContent = cat.name;
+                const btn = document.createElement('button');
+                btn.textContent = cat.name;
                 if (cat.name === currentCategory) btn.classList.add('active');
                 btn.onclick = () => {
                     nav.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active'); currentCategory = cat.name; updateList();
+                    btn.classList.add('active');
+                    currentCategory = cat.name;
+                    updateList();
                 };
                 nav.appendChild(btn);
             });
