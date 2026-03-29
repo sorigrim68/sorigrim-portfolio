@@ -16,8 +16,8 @@
         .admin-actions a:hover { color: var(--primary); }
         .admin-actions .del-btn:hover { color: #ff4d4d; }
 
-        .section-header { margin-bottom: 3rem; border-left: 2px solid var(--primary); padding-left: 2rem; }
-        .section-header h2 { font-size: 2rem; font-weight: 800; opacity: 0.8; }
+        .section-header { margin-bottom: 3rem; border-left: 4px solid var(--primary); padding-left: 2rem; }
+        .section-header h2 { font-size: 2rem; font-weight: 900; opacity: 0.9; }
         
         .glass-box { background: var(--bg-light); padding: 3rem; border: 1px solid var(--border); border-radius: 8px; }
         input, select { background: white; border: 1px solid var(--border); color: var(--text-main); padding: 1rem; transition: 0.3s; border-radius: 4px; }
@@ -35,6 +35,9 @@
             transition: 0.3s; color: var(--text-muted);
         }
         .board-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,85,255,0.2); }
+
+        .usage-bar { width: 100%; height: 8px; background: #EEE; border-radius: 4px; overflow: hidden; margin: 1rem 0; }
+        .usage-fill { height: 100%; background: var(--primary); transition: 0.5s; }
     </style>
 </head>
 <body class="bg-surface">
@@ -48,39 +51,10 @@
 
     <main class="admin-main container">
         
-        <!-- 0. 방문 통계 분석 -->
+        <!-- 1. 게시판(카테고리) 관리 (우선순위 1) -->
         <section style="margin-bottom: 10rem;">
             <header class="section-header">
-                <h2>방문 통계 분석.</h2>
-            </header>
-            <div class="glass-box" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
-                <div style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid var(--border);">
-                    <h4 style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">누적 페이지 뷰</h4>
-                    <div id="total-views" style="font-size: 2.5rem; font-weight: 900; color: var(--primary);">0</div>
-                </div>
-                <div style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid var(--border);">
-                    <h4 style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">오늘의 유니크 방문자</h4>
-                    <div id="today-unique" style="font-size: 2.5rem; font-weight: 900; color: #28a745;">0</div>
-                </div>
-                <div style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid var(--border); grid-column: 1 / -1;">
-                    <h4 style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem;">유입 경로 분석 (Top Referral)</h4>
-                    <table style="width: 100%; font-size: 0.85rem;">
-                        <tbody id="top-referrers-list"></tbody>
-                    </table>
-                </div>
-                <div style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid var(--border); grid-column: 1 / -1;">
-                    <h4 style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem;">인기 페이지 (Top 10)</h4>
-                    <table style="width: 100%; font-size: 0.85rem;">
-                        <tbody id="top-pages-list"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- 1. 카테고리(게시판) 관리 -->
-        <section style="margin-bottom: 10rem;">
-            <header class="section-header">
-                <h2>게시판(카테고리) 설정.</h2>
+                <h2>01. 게시판 설정.</h2>
             </header>
             <div class="glass-box">
                 <form id="category-form" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
@@ -91,42 +65,85 @@
             </div>
         </section>
 
-        <!-- 2. 에셋 매니저 -->
-        <section style="margin-bottom: 10rem;">
-            <header class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
-                <h2>스토리지 탐색기.</h2>
-                <button id="toggle-assets-btn" class="btn-premium" style="padding: 0.6rem 1.5rem; font-size: 0.8rem; background: var(--bg-light); color: var(--text-main); border: 1px solid var(--border);">펼치기</button>
-            </header>
-            <div id="asset-container" class="glass-box" style="display: none;">
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 2rem;">R2 버킷에 업로드된 모든 파일을 관리합니다.</p>
-                <div id="asset-list" class="asset-grid"></div>
-            </div>
-        </section>
-
-        <!-- 3. 게시글 관리 (게시판별 분리) -->
+        <!-- 2. 게시글 관리 (우선순위 2) -->
         <section style="margin-bottom: 10rem;">
             <header class="section-header">
-                <h2>게시글 통합 관리.</h2>
+                <h2>02. 게시글 관리.</h2>
             </header>
-            <div class="board-selector" id="board-selector-ui">
-                <!-- 게시판 선택 버튼들이 여기에 동적으로 생성됨 -->
-            </div>
+            <div class="board-selector" id="board-selector-ui"></div>
             <div id="admin-list-container" class="glass-box" style="padding: 0; background: none; border: none;">
                 <table class="admin-table">
                     <thead>
                         <tr><th>썸네일</th><th>제목</th><th>관리</th></tr>
                     </thead>
                     <tbody id="admin-list">
-                        <tr><td colspan="3" style="text-align:center; padding:4rem; color:#999;">위의 게시판을 선택하여 글 목록을 확인하세요.</td></tr>
+                        <tr><td colspan="3" style="text-align:center; padding:4rem; color:#999;">게시판을 선택하세요.</td></tr>
                     </tbody>
                 </table>
             </div>
         </section>
 
-        <!-- 4. SNS 관리 -->
+        <!-- 3. 저장소 현황 (신규) -->
+        <section style="margin-bottom: 10rem;">
+            <header class="section-header">
+                <h2>03. 스토리지 현황.</h2>
+            </header>
+            <div class="glass-box" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div style="background: white; padding: 2.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                    <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform:uppercase;">R2 Media Storage</h4>
+                    <div id="r2-usage-text" style="font-size: 1.8rem; font-weight: 900; margin: 1rem 0;">0 MB / 10 GB</div>
+                    <div class="usage-bar"><div id="r2-usage-fill" class="usage-fill" style="width: 0%;"></div></div>
+                    <p id="r2-count" style="font-size: 0.75rem; color: var(--text-muted);">총 0개의 파일 보관 중</p>
+                </div>
+                <div style="background: white; padding: 2.5rem; border-radius: 8px; border: 1px solid var(--border);">
+                    <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform:uppercase;">D1 Database Usage</h4>
+                    <div id="d1-usage-text" style="font-size: 1.8rem; font-weight: 900; margin: 1rem 0;">데이터 분석 중...</div>
+                    <div class="usage-bar"><div id="d1-usage-fill" class="usage-fill" style="width: 1%;"></div></div>
+                    <p id="d1-counts" style="font-size: 0.75rem; color: var(--text-muted);">게시글 0개 | 카테고리 0개</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4. 방문 통계 분석 -->
+        <section style="margin-bottom: 10rem;">
+            <header class="section-header">
+                <h2>04. 방문 통계 분석.</h2>
+            </header>
+            <div class="glass-box" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid var(--border);">
+                    <h4 style="font-size: 0.8rem; color: var(--text-muted);">누적 페이지 뷰</h4>
+                    <div id="total-views" style="font-size: 2.5rem; font-weight: 900; color: var(--primary);">0</div>
+                </div>
+                <div style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid var(--border);">
+                    <h4 style="font-size: 0.8rem; color: var(--text-muted);">오늘의 유니크 방문자</h4>
+                    <div id="today-unique" style="font-size: 2.5rem; font-weight: 900; color: #28a745;">0</div>
+                </div>
+                <div style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid var(--border); grid-column: 1 / -1;">
+                    <h4 style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem;">유입 경로 분석 (Top Referral)</h4>
+                    <table style="width: 100%; font-size: 0.85rem;"><tbody id="top-referrers-list"></tbody></table>
+                </div>
+                <div style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid var(--border); grid-column: 1 / -1;">
+                    <h4 style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem;">인기 페이지 (Top 10)</h4>
+                    <table style="width: 100%; font-size: 0.85rem;"><tbody id="top-pages-list"></tbody></table>
+                </div>
+            </div>
+        </section>
+
+        <!-- 5. 에셋 매니저 (스토리지 탐색기) -->
+        <section style="margin-bottom: 10rem;">
+            <header class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h2>05. 스토리지 탐색기.</h2>
+                <button id="toggle-assets-btn" class="btn-premium" style="padding: 0.6rem 1.5rem; font-size: 0.8rem; background: var(--bg-light); color: var(--text-main); border: 1px solid var(--border);">펼치기</button>
+            </header>
+            <div id="asset-container" class="glass-box" style="display: none;">
+                <div id="asset-list" class="asset-grid"></div>
+            </div>
+        </section>
+
+        <!-- 6. SNS 관리 -->
         <section>
             <header class="section-header">
-                <h2>소셜 채널 관리.</h2>
+                <h2>06. 소셜 채널 관리.</h2>
             </header>
             <form id="sns-form" style="display: flex; gap: 1.5rem; margin-bottom: 3rem; align-items: flex-end; flex-wrap: wrap;" class="glass-box">
                 <div style="flex: 1; min-width: 200px;"><input type="text" id="sns-key" placeholder="플랫폼 이름" style="width:100%;"></div>
@@ -134,9 +151,7 @@
                 <button type="submit" class="btn-premium" style="padding: 1rem 2rem; font-size: 0.9rem;">채널 추가</button>
             </form>
             <table class="admin-table">
-                <thead>
-                    <tr><th>플랫폼</th><th>URL</th><th>관리</th></tr>
-                </thead>
+                <thead><tr><th>플랫폼</th><th>URL</th><th>관리</th></tr></thead>
                 <tbody id="sns-admin-list"></tbody>
             </table>
         </section>
@@ -145,27 +160,19 @@
     <script type="module">
         let currentBoard = null;
 
-        // --- 1. Category Logic ---
+        // --- 1. Category & Board Logic ---
         async function loadCategories() {
             const res = await fetch('/api/categories');
             const data = await res.json();
-            
-            // 카테고리 관리 UI
-            const container = document.getElementById('category-list-ui');
-            container.innerHTML = data.map(cat => `
+            document.getElementById('category-list-ui').innerHTML = data.map(cat => `
                 <div style="background:white; border:1px solid var(--border); padding:0.8rem 1.5rem; border-radius:30px; display:flex; align-items:center; gap:1rem;">
                     <span style="font-weight:700; font-size:0.9rem;">${cat.name}</span>
                     <button onclick="deleteCategory(${cat.id})" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-weight:900;">×</button>
                 </div>
             `).join('');
-
-            // 게시글 관리 게시판 선택 UI
-            const selector = document.getElementById('board-selector-ui');
-            selector.innerHTML = data.map(cat => `
+            document.getElementById('board-selector-ui').innerHTML = data.map(cat => `
                 <button class="board-btn ${currentBoard === cat.name ? 'active' : ''}" onclick="selectBoard('${cat.name}')">${cat.name}</button>
             `).join('');
-            
-            // 만약 현재 선택된 보드가 삭제되었다면 초기화
             if (currentBoard && !data.find(c => c.name === currentBoard)) {
                 currentBoard = null;
                 document.getElementById('admin-list').innerHTML = '<tr><td colspan="3" style="text-align:center; padding:4rem; color:#999;">게시판을 선택하세요.</td></tr>';
@@ -174,42 +181,32 @@
 
         window.selectBoard = (name) => {
             currentBoard = name;
-            document.querySelectorAll('.board-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.innerText === name);
-            });
+            document.querySelectorAll('.board-btn').forEach(btn => btn.classList.toggle('active', btn.innerText === name));
             loadAdminList(name);
         };
 
         const catForm = document.getElementById('category-form');
         catForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const name = document.getElementById('cat-name').value;
-            await fetch('/api/categories', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name })
-            });
+            await fetch('/api/categories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name: document.getElementById('cat-name').value }) });
             catForm.reset();
             await loadCategories();
         });
 
         window.deleteCategory = async (id) => {
-            if (confirm('이 게시판을 삭제하시겠습니까? 관련 글들의 카테고리 정보가 유실될 수 있습니다.')) {
+            if (confirm('게시판을 삭제하시겠습니까?')) {
                 await fetch(`/api/categories?id=${id}`, { method: 'DELETE' });
                 await loadCategories();
             }
         };
 
-        // --- 2. Asset Logic ---
+        // --- 2. Asset & Storage Logic ---
         async function loadAssets() {
             const res = await fetch('/api/assets');
             const assets = await res.json();
-            const list = document.getElementById('asset-list');
-            list.innerHTML = assets.map(asset => {
+            document.getElementById('asset-list').innerHTML = assets.map(asset => {
                 const isVideo = asset.name.toLowerCase().match(/\.(mp4|webm|ogg)$/);
-                const mediaHtml = isVideo 
-                    ? `<video src="/api/assets?name=${asset.name}" muted></video>`
-                    : `<img src="/api/assets?name=${asset.name}" loading="lazy">`;
+                const mediaHtml = isVideo ? `<video src="/api/assets?name=${asset.name}" muted></video>` : `<img src="/api/assets?name=${asset.name}" loading="lazy">`;
                 return `<div class="asset-card">${mediaHtml}<p>${asset.name}</p><button class="del-btn" onclick="deleteAsset('${asset.name}')">삭제</button></div>`;
             }).join('');
         }
@@ -218,6 +215,7 @@
             if (confirm(`${name} 파일을 삭제하시겠습니까?`)) {
                 await fetch(`/api/assets?name=${name}`, { method: 'DELETE' });
                 loadAssets();
+                loadStats(); // 사용량 업데이트
             }
         };
 
@@ -225,38 +223,18 @@
         async function loadAdminList(category) {
             const list = document.getElementById('admin-list');
             list.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:4rem; color:#999;">불러오는 중...</td></tr>';
-            
             const res = await fetch(`/api/portfolio?category=${encodeURIComponent(category)}`);
             const data = await res.json();
-            
-            if (data.length === 0) {
-                list.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:4rem; color:#999;">'${category}' 게시판에 등록된 글이 없습니다.</td></tr>`;
-                return;
-            }
-
+            if (data.length === 0) { list.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:4rem; color:#999;">'${category}'에 등록된 글이 없습니다.</td></tr>`; return; }
             list.innerHTML = data.map(item => {
                 let thumbUrl = item.image;
                 if (!thumbUrl && item.content) {
-                    const div = document.createElement('div');
-                    div.innerHTML = item.content;
-                    const media = div.querySelector('img, video');
-                    if (media) thumbUrl = media.src;
+                    const div = document.createElement('div'); div.innerHTML = item.content;
+                    const media = div.querySelector('img, video'); if (media) thumbUrl = media.src;
                 }
                 const isVideo = thumbUrl && thumbUrl.toLowerCase().match(/\.(mp4|webm|ogg)$/);
-                const mediaHtml = isVideo 
-                    ? `<video src="${thumbUrl}" muted style="width: 60px; height: 60px; object-fit: cover;"></video>`
-                    : `<img src="${thumbUrl || ''}" style="width: 60px; height: 60px; object-fit: cover;">`;
-
-                return `
-                    <tr>
-                        <td>${mediaHtml}</td>
-                        <td style="font-weight: 700;">${item.title} ${item.is_hero ? '<span style="color:var(--primary)">[HERO]</span>' : ''} ${item.is_recommended ? '<span style="color:#28a745">[추천]</span>' : ''}</td>
-                        <td class="admin-actions">
-                            <a href="editor.html?id=${item.id}">수정</a>
-                            <button class="del-btn" onclick="deleteItem(${item.id})">삭제</button>
-                        </td>
-                    </tr>
-                `;
+                const mediaHtml = isVideo ? `<video src="${thumbUrl}" muted style="width: 60px; height: 60px; object-fit: cover;"></video>` : `<img src="${thumbUrl || ''}" style="width: 60px; height: 60px; object-fit: cover;">`;
+                return `<tr><td>${mediaHtml}</td><td style="font-weight:700;">${item.title} ${item.is_hero ? '<span style="color:var(--primary)">[HERO]</span>' : ''} ${item.is_recommended ? '<span style="color:#28a745">[추천]</span>' : ''}</td><td class="admin-actions"><a href="editor.html?id=${item.id}">수정</a><button class="del-btn" onclick="deleteItem(${item.id})">삭제</button></td></tr>`;
             }).join('');
         }
 
@@ -264,65 +242,58 @@
             if (confirm('게시글을 삭제하시겠습니까?')) {
                 await fetch(`/api/portfolio?id=${id}`, { method: 'DELETE' });
                 if (currentBoard) loadAdminList(currentBoard);
+                loadStats();
             }
         };
 
-        // --- 4. SNS Logic ---
+        // --- 4. Stats & SNS Logic ---
         async function loadSNSAdmin() {
             const res = await fetch('/api/settings');
             const data = await res.json();
-            const list = document.getElementById('sns-admin-list');
-            list.innerHTML = data.filter(s => s.type === 'sns').map(item => `
-                <tr>
-                    <td style="font-weight: 800;">${item.key}</td>
-                    <td style="color: var(--text-muted);">${item.value}</td>
-                    <td class="admin-actions"><button class="del-btn" onclick="deleteSNS(${item.id})">제거</button></td>
-                </tr>
-            `).join('');
+            document.getElementById('sns-admin-list').innerHTML = data.filter(s => s.type === 'sns').map(item => `<tr><td style="font-weight:800;">${item.key}</td><td style="color:var(--text-muted);">${item.value}</td><td class="admin-actions"><button class="del-btn" onclick="deleteSNS(${item.id})">제거</button></td></tr>`).join('');
         }
 
         const snsForm = document.getElementById('sns-form');
         snsForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            await fetch('/api/settings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    key: document.getElementById('sns-key').value,
-                    value: document.getElementById('sns-value').value,
-                    type: 'sns'
-                })
-            });
-            snsForm.reset();
-            loadSNSAdmin();
+            await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: document.getElementById('sns-key').value, value: document.getElementById('sns-value').value, type: 'sns' }) });
+            snsForm.reset(); loadSNSAdmin();
         });
 
-        window.deleteSNS = async (id) => {
-            if (confirm('삭제하시겠습니까?')) {
-                await fetch(`/api/settings?id=${id}`, { method: 'DELETE' });
-                loadSNSAdmin();
-            }
-        };
+        window.deleteSNS = async (id) => { if (confirm('삭제하시겠습니까?')) { await fetch(`/api/settings?id=${id}`, { method: 'DELETE' }); loadSNSAdmin(); } };
 
-        // --- 0. Stats Logic ---
         async function loadStats() {
             try {
                 const res = await fetch('/api/stats');
                 const data = await res.json();
-                document.getElementById('total-views').innerText = data.totalViews.toLocaleString();
+                
+                // Analytics
+                document.getElementById('total-views').innerText = data.analytics.totalViews.toLocaleString();
                 const todayStr = new Date().toISOString().split('T')[0];
-                const todayStat = data.dailyUnique.find(d => d.date === todayStr);
+                const todayStat = data.analytics.dailyUnique.find(d => d.date === todayStr);
                 document.getElementById('today-unique').innerText = todayStat ? todayStat.count.toLocaleString() : '0';
-                document.getElementById('top-pages-list').innerHTML = data.topPages.map(p => `<tr><td style="padding:0.8rem 0; border-bottom:1px solid var(--border); font-weight:700;">${p.page}</td><td style="padding:0.8rem 0; border-bottom:1px solid var(--border); text-align:right; color:var(--primary); font-weight:800;">${p.count.toLocaleString()} views</td></tr>`).join('');
-                document.getElementById('top-referrers-list').innerHTML = data.topReferrers.length > 0 ? data.topReferrers.map(r => `<tr><td style="padding:0.8rem 0; border-bottom:1px solid var(--border); font-weight:700; word-break:break-all;">${r.referrer}</td><td style="padding:0.8rem 0; border-bottom:1px solid var(--border); text-align:right; color:#28a745; font-weight:800;">${r.count.toLocaleString()} visits</td></tr>`).join('') : '<tr><td colspan="2" style="text-align:center; padding:2rem; color:#999;">직접 유입 또는 데이터 없음</td></tr>';
-            } catch (e) { console.error("Stats Load Error", e); }
+                document.getElementById('top-pages-list').innerHTML = data.analytics.topPages.map(p => `<tr><td style="padding:0.8rem 0; border-bottom:1px solid var(--border); font-weight:700;">${p.page}</td><td style="padding:0.8rem 0; border-bottom:1px solid var(--border); text-align:right; color:var(--primary); font-weight:800;">${p.count.toLocaleString()} views</td></tr>`).join('');
+                document.getElementById('top-referrers-list').innerHTML = data.analytics.topReferrers.length > 0 ? data.analytics.topReferrers.map(r => `<tr><td style="padding:0.8rem 0; border-bottom:1px solid var(--border); font-weight:700; word-break:break-all;">${r.referrer}</td><td style="padding:0.8rem 0; border-bottom:1px solid var(--border); text-align:right; color:#28a745; font-weight:800;">${r.count.toLocaleString()} visits</td></tr>`).join('') : '<tr><td colspan="2" style="text-align:center; padding:2rem; color:#999;">직접 유입</td></tr>';
+
+                // Storage R2
+                const usedMB = (data.storage.r2.used / (1024 * 1024)).toFixed(2);
+                const limitMB = (data.storage.r2.limit / (1024 * 1024)).toFixed(0);
+                const r2Percent = Math.min(100, (data.storage.r2.used / data.storage.r2.limit) * 100).toFixed(1);
+                document.getElementById('r2-usage-text').innerText = `${usedMB} MB / 10 GB`;
+                document.getElementById('r2-usage-fill').style.width = `${r2Percent}%`;
+                document.getElementById('r2-count').innerText = `총 ${data.storage.r2.count}개의 파일 보관 중 (${r2Percent}% 사용)`;
+
+                // Storage D1
+                document.getElementById('d1-usage-text').innerText = `D1 데이터베이스 정기 점검 중`;
+                document.getElementById('d1-counts').innerText = `게시글 ${data.storage.d1.posts}개 | 카테고리 ${data.storage.d1.categories}개 | 통계로그 ${data.storage.d1.statsRows}줄`;
+                const d1Percent = Math.min(100, (data.storage.d1.posts * 100 / 1000)).toFixed(1); // 가상의 게시글 1000개 기준 게이지
+                document.getElementById('d1-usage-fill').style.width = `${d1Percent}%`;
+
+            } catch (e) { console.error("Stats Error", e); }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadCategories();
-            loadAssets();
-            loadSNSAdmin();
-            loadStats();
+            loadCategories(); loadAssets(); loadSNSAdmin(); loadStats();
             const toggleBtn = document.getElementById('toggle-assets-btn');
             const assetContainer = document.getElementById('asset-container');
             toggleBtn.addEventListener('click', () => {
