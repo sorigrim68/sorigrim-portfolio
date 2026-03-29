@@ -24,8 +24,8 @@
         .admin-section.active .section-content { display: block; }
         .admin-section.active .toggle-icon { transform: rotate(180deg); }
 
-        /* Existing component styles */
-        .admin-table { width: 100%; border-collapse: collapse; background: rgba(255,255,255,0.01); }
+        /* Components */
+        .admin-table { width: 100%; border-collapse: collapse; }
         .admin-table th, .admin-table td { padding: 1.2rem; text-align: left; border-bottom: 1px solid var(--border); }
         .admin-table th { font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.1em; font-weight: 800; }
         .admin-table td { font-size: 0.85rem; vertical-align: middle; }
@@ -35,7 +35,8 @@
         .admin-actions .del-btn:hover { color: #ff4d4d; }
 
         .glass-box { background: var(--bg-light); padding: 2rem; border: 1px solid var(--border); border-radius: 8px; }
-        input, select, textarea { background: white; border: 1px solid var(--border); color: var(--text-main); padding: 0.8rem; border-radius: 4px; font-family: inherit; width: 100%; }
+        input, select, textarea { background: white; border: 1px solid var(--border); color: var(--text-main); padding: 0.8rem; border-radius: 4px; font-family: inherit; width: 100%; margin-top: 0.5rem; }
+        label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
         
         .board-selector { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 2rem; }
         .board-btn { padding: 0.6rem 1.5rem; border: 1px solid var(--border); background: white; font-size: 0.85rem; font-weight: 700; cursor: pointer; border-radius: 30px; transition: 0.3s; }
@@ -63,7 +64,7 @@
 
     <main class="admin-main container">
         
-        <!-- 1. 게시판 관리 -->
+        <!-- 01. 게시판 관리 -->
         <div class="admin-section" id="sec-category">
             <header class="section-header" onclick="toggleSection('sec-category')">
                 <h2>01. 게시판 및 순서 설정</h2>
@@ -78,7 +79,7 @@
             </div>
         </div>
 
-        <!-- 2. 게시글 관리 -->
+        <!-- 02. 게시글 관리 -->
         <div class="admin-section active" id="sec-posts">
             <header class="section-header" onclick="toggleSection('sec-posts')">
                 <h2>02. 게시글 통합 관리</h2>
@@ -95,7 +96,7 @@
             </div>
         </div>
 
-        <!-- 3. 프로필 관리 -->
+        <!-- 03. 프로필 관리 -->
         <div class="admin-section" id="sec-profile">
             <header class="section-header" onclick="toggleSection('sec-profile')">
                 <h2>03. 프로필(About) 관리</h2>
@@ -104,38 +105,42 @@
             <div class="section-content">
                 <form id="profile-form" style="display: flex; flex-direction: column; gap: 1.5rem;">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                        <div><label style="font-size:0.75rem; font-weight:800; color:#999;">이름/타이틀</label><textarea id="p-name" rows="2"></textarea></div>
-                        <div><label style="font-size:0.75rem; font-weight:800; color:#999;">이미지 URL</label><input type="url" id="p-image"></div>
+                        <div><label>이름/타이틀</label><textarea id="p-name" rows="2"></textarea></div>
+                        <div><label>이미지 URL</label><input type="url" id="p-image"></div>
                     </div>
-                    <div><label style="font-size:0.75rem; font-weight:800; color:#999;">소개 1</label><textarea id="p-bio1" rows="3"></textarea></div>
-                    <div><label style="font-size:0.75rem; font-weight:800; color:#999;">소개 2</label><textarea id="p-bio2" rows="3"></textarea></div>
+                    <div><label>소개 문단 1</label><textarea id="p-bio1" rows="3"></textarea></div>
+                    <div><label>소개 문단 2</label><textarea id="p-bio2" rows="3"></textarea></div>
                     <button type="submit" class="btn-premium" style="width: 150px; padding: 0.8rem;">저장</button>
                 </form>
             </div>
         </div>
 
-        <!-- 4. 사이트 문구 설정 -->
+        <!-- 04. 사이트 문구 설정 (복구 완료) -->
         <div class="admin-section" id="sec-texts">
             <header class="section-header" onclick="toggleSection('sec-texts')">
-                <h2>04. 사이트 문구 설정</h2>
+                <h2>04. 사이트 주요 문구 설정</h2>
                 <span class="toggle-icon">▼</span>
             </header>
             <div class="section-content">
-                <form id="site-text-form" style="display: flex; flex-direction: column; gap: 1.5rem;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                        <div><label>메인 제목</label><textarea id="site_hero_title" rows="2"></textarea></div>
-                        <div><label>메인 설명</label><textarea id="site_hero_sub" rows="2"></textarea></div>
+                <form id="site-text-form" style="display: flex; flex-direction: column; gap: 2rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <div><label>메인 히어로 타이틀</label><textarea id="site_hero_title" rows="2"></textarea></div>
+                        <div><label>메인 히어로 서브설명</label><textarea id="site_hero_sub" rows="2"></textarea></div>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
                         <div><label>추천 섹션 제목</label><input type="text" id="site_rec_title"></div>
                         <div><label>추천 섹션 설명</label><input type="text" id="site_rec_desc"></div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <div><label>아카이브 페이지 제목</label><input type="text" id="site_archive_title"></div>
+                        <div><label>푸터 브랜드 설명</label><textarea id="site_footer_desc" rows="2"></textarea></div>
                     </div>
                     <button type="submit" class="btn-premium" style="width: 150px; padding: 0.8rem;">저장</button>
                 </form>
             </div>
         </div>
 
-        <!-- 5. 스토리지 탐색기 (복구됨!) -->
+        <!-- 05. 스토리지 탐색기 -->
         <div class="admin-section" id="sec-explorer">
             <header class="section-header" onclick="toggleSection('sec-explorer')">
                 <h2>05. 업로드 이미지 관리 (스토리지 탐색기)</h2>
@@ -146,7 +151,7 @@
             </div>
         </div>
 
-        <!-- 6. 저장소 현황 -->
+        <!-- 06. 리소스 현황 -->
         <div class="admin-section" id="sec-storage">
             <header class="section-header" onclick="toggleSection('sec-storage')">
                 <h2>06. 리소스 사용량 현황</h2>
@@ -155,14 +160,14 @@
             <div class="section-content">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
                     <div class="glass-box">
-                        <h4 style="font-size:0.7rem; color:#999; text-transform:uppercase;">R2 Storage</h4>
+                        <label>R2 Media Storage</label>
                         <div id="r2-usage-text" style="font-size: 1.5rem; font-weight: 900; margin: 0.5rem 0;">0 MB / 10 GB</div>
                         <div class="usage-bar"><div id="r2-usage-fill" class="usage-fill" style="width: 0%;"></div></div>
                         <p id="r2-count" style="font-size: 0.7rem; color:#999;">0 files</p>
                     </div>
                     <div class="glass-box">
-                        <h4 style="font-size:0.7rem; color:#999; text-transform:uppercase;">D1 Database</h4>
-                        <div id="d1-usage-text" style="font-size: 1.5rem; font-weight: 900; margin: 0.5rem 0;">정상 작동 중</div>
+                        <label>D1 Database</label>
+                        <div id="d1-usage-text" style="font-size: 1.5rem; font-weight: 900; margin: 0.5rem 0;">정상</div>
                         <div class="usage-bar"><div id="d1-usage-fill" class="usage-fill" style="width: 1%;"></div></div>
                         <p id="d1-counts" style="font-size: 0.7rem; color:#999;">Posts: 0 | Logs: 0</p>
                     </div>
@@ -170,7 +175,7 @@
             </div>
         </div>
 
-        <!-- 7. 보안 및 통계 -->
+        <!-- 07. 보안 설정 -->
         <div class="admin-section" id="sec-security">
             <header class="section-header" onclick="toggleSection('sec-security')">
                 <h2>07. 보안 및 SNS 관리</h2>
@@ -190,6 +195,7 @@
             </div>
         </div>
 
+        <!-- 08. 방문 통계 -->
         <div class="admin-section" id="sec-stats">
             <header class="section-header" onclick="toggleSection('sec-stats')">
                 <h2>08. 방문 통계 분석</h2>
@@ -197,12 +203,12 @@
             </header>
             <div class="section-content">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-                    <div class="glass-box"><h4>페이지 뷰</h4><div id="total-views" style="font-size: 2rem; font-weight: 900; color: var(--primary);">0</div></div>
-                    <div class="glass-box"><h4>오늘 방문자</h4><div id="today-unique" style="font-size: 2rem; font-weight: 900; color: #28a745;">0</div></div>
+                    <div class="glass-box"><label>페이지 뷰</label><div id="total-views" style="font-size: 2rem; font-weight: 900; color: var(--primary);">0</div></div>
+                    <div class="glass-box"><label>오늘 방문자</label><div id="today-unique" style="font-size: 2rem; font-weight: 900; color: #28a745;">0</div></div>
                 </div>
                 <div class="glass-box">
-                    <h4>인기 페이지 (Top 10)</h4>
-                    <table style="width: 100%; font-size: 0.85rem;"><tbody id="top-pages-list"></tbody></table>
+                    <label>인기 페이지 (Top 10)</label>
+                    <table style="width: 100%; font-size: 0.85rem; margin-top: 1rem;"><tbody id="top-pages-list"></tbody></table>
                 </div>
             </div>
         </div>
@@ -222,7 +228,7 @@
             document.getElementById('board-selector-ui').innerHTML = categoriesData.map(cat => `<button class="board-btn ${currentBoard === cat.name ? 'active' : ''}" onclick="selectBoard('${cat.name}')">${cat.name}</button>`).join('');
         }
         window.renameCategory = async (id, old) => { const n = prompt('이름 수정:', old); if(n && n!==old) { await fetch(`/api/categories?id=${id}`, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:n}) }); await loadCategories(); } };
-        window.moveCategory = async (idx, dir) => { const tidx = idx + dir; if(tid < 0 || tidx >= categoriesData.length) return; const items = [...categoriesData]; [items[idx], items[tidx]] = [items[tidx], items[idx]]; await fetch('/api/categories', { method: 'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({items: items.map((it, i) => ({id:it.id, sort_order:i}))}) }); await loadCategories(); };
+        window.moveCategory = async (idx, dir) => { const tidx = idx + dir; if(tidx < 0 || tidx >= categoriesData.length) return; const items = [...categoriesData]; [items[idx], items[tidx]] = [items[tidx], items[idx]]; await fetch('/api/categories', { method: 'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({items: items.map((it, i) => ({id:it.id, sort_order:i}))}) }); await loadCategories(); };
         window.selectBoard = (name) => { currentBoard = name; document.querySelectorAll('.board-btn').forEach(b => b.classList.toggle('active', b.innerText === name)); loadAdminList(name); };
         document.getElementById('category-form').onsubmit = async (e) => { e.preventDefault(); await fetch('/api/categories', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name: document.getElementById('cat-name').value}) }); e.target.reset(); loadCategories(); };
         window.deleteCategory = async (id) => { if(confirm('삭제하시겠습니까?')) { await fetch(`/api/categories?id=${id}`, { method: 'DELETE' }); loadCategories(); } };
@@ -248,7 +254,6 @@
                 const tUnique = d.analytics.dailyUnique.find(u => u.date === today)?.count || 0;
                 document.getElementById('today-unique').innerText = tUnique.toLocaleString();
                 document.getElementById('top-pages-list').innerHTML = d.analytics.topPages.map(p => `<tr><td style="padding:0.8rem 0; border-bottom:1px solid #EEE; font-weight:700;">${p.page}</td><td style="text-align:right; font-weight:800; color:var(--primary);">${p.count} views</td></tr>`).join('');
-                
                 const usedMB = (d.storage.r2.used / (1024*1024)).toFixed(2);
                 document.getElementById('r2-usage-text').innerText = `${usedMB} MB / 10 GB`;
                 document.getElementById('r2-usage-fill').style.width = `${Math.min(100, (d.storage.r2.used/d.storage.r2.limit)*100)}%`;
@@ -269,15 +274,14 @@
         window.deleteAsset = async (n) => { if(confirm(`${n} 삭제?`)) { await fetch(`/api/assets?name=${n}`, { method: 'DELETE' }); loadAssets(); loadStats(); } };
 
         document.getElementById('profile-form').onsubmit = async (e) => { e.preventDefault(); const ks = ['profile_name','profile_bio_1','profile_bio_2','profile_image']; for(const k of ks) { const v = document.getElementById(`p-${k.split('_')[1]}`).value; await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,value:v,type:'profile'})}); } alert('저장완료'); };
-        document.getElementById('site-text-form').onsubmit = async (e) => { e.preventDefault(); const ks = ['site_hero_title','site_hero_sub','site_rec_title','site_rec_desc']; for(const k of ks) { await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,value:document.getElementById(k).value,type:'site_text'})}); } alert('저장완료'); };
+        document.getElementById('site-text-form').onsubmit = async (e) => { e.preventDefault(); const ks = ['site_hero_title','site_hero_sub','site_rec_title','site_rec_desc','site_archive_title','site_footer_desc']; for(const k of ks) { await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,value:document.getElementById(k).value,type:'site_text'})}); } alert('저장완료'); };
         document.getElementById('password-form').onsubmit = async (e) => { e.preventDefault(); await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:'admin_password',value:document.getElementById('new-password').value,type:'security'})}); alert('변경완료'); e.target.reset(); };
 
         document.addEventListener('DOMContentLoaded', async () => {
             await loadCategories(); loadStats();
-            // Load initial text values
             const res = await fetch('/api/settings'); const settings = await res.json();
             const gv = (k) => settings.find(s=>s.key===k)?.value || '';
-            ['site_hero_title','site_hero_sub','site_rec_title','site_rec_desc','profile_name','profile_bio_1','profile_bio_2','profile_image'].forEach(k => {
+            ['site_hero_title','site_hero_sub','site_rec_title','site_rec_desc','site_archive_title','site_footer_desc','profile_name','profile_bio_1','profile_bio_2','profile_image'].forEach(k => {
                 const el = document.getElementById(k) || document.getElementById(`p-${k.split('_')[1]}`);
                 if(el) el.value = gv(k);
             });
