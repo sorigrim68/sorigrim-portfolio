@@ -58,10 +58,11 @@
 
         <!-- 2. 에셋 매니저 -->
         <section style="margin-bottom: 10rem;">
-            <header class="section-header">
+            <header class="section-header" style="display: flex; justify-content: space-between; align-items: center;">
                 <h2>스토리지 탐색기.</h2>
+                <button id="toggle-assets-btn" class="btn-premium" style="padding: 0.6rem 1.5rem; font-size: 0.8rem; background: var(--bg-light); color: var(--text-main); border: 1px solid var(--border);">펼치기</button>
             </header>
-            <div class="glass-box">
+            <div id="asset-container" class="glass-box" style="display: none;">
                 <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 2rem;">R2 버킷에 업로드된 모든 파일을 관리합니다. 사용하지 않는 파일을 삭제하여 용량을 절약하세요.</p>
                 <div id="asset-list" class="asset-grid">
                     <!-- 자산 목록 -->
@@ -237,6 +238,15 @@
             loadAssets();
             loadAdminList();
             loadSNSAdmin();
+
+            // Toggle Assets Logic
+            const toggleBtn = document.getElementById('toggle-assets-btn');
+            const assetContainer = document.getElementById('asset-container');
+            toggleBtn.addEventListener('click', () => {
+                const isHidden = assetContainer.style.display === 'none';
+                assetContainer.style.display = isHidden ? 'block' : 'none';
+                toggleBtn.innerText = isHidden ? '접기' : '펼치기';
+            });
         });
     </script>
 </body>

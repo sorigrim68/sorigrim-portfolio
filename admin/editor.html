@@ -27,14 +27,37 @@
 
         .editor-toolbar {
             display: flex; gap: 0.5rem; padding: 0.8rem; background: var(--bg-light); 
-            border: 1px solid var(--border); border-bottom: none; border-radius: 4px 4px 0 0; flex-wrap: wrap;
+            border: none; border-bottom: 1px solid var(--border); flex-wrap: wrap;
+            position: sticky; top: 0; z-index: 10;
         }
-        .editor-toolbar button {
-            background: white; border: 1px solid var(--border); padding: 0.5rem 1rem; font-size: 0.8rem; font-weight: 700; cursor: pointer; border-radius: 4px;
+        .toolbar-group {
+            display: flex; gap: 0.3rem; align-items: center; 
+            border-right: 1px solid #ddd; padding-right: 0.8rem; margin-right: 0.5rem;
         }
+        .toolbar-group:last-child { border-right: none; margin-right: 0; padding-right: 0; }
+        
+        .editor-toolbar button, .editor-toolbar select {
+            background: white; border: 1px solid var(--border); padding: 0.5rem 0.8rem; 
+            font-size: 0.8rem; font-weight: 700; cursor: pointer; border-radius: 4px;
+            transition: 0.2s; color: var(--text-main);
+        }
+        .editor-toolbar button:hover { background: var(--primary); color: white; border-color: var(--primary); }
+        .editor-toolbar select { padding-right: 1.5rem; }
+        
+        .editor-wrapper {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+            background: white;
+        }
+
         .rich-editor {
-            min-height: 600px; padding: 2.5rem; border: 1px solid var(--border); border-radius: 0 0 4px 4px;
+            height: 700px; overflow-y: auto; padding: 3rem; 
             outline: none; font-size: 1.1rem; line-height: 1.8;
+            background: white;
         }
         .rich-editor h2 { font-size: 2rem; margin: 2.5rem 0 1.2rem; font-weight: 800; }
         .rich-editor img, .rich-editor video { max-width: 100%; border-radius: 4px; margin: 2rem 0; display: block; height: auto; }
@@ -75,14 +98,49 @@
 
                     <div class="form-group">
                         <label>본문 내용</label>
-                        <div class="editor-toolbar">
-                            <button type="button" onclick="execCmd('formatBlock', 'H2')">소제목</button>
-                            <button type="button" onclick="execCmd('formatBlock', 'P')">일반문단</button>
-                            <button type="button" onclick="execCmd('bold')"><b>굵게</b></button>
-                            <button type="button" onclick="handleMediaUpload('image')" style="color: var(--primary);">+ 이미지 추가</button>
-                            <button type="button" onclick="handleMediaUpload('video')" style="color: var(--primary);">+ 영상 추가</button>
+                        <div class="editor-wrapper">
+                            <div class="editor-toolbar">
+                                <div class="toolbar-group">
+                                    <select onchange="execCmd('fontName', this.value)" title="글꼴">
+                                        <option value="Pretendard Variable">기본 글꼴</option>
+                                        <option value="'Times New Roman', serif">명조체</option>
+                                        <option value="'Courier New', monospace">코드체</option>
+                                    </select>
+                                    <select onchange="execCmd('fontSize', this.value)" title="글자 크기">
+                                        <option value="3">보통</option>
+                                        <option value="1">매우 작게</option>
+                                        <option value="2">작게</option>
+                                        <option value="4">크게</option>
+                                        <option value="5">더 크게</option>
+                                        <option value="6">매우 크게</option>
+                                        <option value="7">최대</option>
+                                    </select>
+                                </div>
+                                <div class="toolbar-group">
+                                    <button type="button" onclick="execCmd('bold')" title="굵게"><b>B</b></button>
+                                    <button type="button" onclick="execCmd('italic')" title="기울임"><i>I</i></button>
+                                    <button type="button" onclick="execCmd('underline')" title="밑줄"><u>U</u></button>
+                                    <button type="button" onclick="execCmd('strikeThrough')" title="취소선"><s>S</s></button>
+                                </div>
+                                <div class="toolbar-group">
+                                    <input type="color" onchange="execCmd('foreColor', this.value)" title="글자 색상" style="width:30px; height:30px; padding:0; border:none; background:none; cursor:pointer;">
+                                    <button type="button" onclick="execCmd('justifyLeft')" title="좌측 정렬">左</button>
+                                    <button type="button" onclick="execCmd('justifyCenter')" title="중앙 정렬">中</button>
+                                    <button type="button" onclick="execCmd('justifyRight')" title="우측 정렬">右</button>
+                                </div>
+                                <div class="toolbar-group">
+                                    <button type="button" onclick="execCmd('formatBlock', 'H2')" title="소제목">제목</button>
+                                    <button type="button" onclick="execCmd('formatBlock', 'P')" title="일반문단">본문</button>
+                                </div>
+                                <div class="toolbar-group">
+                                    <button type="button" onclick="handleMediaUpload('image')" style="color: var(--primary);" title="이미지 삽입">이미지</button>
+                                    <button type="button" onclick="handleMediaUpload('video')" style="color: var(--primary);" title="영상 삽입">영상</button>
+                                    <button type="button" onclick="execCmd('createLink')" title="링크 삽입">🔗</button>
+                                    <button type="button" onclick="execCmd('removeFormat')" title="서식 지우기">Clear</button>
+                                </div>
+                            </div>
+                            <div id="content-editor" class="rich-editor" contenteditable="true" spellcheck="false"></div>
                         </div>
-                        <div id="content-editor" class="rich-editor" contenteditable="true" spellcheck="false"></div>
                     </div>
 
                     <div class="form-group" style="background: var(--bg-light); padding: 1.5rem; border-radius: 4px;">
