@@ -14,303 +14,76 @@
             width: 100%; padding: 1rem; background: var(--bg-light); border: 1px solid var(--border);
             color: var(--text-main); font-family: inherit; font-size: 1rem; border-radius: 4px;
         }
-        
-        .editor-sidebar { position: sticky; top: 120px; display: flex; flex-direction: column; gap: 1.5rem; }
-        .sidebar-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; }
-        .sidebar-card h4 { font-size: 0.9rem; font-weight: 800; margin-bottom: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.8rem; }
-        
-        .seo-check { display: flex; align-items: center; gap: 0.8rem; font-size: 0.85rem; margin-bottom: 0.8rem; color: #555; }
-        .seo-check .status { width: 10px; height: 10px; border-radius: 50%; background: #ddd; }
-        .seo-check.pass .status { background: #28a745; }
-        .seo-check.warn .status { background: #ffc107; }
-        .seo-check.fail .status { background: #dc3545; }
-
-        .editor-toolbar {
-            display: flex; gap: 0.5rem; padding: 0.8rem; background: var(--bg-light); 
-            border: none; border-bottom: 1px solid var(--border); flex-wrap: wrap;
-            position: sticky; top: 0; z-index: 10;
-        }
-        .toolbar-group {
-            display: flex; gap: 0.3rem; align-items: center; 
-            border-right: 1px solid #ddd; padding-right: 0.8rem; margin-right: 0.5rem;
-        }
-        .toolbar-group:last-child { border-right: none; margin-right: 0; padding-right: 0; }
-        
-        .editor-toolbar button, .editor-toolbar select {
-            background: white; border: 1px solid var(--border); padding: 0.5rem 0.8rem; 
-            font-size: 0.8rem; font-weight: 700; cursor: pointer; border-radius: 4px;
-            transition: 0.2s; color: var(--text-main);
-        }
-        .editor-toolbar button:hover { background: var(--primary); color: white; border-color: var(--primary); }
-        .editor-toolbar select { padding-right: 1.5rem; }
-        
-        .editor-wrapper {
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05);
-            background: white;
-        }
-
-        .rich-editor {
-            height: 700px; overflow-y: auto; padding: 3rem; 
-            outline: none; font-size: 1.1rem; line-height: 1.8;
-            background: white;
-        }
-        .rich-editor h2 { font-size: 2rem; margin: 2.5rem 0 1.2rem; font-weight: 800; }
-        .rich-editor img, .rich-editor video { max-width: 100%; border-radius: 4px; margin: 2rem 0; display: block; height: auto; }
-
+        .editor-toolbar { display: flex; gap: 0.5rem; padding: 0.8rem; background: var(--bg-light); border-bottom: 1px solid var(--border); flex-wrap: wrap; position: sticky; top: 0; z-index: 10; }
+        .toolbar-group { display: flex; gap: 0.3rem; align-items: center; border-right: 1px solid #ddd; padding-right: 0.8rem; margin-right: 0.5rem; }
+        .editor-toolbar button, .editor-toolbar select { background: white; border: 1px solid var(--border); padding: 0.5rem 0.8rem; font-size: 0.8rem; font-weight: 700; cursor: pointer; border-radius: 4px; transition: 0.2s; color: var(--text-main); }
+        .editor-toolbar button:hover { background: var(--primary); color: white; }
+        .editor-wrapper { border: 1px solid var(--border); border-radius: 8px; overflow: hidden; display: flex; flex-direction: column; background: white; }
+        .rich-editor { height: 600px; overflow-y: auto; padding: 3rem; outline: none; font-size: 1.1rem; line-height: 1.8; }
         #save-btn { width: 100%; padding: 1.5rem; font-size: 1.1rem; font-weight: 800; margin-top: 2rem; }
-        
         .upload-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: none; align-items: center; justify-content: center; z-index: 10000; flex-direction: column; gap: 2rem; }
         .spinner { width: 40px; height: 40px; border: 3px solid #eee; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <div id="upload-overlay" class="upload-overlay">
-        <div class="spinner"></div>
-        <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary);">시각적 조각을 전송 중...</div>
-    </div>
-
-    <nav id="global-nav" class="scrolled">
-        <a href="/" class="brand">SORIGRIM</a>
-        <a href="dashboard.html" style="font-size: 0.85rem; color: var(--text-muted); text-decoration: none;">← 관리 홈으로</a>
-    </nav>
-
+    <div id="upload-overlay" class="upload-overlay"><div class="spinner"></div><div style="font-weight:700; color:var(--primary);">전송 중...</div></div>
+    <nav id="global-nav" class="scrolled"><a href="/" class="brand">SORIGRIM</a><a href="dashboard.html" style="font-size:0.85rem; color:var(--text-muted); text-decoration:none;">← 관리 홈으로</a></nav>
     <main class="container">
         <div class="editor-layout">
             <div class="editor-main">
                 <form id="editor-form">
-                    <div class="form-group">
-                        <label>작품 제목</label>
-                        <input type="text" id="title" placeholder="작품의 이름을 입력하세요..." required>
+                    <div class="form-group"><label>작품 제목</label><input type="text" id="title" required></div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:2rem;">
+                        <div class="form-group"><label>카테고리</label><select id="category" required></select></div>
+                        <div class="form-group"><label>태그 (쉼표로 구분)</label><input type="text" id="tags" placeholder="Cyberpunk, Realistic, Portrait"></div>
                     </div>
-
-                    <div class="form-group">
-                        <label>카테고리 (게시판)</label>
-                        <select id="category" required>
-                            <!-- 동적으로 로드됨 -->
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>AI Prompt</label>
-                        <textarea id="prompt" rows="4" placeholder="작품 생성에 사용된 프롬프트를 입력하세요..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>본문 내용</label>
+                    <div class="form-group"><label>AI Prompt</label><textarea id="prompt" rows="4"></textarea></div>
+                    <div class="form-group"><label>본문 내용</label>
                         <div class="editor-wrapper">
                             <div class="editor-toolbar">
-                                <div class="toolbar-group">
-                                    <select onchange="execCmd('fontName', this.value)" title="글꼴">
-                                        <option value="Pretendard Variable">기본 글꼴</option>
-                                        <option value="'Times New Roman', serif">명조체</option>
-                                        <option value="'Courier New', monospace">코드체</option>
-                                    </select>
-                                    <select onchange="execCmd('fontSize', this.value)" title="글자 크기">
-                                        <option value="3">보통</option>
-                                        <option value="1">매우 작게</option>
-                                        <option value="2">작게</option>
-                                        <option value="4">크게</option>
-                                        <option value="5">더 크게</option>
-                                        <option value="6">매우 크게</option>
-                                        <option value="7">최대</option>
-                                    </select>
-                                </div>
-                                <div class="toolbar-group">
-                                    <button type="button" onclick="execCmd('bold')" title="굵게"><b>B</b></button>
-                                    <button type="button" onclick="execCmd('italic')" title="기울임"><i>I</i></button>
-                                    <button type="button" onclick="execCmd('underline')" title="밑줄"><u>U</u></button>
-                                    <button type="button" onclick="execCmd('strikeThrough')" title="취소선"><s>S</s></button>
-                                </div>
-                                <div class="toolbar-group">
-                                    <input type="color" onchange="execCmd('foreColor', this.value)" title="글자 색상" style="width:30px; height:30px; padding:0; border:none; background:none; cursor:pointer;">
-                                    <button type="button" onclick="execCmd('justifyLeft')" title="좌측 정렬">左</button>
-                                    <button type="button" onclick="execCmd('justifyCenter')" title="중앙 정렬">中</button>
-                                    <button type="button" onclick="execCmd('justifyRight')" title="우측 정렬">Right</button>
-                                </div>
-                                <div class="toolbar-group">
-                                    <button type="button" onclick="execCmd('formatBlock', 'H2')" title="소제목">제목</button>
-                                    <button type="button" onclick="execCmd('formatBlock', 'P')" title="일반문단">본문</button>
-                                </div>
-                                <div class="toolbar-group">
-                                    <button type="button" onclick="handleMediaUpload('image')" style="color: var(--primary);" title="이미지 삽입">이미지</button>
-                                    <button type="button" onclick="handleMediaUpload('video')" style="color: var(--primary);" title="영상 삽입">영상</button>
-                                    <button type="button" onclick="execCmd('createLink')" title="링크 삽입">🔗</button>
-                                    <button type="button" onclick="execCmd('removeFormat')" title="서식 지우기">Clear</button>
-                                </div>
+                                <div class="toolbar-group"><select onchange="execCmd('fontName', this.value)"><option value="Pretendard Variable">기본 글꼴</option><option value="serif">명조체</option></select><select onchange="execCmd('fontSize', this.value)"><option value="3">보통</option><option value="5">크게</option></select></div>
+                                <div class="toolbar-group"><button type="button" onclick="execCmd('bold')">B</button><button type="button" onclick="execCmd('italic')">I</button></div>
+                                <div class="toolbar-group"><button type="button" onclick="handleMediaUpload('image')">이미지</button><button type="button" onclick="handleMediaUpload('video')">영상</button></div>
                             </div>
-                            <div id="content-editor" class="rich-editor" contenteditable="true" spellcheck="false"></div>
+                            <div id="content-editor" class="rich-editor" contenteditable="true"></div>
                         </div>
                     </div>
-
-                    <div class="form-group" style="background: var(--bg-light); padding: 1.5rem; border-radius: 4px; display: flex; flex-direction: column; gap: 1rem;">
-                        <div style="display:flex; align-items:center; gap:1rem;">
-                            <input type="checkbox" id="is_published" checked style="width: auto;">
-                            <label style="margin-bottom:0; color: #000; font-weight:800;">🌐 웹사이트에 즉시 게시 (체크 해제 시 임시저장)</label>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:1rem;">
-                            <input type="checkbox" id="is_hero" style="width: auto;">
-                            <label style="margin-bottom:0; color: var(--primary); font-weight:700;">★ 이 게시글의 썸네일을 메인 히어로 이미지로 사용</label>
-                        </div>
-                        <div style="display:flex; align-items:center; gap:1rem;">
-                            <input type="checkbox" id="is_recommended" style="width: auto;">
-                            <label style="margin-bottom:0; color: #28a745; font-weight:700;">✔ 이 게시글을 메인 페이지 추천 작품으로 등록</label>
-                        </div>
+                    <div class="form-group" style="background:var(--bg-light); padding:1.5rem; border-radius:4px; display:flex; flex-direction:column; gap:1rem;">
+                        <label style="display:flex; align-items:center; gap:1rem;"><input type="checkbox" id="is_published" checked> 🌐 웹사이트에 즉시 게시</label>
+                        <label style="display:flex; align-items:center; gap:1rem;"><input type="checkbox" id="is_hero"> ★ 메인 히어로 사용</label>
+                        <label style="display:flex; align-items:center; gap:1rem;"><input type="checkbox" id="is_recommended"> ✔ 추천 작품 등록</label>
                     </div>
-
                     <button type="submit" id="save-btn" class="btn-premium">작품 저장하기</button>
                 </form>
             </div>
-
-            <div class="editor-sidebar">
-                <div class="sidebar-card">
-                    <h4>콘텐츠 진단</h4>
-                    <div id="seo-score-list">
-                        <div id="check-media" class="seo-check"><div class="status"></div> 썸네일 자동 추출 대기</div>
-                        <div id="check-length" class="seo-check"><div class="status"></div> 본문 글자 수</div>
-                        <div id="check-h2" class="seo-check"><div class="status"></div> 소제목 활용</div>
-                    </div>
-                </div>
-            </div>
         </div>
     </main>
-
-    <input type="file" id="editor-media-upload" style="display: none;" multiple>
-
+    <input type="file" id="editor-media-upload" style="display:none;" multiple>
     <script type="module">
-        const form = document.getElementById('editor-form');
-        const saveBtn = document.getElementById('save-btn');
-        const editor = document.getElementById('content-editor');
-        const overlay = document.getElementById('upload-overlay');
-        const uploadText = overlay.querySelector('div:last-child');
-        const mediaInput = document.getElementById('editor-media-upload');
-        const categorySelect = document.getElementById('category');
-        
-        const urlParams = new URLSearchParams(window.location.search);
-        const editId = urlParams.get('id');
-
-        let lastSelection = null;
-
-        // --- 1. Category Loading ---
-        async function loadCategories() {
-            const res = await fetch('/api/categories');
-            const cats = await res.json();
-            categorySelect.innerHTML = cats.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
-            if (editId) loadPostData();
-        }
-
-        // --- 2. Selection Management ---
-        function saveSelection() {
-            const sel = window.getSelection();
-            if (sel.getRangeAt && sel.rangeCount) { lastSelection = sel.getRangeAt(0); }
-        }
-        function restoreSelection() {
-            if (lastSelection) {
-                const sel = window.getSelection();
-                sel.removeAllRanges(); sel.addRange(lastSelection);
-            }
-        }
-        editor.addEventListener('blur', saveSelection);
-        editor.addEventListener('keyup', saveSelection);
-        editor.addEventListener('click', saveSelection);
-
-        // --- 3. Media Upload ---
-        window.handleMediaUpload = (type) => {
-            saveSelection();
-            mediaInput.accept = type === 'image' ? 'image/*' : 'video/*';
-            mediaInput.onchange = async () => {
-                const files = Array.from(mediaInput.files);
-                if (files.length > 0) {
-                    overlay.style.display = 'flex';
-                    for (let i = 0; i < files.length; i++) {
-                        uploadText.innerText = `시각적 조각 전송 중... (${i + 1}/${files.length})`;
-                        const url = await uploadFile(files[i]);
-                        if (url) insertAtCursor(type, url);
-                    }
-                    overlay.style.display = 'none';
-                    mediaInput.value = '';
-                }
-            };
-            mediaInput.click();
-        };
-
-        function insertAtCursor(type, url) {
-            editor.focus(); restoreSelection();
-            const sel = window.getSelection();
-            if (!sel.rangeCount) return;
-            const range = sel.getRangeAt(0);
-            range.deleteContents();
-            let node = type === 'image' ? document.createElement('img') : document.createElement('video');
-            node.src = url; node.style.maxWidth = "100%"; node.style.display = "block"; node.style.margin = "2rem 0";
-            if (type === 'video') { node.controls = true; node.playsInline = true; }
-            range.insertNode(node);
-            const nextNode = document.createElement('p'); nextNode.innerHTML = '<br>'; node.after(nextNode);
-            range.setStartAfter(nextNode); range.setEndAfter(nextNode);
-            sel.removeAllRanges(); sel.addRange(range);
-            saveSelection(); updateSEO();
-        }
-
-        async function uploadFile(file) {
-            const formData = new FormData(); formData.append('file', file);
-            try { const res = await fetch('/api/assets', { method: 'POST', body: formData }); const data = await res.json(); return data.url; } catch (e) { return null; }
-        }
-
-        // --- 4. SEO & UI ---
-        function updateSEO() {
-            const text = editor.innerText; const html = editor.innerHTML;
-            const hasMedia = html.includes('<img') || html.includes('<video');
-            toggleCheck('check-media', hasMedia ? 'pass' : 'fail');
-            toggleCheck('check-length', text.trim().length > 100 ? 'pass' : 'warn');
-            toggleCheck('check-h2', html.includes('<h2') ? 'pass' : 'fail');
-        }
-        function toggleCheck(id, status) {
-            const el = document.getElementById(id); if (!el) return;
-            el.classList.remove('pass', 'warn', 'fail'); el.classList.add(status);
-        }
-        editor.addEventListener('input', updateSEO);
-        window.execCmd = (cmd, val = null) => { document.execCommand(cmd, false, val); editor.focus(); updateSEO(); };
-
-        // --- 5. Save & Load ---
+        const form = document.getElementById('editor-form'); const editor = document.getElementById('content-editor'); const mediaInput = document.getElementById('editor-media-upload');
+        const urlParams = new URLSearchParams(window.location.search); const editId = urlParams.get('id');
+        let lastRange = null;
+        async function loadCategories() { const res = await fetch('/api/categories'); const cats = await res.json(); document.getElementById('category').innerHTML = cats.map(c => `<option value="${c.name}">${c.name}</option>`).join(''); if (editId) loadPostData(); }
         async function loadPostData() {
-            const res = await fetch(`/api/portfolio?id=${editId}`);
-            const data = await res.json();
-            document.getElementById('title').value = data.title;
-            categorySelect.value = data.category;
-            editor.innerHTML = data.content || '';
-            document.getElementById('prompt').value = data.prompt || '';
-            document.getElementById('is_hero').checked = data.is_hero === 1;
-            document.getElementById('is_recommended').checked = data.is_recommended === 1;
-            document.getElementById('is_published').checked = data.is_published === 1;
-            updateSEO();
+            const res = await fetch(`/api/portfolio?id=${editId}&admin=true`); const d = await res.json();
+            document.getElementById('title').value = d.title; document.getElementById('category').value = d.category;
+            document.getElementById('tags').value = d.tags || ''; document.getElementById('prompt').value = d.prompt || '';
+            editor.innerHTML = d.content || ''; document.getElementById('is_published').checked = d.is_published === 1;
+            document.getElementById('is_hero').checked = d.is_hero === 1; document.getElementById('is_recommended').checked = d.is_recommended === 1;
         }
-
+        window.execCmd = (c, v = null) => { document.execCommand(c, false, v); editor.focus(); };
+        window.handleMediaUpload = (t) => { mediaInput.accept = t === 'image' ? 'image/*' : 'video/*'; mediaInput.onchange = async () => {
+            const files = Array.from(mediaInput.files); if (files.length > 0) { document.getElementById('upload-overlay').style.display='flex';
+            for (const f of files) { const url = await uploadFile(f); if (url) insertMedia(t, url); }
+            document.getElementById('upload-overlay').style.display='none'; mediaInput.value=''; }
+        }; mediaInput.click(); };
+        function insertMedia(t, url) { editor.focus(); const n = t === 'image' ? document.createElement('img') : document.createElement('video'); n.src = url; n.style.maxWidth = "100%"; n.style.display = "block"; n.style.margin = "2rem 0"; if (t === 'video') { n.controls = true; n.playsInline = true; } editor.appendChild(n); editor.appendChild(document.createElement('p')).innerHTML = '<br>'; }
+        async function uploadFile(f) { const fd = new FormData(); fd.append('file', f); try { const res = await fetch('/api/assets', { method: 'POST', body: fd }); const d = await res.json(); return d.url; } catch (e) { return null; } }
         form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            saveBtn.disabled = true; saveBtn.innerText = '저장 중...';
-            const div = document.createElement('div'); div.innerHTML = editor.innerHTML;
-            const firstMedia = div.querySelector('img, video');
-            const thumb = firstMedia ? firstMedia.src : "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop";
-            const data = {
-                title: document.getElementById('title').value,
-                category: categorySelect.value,
-                image: thumb,
-                description: editor.innerText.slice(0, 200),
-                content: editor.innerHTML,
-                prompt: document.getElementById('prompt').value,
-                is_recommended: document.getElementById('is_recommended').checked,
-                is_hero: document.getElementById('is_hero').checked,
-                is_published: document.getElementById('is_published').checked
-            };
-            try {
-                const res = await fetch('/api/portfolio' + (editId ? `?id=${editId}` : ''), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-                if (res.ok) { alert('성공적으로 저장되었습니다.'); window.location.href = 'dashboard.html'; }
-                else { saveBtn.disabled = false; saveBtn.innerText = '작품 저장하기'; }
-            } catch (err) { saveBtn.disabled = false; saveBtn.innerText = '작품 저장하기'; }
+            e.preventDefault(); const div = document.createElement('div'); div.innerHTML = editor.innerHTML; const first = div.querySelector('img, video');
+            const data = { title: document.getElementById('title').value, category: document.getElementById('category').value, tags: document.getElementById('tags').value, prompt: document.getElementById('prompt').value, content: editor.innerHTML, image: first ? first.src : '', is_published: document.getElementById('is_published').checked, is_hero: document.getElementById('is_hero').checked, is_recommended: document.getElementById('is_recommended').checked };
+            await fetch('/api/portfolio' + (editId ? `?id=${editId}` : ''), { method: 'POST', body: JSON.stringify(data) }); window.location.href = 'dashboard.html';
         });
         document.addEventListener('DOMContentLoaded', loadCategories);
     </script>

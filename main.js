@@ -3,21 +3,38 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+  initTheme(); // 테마 초기화
   initPageTransition();
   initStickyNav();
   setTimeout(initHeroBackground, 100); 
-  loadRecommendedByBoard(); // 게시판별 추천 로드
-  trackVisit(); // 방문 통계 트래킹
+  loadRecommendedByBoard();
+  trackVisit();
   
   if (document.getElementById('portfolio-list')) {
-    // URL 파라미터 확인 (카테고리 필터 연동)
     const urlParams = new URLSearchParams(window.location.search);
-    const category = urlParams.get('category') || 'all';
-    
-    // 초기 로딩 (파라미터가 있으면 해당 카테고리, 없으면 전체)
-    loadArchiveInternal(category);
+    loadArchiveInternal(urlParams.get('category') || 'all');
   }
 });
+
+// --- 테마 관리 (다크모드) ---
+function initTheme() {
+  const savedTheme = localStorage.getItem('sg-theme');
+  if (savedTheme === 'dark') document.body.classList.add('dark-mode');
+  
+  // 테마 토글 버튼 주입 (네비게이션 우측)
+  const navLinks = document.querySelector('.nav-links');
+  if (navLinks && !document.querySelector('.theme-toggle')) {
+    const toggle = document.createElement('button');
+    toggle.className = 'theme-toggle';
+    toggle.innerHTML = savedTheme === 'dark' ? '☀️' : '🌙';
+    toggle.onclick = () => {
+      const isDark = document.body.classList.toggle('dark-mode');
+      localStorage.setItem('sg-theme', isDark ? 'dark' : 'light');
+      toggle.innerHTML = isDark ? '☀️' : '🌙';
+    };
+    navLinks.appendChild(toggle);
+  }
+}
 
 function initStickyNav() {
   const nav = document.getElementById('global-nav');
@@ -57,10 +74,6 @@ async function initHeroBackground() {
     const isVideo = url.toLowerCase().match(/\.(mp4|webm|ogg)$/) || url.includes('video');
     if (isVideo) {
       container.innerHTML = `<video src="${url}" muted loop autoplay playsinline style="width:100%; height:100%; object-fit:cover; display:block;"></video>`;
-      const v = container.querySelector('video');
-      v.play().catch(() => {
-        document.body.addEventListener('mousedown', () => v.play(), { once: true });
-      });
     } else {
       container.innerHTML = `<div class="hero-bg-image" style="background-image: url('${url}'); width:100%; height:100%; background-size:cover; background-position:center; animation: ken-burns 25s ease-in-out infinite alternate;"></div>`;
     }
@@ -69,74 +82,50 @@ async function initHeroBackground() {
   }
 }
 
-// --- 핵심: 전역에서 접근 가능한 아카이브 로드 함수 ---
 window.loadArchiveInternal = async function(category = 'all') {
   const grid = document.getElementById('portfolio-list');
   if (!grid) return;
-  
+  grid.innerHTML = Array(8).fill('<div class="archive-card skeleton" style="height:400px; border-radius:8px;"></div>').join('');
   try {
-    const url = `/api/portfolio${category !== 'all' ? `?category=${category}` : ''}`;
-    const res = await fetch(url);
+    const res = await fetch(`/api/portfolio${category !== 'all' ? `?category=${category}` : ''}`);
     const works = await res.json();
-    
     grid.innerHTML = works.map((work, i) => renderTechnicalCard(work, i)).join('');
-    
-    setTimeout(() => {
-      document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
-    }, 100);
-  } catch (e) {
-    console.error("Archive Load Error", e);
-  }
+    setTimeout(() => document.querySelectorAll('.reveal').forEach(el => el.classList.add('active')), 100);
+  } catch (e) { console.error(e); }
 };
 
-/**
- * 게시판별로 글을 가져와서 추천글이 있으면 추천글 위주로, 없으면 최신글 위주로 4개씩 노출
- */
 async function loadRecommendedByBoard() {
   const container = document.getElementById('recommended-grid');
   if (!container) return;
-
   try {
-    const catRes = await fetch('/api/categories');
-    const categories = await catRes.json();
-    const postRes = await fetch('/api/portfolio');
-    const allPosts = await postRes.json();
-
+    const catRes = await fetch('/api/categories'); const categories = await catRes.json();
+    const postRes = await fetch('/api/portfolio'); const allPosts = await postRes.json();
     let finalHtml = '';
     categories.forEach(cat => {
       const boardPosts = allPosts.filter(p => p.category === cat.name);
       if (boardPosts.length === 0) return; 
-      const sortedPosts = boardPosts.sort((a, b) => {
-        if (b.is_recommended !== a.is_recommended) return b.is_recommended - a.is_recommended;
-        return b.id - a.id;
-      });
+      const sortedPosts = boardPosts.sort((a, b) => (b.is_recommended - a.is_recommended) || (b.id - a.id));
       const top4 = sortedPosts.slice(0, 4);
       finalHtml += `
         <div class="board-section" style="margin-bottom: 6rem; width: 100%;">
           <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:2rem; border-bottom:1px solid var(--border); padding-bottom:1rem;">
-            <h3 class="reveal" style="font-size:1.5rem; font-weight:900; color:var(--text-main); text-transform:uppercase; letter-spacing:-0.02em;">${cat.name}.</h3>
+            <h3 class="reveal" style="font-size:1.5rem; font-weight:900; color:var(--text-main); text-transform:uppercase;">${cat.name}.</h3>
             <a href="/portfolio/index.html?category=${encodeURIComponent(cat.name)}" style="font-size:0.8rem; font-weight:800; color:var(--primary); text-decoration:none;">VIEW ALL →</a>
           </div>
-          <div class="grid-archive">
-            ${top4.map((work, i) => renderTechnicalCard(work, i)).join('')}
-          </div>
+          <div class="grid-archive">${top4.map((work, i) => renderTechnicalCard(work, i)).join('')}</div>
         </div>
       `;
     });
     container.innerHTML = finalHtml;
-    setTimeout(() => {
-      document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
-    }, 100);
-  } catch (e) { console.error("Recommended Board Load Error", e); }
+    setTimeout(() => document.querySelectorAll('.reveal').forEach(el => el.classList.add('active')), 100);
+  } catch (e) { console.error(e); }
 }
 
 function renderTechnicalCard(work, index) {
   let thumbUrl = work.image;
   if (!thumbUrl && work.content) {
-    const div = document.createElement('div');
-    div.innerHTML = work.content;
-    const media = div.querySelector('img, video');
-    if (media) thumbUrl = media.src;
+    const div = document.createElement('div'); div.innerHTML = work.content;
+    const media = div.querySelector('img, video'); if (media) thumbUrl = media.src;
   }
   const isVideo = thumbUrl && (thumbUrl.toLowerCase().match(/\.(mp4|webm|ogg)$/) || thumbUrl.includes('video'));
   const mediaHtml = isVideo 
@@ -149,7 +138,10 @@ function renderTechnicalCard(work, index) {
       <div class="card-meta">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
           <span class="tag">${work.category}</span>
-          ${work.is_recommended ? '<span style="font-size:0.6rem; font-weight:900; color:#28a745; background:#e8f5e9; padding:2px 6px; border-radius:4px;">FEATURED</span>' : ''}
+          <div style="display:flex; gap:0.8rem; font-size:0.65rem; font-weight:800; color:#AAA;">
+            <span>👁 ${work.views || 0}</span>
+            <span>❤️ ${work.likes || 0}</span>
+          </div>
         </div>
         <h3>${work.title}</h3>
       </div>
@@ -163,76 +155,41 @@ window.navigate = (url) => {
   setTimeout(() => { window.location.href = url; }, 500);
 };
 
-// --- 방문 통계 트래킹 ---
+// --- Engagement & Analytics ---
 async function trackVisit() {
-  try {
-    fetch('/api/stats', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ 
-        page: window.location.pathname,
-        referrer: document.referrer 
-      })
-    });
-  } catch (e) {}
+  try { fetch('/api/stats', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ page: window.location.pathname, referrer: document.referrer }) }); } catch (e) {}
 }
+
+window.likePost = async (id) => {
+  try {
+    const res = await fetch(`/api/portfolio?id=${id}&action=like`, { method: 'POST' });
+    if (res.ok) return true;
+  } catch (e) { return false; }
+};
 
 class SorigrimFooter extends HTMLElement {
   constructor() { super(); this.attachShadow({ mode: 'open' }); }
   connectedCallback() { this.render(); }
-  async fetchSNS() {
-    try {
-      const res = await fetch('/api/settings');
-      const settings = await res.json();
-      return settings.filter(s => s.type === 'sns');
-    } catch (e) { return []; }
-  }
   async render() {
-    const sns = await this.fetchSNS();
+    const res = await fetch('/api/settings'); const settings = await res.json();
+    const sns = settings.filter(s => s.type === 'sns');
     this.shadowRoot.innerHTML = `
       <style>
-        :host { display: block; padding: 8rem 0; background: #F8F9FA; color: #1A1A1A; font-family: sans-serif; border-top: 1px solid #EEE; }
+        :host { display: block; padding: 8rem 0; background: var(--bg-light); color: var(--text-main); font-family: sans-serif; border-top: 1px solid var(--border); }
         .container { max-width: 1400px; margin: 0 auto; padding: 0 4rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4rem; }
         .brand h2 { font-size: 1.5rem; font-weight: 900; color: #0055FF; margin-bottom: 1rem; text-transform: uppercase; }
-        .brand p { font-size: 0.9rem; color: #666; max-width: 350px; }
-        .links { display: flex; gap: 5rem; flex-wrap: wrap; }
+        .links { display: flex; gap: 5rem; }
         .group h4 { font-size: 0.8rem; font-weight: 800; margin-bottom: 1.5rem; text-transform: uppercase; }
         .group a { display: block; font-size: 0.9rem; color: #666; text-decoration: none; margin-bottom: 0.8rem; }
-        .group a:hover { color: #0055FF; }
-        .bottom { width: 100%; margin-top: 6rem; padding-top: 2rem; border-top: 1px solid #EEE; display: flex; justify-content: space-between; font-size: 0.8rem; color: #999; text-transform: uppercase; flex-wrap: wrap; gap: 1rem; }
-        
-        @media (max-width: 768px) {
-          :host { padding: 4rem 0; }
-          .container { padding: 0 1.5rem; gap: 3rem; }
-          .links { gap: 3rem; }
-          .bottom { margin-top: 3rem; }
-        }
+        .bottom { width: 100%; margin-top: 6rem; padding-top: 2rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: #999; }
       </style>
       <div class="container">
-        <div class="brand">
-          <h2>SORIGRIM</h2>
-          <p>프롬프트와 알고리즘으로 시각적 미학을 탐구하는 AI 아티스트의 개인 포트폴리오 공간입니다.</p>
-        </div>
+        <div class="brand"><h2>SORIGRIM</h2><p style="max-width:300px; font-size:0.9rem;">AI 시각 예술과 프롬프트 엔지니어링의 정수를 담은 개인 포트폴리오입니다.</p></div>
         <div class="links">
-          <div class="group">
-            <h4>Explore</h4>
-            <a href="/">홈으로</a>
-            <a href="/portfolio/">아카이브</a>
-            <a href="/about.html">About</a>
-          </div>
-          <div class="group">
-            <h4>Legal</h4>
-            <a href="/legal.html?type=privacy">개인정보처리방침</a>
-            <a href="/legal.html?type=terms">이용약관</a>
-          </div>
-          <div class="group">
-            <h4>Social</h4>
-            ${sns.map(s => `<a href="${s.value}" target="_blank">${s.key}</a>`).join('')}
-          </div>
+          <div class="group"><h4>Explore</h4><a href="/">홈으로</a><a href="/portfolio/">아카이브</a><a href="/about.html">About</a></div>
+          <div class="group"><h4>Social</h4>${sns.map(s => `<a href="${s.value}" target="_blank">${s.key}</a>`).join('')}</div>
         </div>
-        <div class="bottom">
-          <p>&copy; ${new Date().getFullYear()} SORIGRIM. All rights reserved.</p>
-        </div>
+        <div class="bottom"><p>&copy; ${new Date().getFullYear()} SORIGRIM. All rights reserved.</p></div>
       </div>
     `;
   }

@@ -1,6 +1,6 @@
 /**
- * Cloudflare Pages Functions API: Portfolio (Sorigrim 1.0)
- * Handles data fetching from D1 database.
+ * Cloudflare Pages Functions API: Portfolio (Sorigrim 2.0)
+ * Handles data fetching, searching, and engagement (likes/views).
  */
 
 export async function onRequest(context) {
@@ -10,10 +10,12 @@ export async function onRequest(context) {
   const category = url.searchParams.get('category');
   const recommended = url.searchParams.get('recommended');
   const isHeroParam = url.searchParams.get('is_hero');
-  const adminMode = url.searchParams.get('admin') === 'true'; // Admin-only flag
+  const search = url.searchParams.get('search'); // Search query
+  const tag = url.searchParams.get('tag'); // Tag filter
+  const adminMode = url.searchParams.get('admin') === 'true';
 
   try {
-    // 1. Database Table Sync & Migration
+    // 1. Table & Migration
     await env.DB.prepare(`
       CREATE TABLE IF NOT EXISTS sg_posts (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -28,17 +30,19 @@ export async function onRequest(context) {
         is_hero INTEGER DEFAULT 0,
         is_published INTEGER DEFAULT 1,
         prompt TEXT,
+        views INTEGER DEFAULT 0,
+        likes INTEGER DEFAULT 0,
         createdAt TEXT
       )
     `).run();
 
-    // Migration: Add columns if they don't exist
-    const columns = ['is_hero', 'is_published', 'views', 'prompt'];
+    // Ensure all columns exist
+    const columns = ['is_hero', 'is_published', 'views', 'prompt', 'likes', 'tags'];
     for (const col of columns) {
       try { 
-        if (col === 'views') {
+        if (col === 'views' || col === 'likes') {
           await env.DB.prepare(`ALTER TABLE sg_posts ADD COLUMN ${col} INTEGER DEFAULT 0`).run();
-        } else if (col === 'prompt') {
+        } else if (col === 'prompt' || col === 'tags') {
           await env.DB.prepare(`ALTER TABLE sg_posts ADD COLUMN ${col} TEXT`).run();
         } else {
           await env.DB.prepare(`ALTER TABLE sg_posts ADD COLUMN ${col} INTEGER DEFAULT 1`).run(); 
@@ -46,38 +50,33 @@ export async function onRequest(context) {
       } catch (e) {}
     }
 
+    // Engagement: POST to /api/portfolio?id=X&action=like
+    if (request.method === "POST" && id && url.searchParams.get('action') === 'like') {
+      await env.DB.prepare("UPDATE sg_posts SET likes = likes + 1 WHERE id = ?").bind(id).run();
+      return Response.json({ success: true });
+    }
+
     // GET Request handling
     if (request.method === "GET") {
-      // Fetch the special Hero Post
       if (isHeroParam === 'true') {
         const hero = await env.DB.prepare("SELECT * FROM sg_posts WHERE is_hero = 1 AND is_published = 1 ORDER BY id DESC LIMIT 1").first();
         return Response.json(hero || {});
       }
 
       if (id) {
-        // 1. Increment View Count
-        if (!adminMode) {
-          await env.DB.prepare("UPDATE sg_posts SET views = views + 1 WHERE id = ?").bind(id).run();
-        }
-
-        // 2. Fetch Item
+        if (!adminMode) await env.DB.prepare("UPDATE sg_posts SET views = views + 1 WHERE id = ?").bind(id).run();
         const item = await env.DB.prepare("SELECT * FROM sg_posts WHERE id = ?").bind(id).first();
-        if (!item) return Response.json({ error: "Item not found" }, { status: 404 });
-
-        // Fetch Next & Prev (Only published for public)
+        if (!item) return Response.json({ error: "Not found" }, { status: 404 });
+        
         const visibilityFilter = adminMode ? "" : "AND is_published = 1";
         const next = await env.DB.prepare(`SELECT id, title FROM sg_posts WHERE id > ? AND (category != 'HERO_CONFIG' OR category IS NULL) ${visibilityFilter} ORDER BY id ASC LIMIT 1`).bind(id).first();
         const prev = await env.DB.prepare(`SELECT id, title FROM sg_posts WHERE id < ? AND (category != 'HERO_CONFIG' OR category IS NULL) ${visibilityFilter} ORDER BY id DESC LIMIT 1`).bind(id).first();
-
         return Response.json({ ...item, next, prev });
       }
 
       let query = "SELECT * FROM sg_posts WHERE (category != 'HERO_CONFIG' OR category IS NULL)"; 
       let params = [];
-      
-      if (!adminMode) {
-        query += " AND is_published = 1";
-      }
+      if (!adminMode) query += " AND is_published = 1";
 
       if (recommended === 'true') {
         query += " AND is_recommended = 1";
@@ -85,52 +84,56 @@ export async function onRequest(context) {
         query += " AND category = ?";
         params.push(category);
       }
-      query += " ORDER BY id DESC";
 
+      if (search) {
+        query += " AND (title LIKE ? OR description LIKE ? OR tags LIKE ?)";
+        const searchTerm = `%${search}%`;
+        params.push(searchTerm, searchTerm, searchTerm);
+      }
+
+      if (tag) {
+        query += " AND tags LIKE ?";
+        params.push(`%${tag}%`);
+      }
+
+      query += " ORDER BY id DESC";
       const { results } = await env.DB.prepare(query).bind(...params).all();
       return Response.json(results);
     }
 
-    // POST Request: Handle INSERT and UPDATE
+    // POST Request: Save Post
     if (request.method === "POST") {
       const data = await request.json();
       const isHero = data.is_hero ? 1 : 0;
       const isRec = data.is_recommended ? 1 : 0;
       const isPub = data.is_published !== undefined ? (data.is_published ? 1 : 0) : 1;
 
-      // If marking as hero, unmark all others
-      if (isHero === 1) {
-        await env.DB.prepare("UPDATE sg_posts SET is_hero = 0").run();
-      }
+      if (isHero === 1) await env.DB.prepare("UPDATE sg_posts SET is_hero = 0").run();
 
       if (id) {
         await env.DB.prepare(
-          "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ?, is_hero = ?, is_published = ?, prompt = ? WHERE id = ?"
+          "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ?, is_hero = ?, is_published = ?, prompt = ?, tags = ? WHERE id = ?"
         ).bind(
-          data.title, data.category, data.image, data.description, data.content || "", isRec, isHero, isPub, data.prompt || "", id
+          data.title, data.category, data.image, data.description, data.content || "", isRec, isHero, isPub, data.prompt || "", data.tags || "", id
         ).run();
         return Response.json({ success: true, action: "update" });
       } else {
         await env.DB.prepare(
-          "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, is_hero, is_published, prompt, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+          "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, is_hero, is_published, prompt, tags, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         ).bind(
-          data.title, data.category, data.image, data.description, data.content || "", isRec, isHero, isPub, data.prompt || "", new Date().toISOString()
+          data.title, data.category, data.image, data.description, data.content || "", isRec, isHero, isPub, data.prompt || "", data.tags || "", new Date().toISOString()
         ).run();
         return Response.json({ success: true, action: "insert" });
       }
     }
 
-    // DELETE Request
     if (request.method === "DELETE") {
-      if (!id) return Response.json({ error: "ID required" }, { status: 400 });
       await env.DB.prepare("DELETE FROM sg_posts WHERE id = ?").bind(id).run();
       return Response.json({ success: true });
     }
 
   } catch (e) {
-    console.error("DB Error:", e.message);
     return Response.json({ error: e.message }, { status: 500 });
   }
-
   return new Response("Method not allowed", { status: 405 });
 }

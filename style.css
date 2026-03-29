@@ -12,6 +12,16 @@
   --font-main: "Pretendard Variable", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 }
 
+/* Dark Mode Overrides (Triggered by class on body or system preference) */
+body.dark-mode {
+  --bg-white: #0A0A0A;
+  --bg-light: #111111;
+  --text-main: #EEEEEE;
+  --text-muted: #999999;
+  --border: #222222;
+  --secondary: #FFFFFF;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
@@ -20,8 +30,23 @@ body {
   font-family: var(--font-main);
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden; /* Prevent horizontal scroll */
+  overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
+
+/* Skeleton Loading Animation */
+@keyframes skeleton-loading {
+  0% { background-color: #f0f0f0; }
+  50% { background-color: #e0e0e0; }
+  100% { background-color: #f0f0f0; }
+}
+body.dark-mode .skeleton { animation: skeleton-loading-dark 1.5s infinite; }
+@keyframes skeleton-loading-dark {
+  0% { background-color: #1a1a1a; }
+  50% { background-color: #2a2a2a; }
+  100% { background-color: #1a1a1a; }
+}
+.skeleton { animation: skeleton-loading 1.5s infinite linear; }
 
 /* Page Transition */
 #page-transition {
@@ -39,20 +64,28 @@ body {
   transition: all 0.4s var(--ease-smooth);
 }
 #global-nav.scrolled {
-  background: rgba(255, 255, 255, 0.95);
+  background: var(--bg-white);
   padding: 1rem 4rem; backdrop-filter: blur(15px); border-bottom: 1px solid var(--border);
+  opacity: 0.98;
 }
 #global-nav .brand {
   font-size: 1.6rem; font-weight: 900; color: var(--primary);
-  text-decoration: none; letter-spacing: 0.05em; text-transform: uppercase; transition: 0.3s;
+  text-decoration: none; letter-spacing: 0.05em; text-transform: uppercase;
 }
-#global-nav .nav-links { display: flex; gap: 3.5rem; }
+#global-nav .nav-links { display: flex; gap: 3rem; align-items: center; }
 #global-nav .nav-links a {
   font-size: 0.95rem; font-weight: 600; text-decoration: none; color: rgba(255,255,255,0.8); transition: 0.3s;
 }
 #global-nav.scrolled .nav-links a { color: var(--text-main); }
-#global-nav .nav-links a:hover { color: #FFF; }
 #global-nav.scrolled .nav-links a:hover { color: var(--primary); }
+
+/* Theme Toggle Button */
+.theme-toggle {
+  background: none; border: 1px solid rgba(255,255,255,0.2); color: #FFF;
+  width: 40px; height: 40px; border-radius: 50%; cursor: pointer;
+  display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
+}
+#global-nav.scrolled .theme-toggle { border-color: var(--border); color: var(--text-main); }
 
 /* Hero Section */
 #hero {
@@ -68,9 +101,7 @@ body {
 #hero-video-container { width: 100%; height: 100%; }
 #hero-video-container img, #hero-video-container video {
   width: 100%; height: 100%; object-fit: cover;
-  animation: ken-burns 25s ease-in-out infinite alternate;
 }
-@keyframes ken-burns { from { transform: scale(1); } to { transform: scale(1.15); } }
 
 .hero-content {
   position: relative; z-index: 10; padding: 0 4rem;
@@ -94,6 +125,7 @@ body {
   background: var(--primary); color: white; text-decoration: none;
   font-weight: 700; font-size: 0.95rem; border-radius: 4px; transition: 0.4s;
   opacity: 0; animation: reveal-up 1.2s var(--ease-smooth) 0.7s forwards;
+  border: none; cursor: pointer;
 }
 .btn-premium:hover { background: #0044CC; transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,85,255,0.25); }
 
@@ -106,17 +138,17 @@ body {
   display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5rem;
 }
 .archive-card {
-  background: white; border: 1px solid var(--border);
+  background: var(--bg-white); border: 1px solid var(--border);
   transition: 0.6s var(--ease-smooth); cursor: pointer;
 }
 .archive-card:hover { transform: translateY(-15px); border-color: var(--primary); box-shadow: 0 40px 80px rgba(0,0,0,0.08); }
 
-.img-box { aspect-ratio: 16 / 10; overflow: hidden; background: #F0F0F0; }
+.img-box { aspect-ratio: 16 / 10; overflow: hidden; background: var(--bg-light); }
 .img-box img, .img-box video { width: 100%; height: 100%; object-fit: cover; transition: 1s var(--ease-smooth); }
 
 .card-meta { padding: 1.8rem; }
 .card-meta .tag { font-size: 0.8rem; font-weight: 800; color: var(--primary); margin-bottom: 1rem; display: block; text-transform: uppercase; }
-.card-meta h3 { font-size: 1.5rem; font-weight: 700; color: var(--secondary); line-height: 1.3; }
+.card-meta h3 { font-size: 1.2rem; font-weight: 700; color: var(--secondary); line-height: 1.3; }
 
 /* Utilities */
 .py-xl { padding: 12rem 0; }
@@ -126,7 +158,6 @@ body {
 @keyframes reveal-up { to { opacity: 1; transform: translateY(0); } }
 
 /* --- Mobile Optimization --- */
-
 @media (max-width: 1024px) {
   .container { padding: 0 2.5rem; }
   #global-nav, #global-nav.scrolled { padding: 1.2rem 2.5rem; }
@@ -137,32 +168,17 @@ body {
 @media (max-width: 768px) {
   #global-nav { padding: 1rem 1.5rem; }
   #global-nav .brand { font-size: 1.3rem; }
-  #global-nav .nav-links { gap: 1.5rem; }
-  #global-nav .nav-links a { font-size: 0.85rem; }
-
+  #global-nav .nav-links { gap: 1rem; }
+  .theme-toggle { width: 32px; height: 32px; font-size: 1rem; }
   .hero-content { padding: 0 1.5rem; }
   .hero-content h1 { line-height: 1.1; margin-bottom: 1.5rem; }
   .hero-content p { margin-bottom: 3rem; }
   .btn-premium { padding: 1rem 2.5rem; width: 100%; text-align: center; justify-content: center; }
-
   .grid-archive { grid-template-columns: 1fr; gap: 2rem; }
   .container { padding: 0 1.5rem; }
-  .section-desc { margin-bottom: 3rem; }
-  .card-meta { padding: 1.5rem; }
-  .card-meta h3 { font-size: 1.3rem; }
-  
   .py-xl { padding: 6rem 0; }
 }
 
-/* Admin Specific Mobile Fixes */
-.editor-layout {
-  display: grid;
-  grid-template-columns: 1fr 350px;
-  gap: 2rem;
-}
-
-@media (max-width: 1200px) {
-  .editor-layout { grid-template-columns: 1fr; }
-  .editor-sidebar { position: static; order: 2; }
-  .editor-main { order: 1; }
-}
+/* Admin Styles */
+.editor-layout { display: grid; grid-template-columns: 1fr 350px; gap: 2rem; }
+@media (max-width: 1200px) { .editor-layout { grid-template-columns: 1fr; } }

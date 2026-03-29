@@ -4,174 +4,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fragment — SORIGRIM</title>
-    <meta id="meta-description" name="description" content="Cinematic AI vision fragment.">
     <link rel="stylesheet" href="/style.css">
     <style>
         .detail-view { padding-bottom: 10rem; }
-        .detail-hero { 
-            width: 100%; height: 60vh; position: relative; overflow: hidden; background: #000;
-            display: flex; align-items: center; justify-content: center;
-        }
+        .detail-hero { width: 100%; height: 60vh; background: #000; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .detail-hero img, .detail-hero video { width: 100%; height: 100%; object-fit: cover; }
         
         .detail-header { padding: 6rem 0 4rem; border-bottom: 1px solid var(--border); }
-        .detail-header .tag { color: var(--primary); font-weight: 800; font-size: 0.85rem; margin-bottom: 1rem; display: block; text-transform: uppercase; }
         .detail-header .meta-info { display: flex; gap: 1.5rem; font-size: 0.8rem; font-weight: 700; color: #AAA; margin-bottom: 2rem; text-transform: uppercase; }
         .detail-header h1 { font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 850; letter-spacing: -0.04em; margin-bottom: 1.5rem; color: var(--secondary); line-height: 1.1; }
-        .detail-header .desc { font-size: clamp(1.1rem, 2vw, 1.4rem); color: var(--text-muted); line-height: 1.6; max-width: 800px; }
+        
+        .tag-list { display: flex; gap: 0.8rem; margin-top: 2rem; flex-wrap: wrap; }
+        .tag-item { font-size: 0.75rem; font-weight: 800; color: var(--primary); background: var(--bg-light); padding: 0.4rem 1rem; border-radius: 20px; text-decoration: none; }
+        .tag-item:hover { background: var(--primary); color: white; }
+
+        .engagement-bar { display: flex; align-items: center; gap: 2rem; margin: 4rem 0; padding: 2rem 0; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .like-btn { background: none; border: 1px solid var(--border); padding: 0.8rem 2rem; border-radius: 30px; cursor: pointer; font-weight: 800; font-size: 0.9rem; transition: 0.3s; display: flex; align-items: center; gap: 0.8rem; color: var(--text-main); }
+        .like-btn.active { background: #FF4D4D; border-color: #FF4D4D; color: white; }
+        .like-btn:hover:not(.active) { transform: scale(1.05); border-color: var(--primary); }
 
         .detail-body { padding: 6rem 0; max-width: 900px; margin: 0 auto; }
-        .rich-text { font-size: 1.1rem; line-height: 1.8; color: #333; }
-        .rich-text h2 { font-size: 1.8rem; font-weight: 800; margin: 4rem 0 1.5rem; color: var(--secondary); }
-        .rich-text img, .rich-text video { max-width: 100%; height: auto; margin: 2.5rem 0; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+        .rich-text { font-size: 1.1rem; line-height: 1.8; }
+        .rich-text img, .rich-text video { max-width: 100%; height: auto; margin: 2.5rem 0; border-radius: 8px; }
 
-        /* Prompt Box Styling */
-        .prompt-section { margin: 6rem 0; background: #111; border-radius: 12px; padding: 3rem; color: #EEE; position: relative; overflow: hidden; }
-        .prompt-section h3 { font-size: 0.75rem; font-weight: 800; color: var(--primary); text-transform: uppercase; margin-bottom: 1.5rem; letter-spacing: 0.1em; }
-        .prompt-box { font-family: 'Courier New', monospace; font-size: 1rem; line-height: 1.6; color: #BBB; white-space: pre-wrap; word-break: break-all; }
-        .btn-copy-prompt { 
-            margin-top: 2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); 
-            color: #FFF; padding: 0.8rem 1.5rem; font-size: 0.8rem; font-weight: 700; cursor: pointer; border-radius: 4px; transition: 0.3s;
-        }
-        .btn-copy-prompt:hover { background: var(--primary); border-color: var(--primary); }
+        .prompt-section { margin: 6rem 0; background: #111; border-radius: 12px; padding: 3rem; color: #EEE; }
+        .prompt-box { font-family: monospace; font-size: 1rem; color: #BBB; white-space: pre-wrap; word-break: break-all; }
+        .btn-copy-prompt { margin-top: 2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #FFF; padding: 0.8rem 1.5rem; font-size: 0.8rem; font-weight: 700; cursor: pointer; border-radius: 4px; }
 
-        .share-section { margin-top: 6rem; padding-top: 4rem; border-top: 1px solid var(--border); }
-        .share-section h4 { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2.5rem; text-align: center; letter-spacing: 0.1em; }
-        .share-buttons { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
-        .share-btn {
-            width: 50px; height: 50px; border-radius: 50%; border: 1px solid var(--border);
-            display: flex; align-items: center; justify-content: center; background: white;
-            cursor: pointer; transition: 0.3s; text-decoration: none; color: var(--text-main); font-size: 1.2rem;
-        }
-        .share-btn:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-5px); }
+        .share-section { margin-top: 6rem; text-align: center; }
+        .share-buttons { display: flex; justify-content: center; gap: 1rem; margin-top: 2rem; }
+        .share-btn { width: 50px; height: 50px; border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.3s; text-decoration: none; color: var(--text-main); font-size: 1.2rem; background: white; }
+        .share-btn:hover { background: var(--primary); color: white; transform: translateY(-5px); }
 
-        .post-nav {
-            margin-top: 8rem; padding-top: 4rem; border-top: 1px solid var(--border);
-            display: flex; justify-content: space-between; gap: 2rem;
-        }
-        .nav-item { flex: 1; text-decoration: none; color: inherit; transition: 0.3s; min-width: 0; }
-        .nav-item:hover { color: var(--primary); transform: translateY(-5px); }
-        .nav-label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 0.8rem; display: block; }
-        .nav-title { font-size: 1.2rem; font-weight: 700; line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-        .nav-item.next { text-align: right; }
-
-        @media (max-width: 768px) {
-            .detail-view { padding-bottom: 6rem; }
-            .detail-hero { height: 40vh; }
-            .detail-header { padding: 4rem 0 3rem; }
-            .detail-body { padding: 4rem 0; }
-            .prompt-section { padding: 2rem; margin: 4rem 0; }
-            .post-nav { flex-direction: column; gap: 2.5rem; margin-top: 5rem; }
-            .nav-title { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-        }
+        .post-nav { margin-top: 8rem; display: flex; justify-content: space-between; border-top: 1px solid var(--border); padding-top: 4rem; }
+        .nav-item { flex: 1; text-decoration: none; color: inherit; }
+        .nav-label { font-size: 0.7rem; font-weight: 800; color: var(--text-muted); display: block; margin-bottom: 0.5rem; }
+        .nav-title { font-size: 1.1rem; font-weight: 700; }
     </style>
 </head>
 <body>
-    <nav id="global-nav" class="scrolled">
-        <a href="/" class="brand">SORIGRIM</a>
-        <div class="nav-links">
-            <a href="/portfolio/">아카이브</a>
-        </div>
-    </nav>
-
-    <main id="detail-target" class="detail-view">
-        <!-- Dynamic Content -->
-    </main>
-
+    <nav id="global-nav" class="scrolled"><a href="/" class="brand">SORIGRIM</a><div class="nav-links"><a href="/portfolio/">아카이브</a></div></nav>
+    <main id="detail-target" class="detail-view"></main>
     <sg-footer></sg-footer>
-
     <script type="module" src="/main.js"></script>
     <script type="module">
+        let postId = null;
         async function loadDetail() {
-            const id = new URLSearchParams(window.location.search).get('id');
-            if (!id) return;
-            const res = await fetch(`/api/portfolio?id=${id}`);
-            const work = await res.json();
-            
-            document.title = `${work.title} — SORIGRIM`;
-
+            postId = new URLSearchParams(window.location.search).get('id');
+            const res = await fetch(`/api/portfolio?id=${postId}`);
+            const d = await res.json();
+            document.title = `${d.title} — SORIGRIM`;
             const currentUrl = encodeURIComponent(window.location.href);
-            const shareText = encodeURIComponent(`SORIGRIM | ${work.title}`);
+            const shareText = encodeURIComponent(`SORIGRIM | ${d.title}`);
 
             document.getElementById('detail-target').innerHTML = `
-                <div class="detail-hero reveal">
-                    ${work.image && work.image.toLowerCase().match(/\.(mp4|webm|ogg)$/) 
-                        ? `<video src="${work.image}" muted loop autoplay playsinline></video>`
-                        : `<img src="${work.image || ''}" alt="${work.title}">`
-                    }
-                </div>
+                <div class="detail-hero reveal">${d.image && d.image.toLowerCase().match(/\.(mp4|webm|ogg)$/) ? `<video src="${d.image}" muted loop autoplay playsinline></video>` : `<img src="${d.image || ''}" alt="${d.title}">`}</div>
                 <div class="container">
                     <header class="detail-header reveal">
-                        <span class="tag">${work.category}</span>
-                        <h1>${work.title}</h1>
-                        <div class="meta-info">
-                            <span>CREATED: ${new Date(work.createdAt).toLocaleDateString()}</span>
-                            <span>VIEWS: ${work.views?.toLocaleString() || 0}</span>
-                        </div>
-                        <p class="desc">${work.description || ''}</p>
+                        <span class="tag" style="color:var(--primary); font-weight:800; font-size:0.85rem; margin-bottom:1rem; display:block;">${d.category}</span>
+                        <h1>${d.title}</h1>
+                        <div class="meta-info"><span>CREATED: ${new Date(d.createdAt).toLocaleDateString()}</span><span>VIEWS: ${d.views || 0}</span></div>
+                        <p style="font-size:1.2rem; color:var(--text-muted); line-height:1.6; max-width:800px;">${d.description || ''}</p>
+                        <div class="tag-list">${(d.tags || '').split(',').filter(t => t.trim()).map(t => `<a href="/portfolio/index.html?tag=${encodeURIComponent(t.trim())}" class="tag-item">#${t.trim()}</a>`).join('')}</div>
                     </header>
-                    
                     <div class="detail-body reveal">
-                        <div class="rich-text">${work.content || '콘텐츠 준비 중입니다.'}</div>
-                        
-                        ${work.prompt ? `
-                            <div class="prompt-section reveal">
-                                <h3>AI Generation Prompt.</h3>
-                                <div class="prompt-box" id="raw-prompt">${work.prompt}</div>
-                                <button class="btn-copy-prompt" onclick="copyPrompt()">COPY PROMPT</button>
-                            </div>
-                        ` : ''}
-
-                        <div class="share-section reveal">
-                            <h4>Share this Fragment</h4>
-                            <div class="share-buttons">
-                                <a href="https://twitter.com/intent/tweet?url=${currentUrl}&text=${shareText}" target="_blank" class="share-btn" title="Twitter(X)">𝕏</a>
-                                <a href="https://www.threads.net/intent/post?text=${shareText}%20${currentUrl}" target="_blank" class="share-btn" title="Threads">@</a>
-                                <a href="https://www.facebook.com/sharer/sharer.php?u=${currentUrl}" target="_blank" class="share-btn" title="Facebook">f</a>
-                                <a href="https://t.me/share/url?url=${currentUrl}&text=${shareText}" target="_blank" class="share-btn" title="Telegram">✈</a>
-                                <button onclick="copyToClipboard()" class="share-btn" title="Link Copy">🔗</button>
-                            </div>
+                        <div class="rich-text">${d.content || ''}</div>
+                        <div class="engagement-bar">
+                            <button id="like-btn" class="like-btn" onclick="handleLike()">❤️ <span id="like-count">${d.likes || 0}</span> LIKES</button>
                         </div>
-
+                        ${d.prompt ? `<div class="prompt-section"><h3>AI Generation Prompt.</h3><div class="prompt-box" id="raw-prompt">${d.prompt}</div><button class="btn-copy-prompt" onclick="copyPrompt()">COPY PROMPT</button></div>` : ''}
+                        <div class="share-section"><h4>Share this Fragment</h4><div class="share-buttons">
+                            <a href="https://twitter.com/intent/tweet?url=${currentUrl}&text=${shareText}" target="_blank" class="share-btn">𝕏</a>
+                            <a href="https://www.threads.net/intent/post?text=${shareText}%20${currentUrl}" target="_blank" class="share-btn">@</a>
+                            <a href="https://t.me/share/url?url=${currentUrl}&text=${shareText}" target="_blank" class="share-btn">✈</a>
+                            <button onclick="copyLink()" class="share-btn">🔗</button>
+                        </div></div>
                         <nav class="post-nav">
-                            ${work.prev ? `
-                                <a href="/portfolio/detail.html?id=${work.prev.id}" class="nav-item prev">
-                                    <span class="nav-label">이전 작품</span>
-                                    <div class="nav-title">${work.prev.title}</div>
-                                </a>
-                            ` : '<div></div>'}
-                            
-                            ${work.next ? `
-                                <a href="/portfolio/detail.html?id=${work.next.id}" class="nav-item next">
-                                    <span class="nav-label">다음 작품</span>
-                                    <div class="nav-title">${work.next.title}</div>
-                                </a>
-                            ` : '<div></div>'}
+                            ${d.prev ? `<a href="/portfolio/detail.html?id=${d.prev.id}" class="nav-item"> <span class="nav-label">PREV</span> <div class="nav-title">${d.prev.title}</div> </a>` : '<div></div>'}
+                            ${d.next ? `<a href="/portfolio/detail.html?id=${d.next.id}" class="nav-item" style="text-align:right;"> <span class="nav-label">NEXT</span> <div class="nav-title">${d.next.title}</div> </a>` : '<div></div>'}
                         </nav>
                     </div>
                 </div>
             `;
-            
-            setTimeout(() => {
-                document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
-            }, 100);
+            setTimeout(() => document.querySelectorAll('.reveal').forEach(el => el.classList.add('active')), 100);
         }
-
-        window.copyPrompt = () => {
-            const text = document.getElementById('raw-prompt').innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                const btn = document.querySelector('.btn-copy-prompt');
-                btn.innerText = 'COPIED!';
-                setTimeout(() => btn.innerText = 'COPY PROMPT', 2000);
-            });
+        window.handleLike = async () => {
+            const btn = document.getElementById('like-btn'); if (btn.classList.contains('active')) return;
+            if (await window.likePost(postId)) {
+                btn.classList.add('active');
+                const countEl = document.getElementById('like-count');
+                countEl.innerText = parseInt(countEl.innerText) + 1;
+            }
         };
-
-        window.copyToClipboard = () => {
-            navigator.clipboard.writeText(window.location.href).then(() => {
-                alert('링크가 복사되었습니다.');
-            });
-        };
-
+        window.copyPrompt = () => { navigator.clipboard.writeText(document.getElementById('raw-prompt').innerText).then(() => { alert('프롬프트가 복사되었습니다.'); }); };
+        window.copyLink = () => { navigator.clipboard.writeText(window.location.href).then(() => alert('링크 복사 완료')); };
         document.addEventListener('DOMContentLoaded', loadDetail);
     </script>
 </body>
