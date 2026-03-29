@@ -10,6 +10,7 @@ export async function onRequest(context) {
   const category = url.searchParams.get('category');
   const recommended = url.searchParams.get('recommended');
   const isHeroParam = url.searchParams.get('is_hero');
+  const adminMode = url.searchParams.get('admin') === 'true'; // Admin-only flag
 
   try {
     // 1. Database Table Sync & Migration
@@ -25,22 +26,22 @@ export async function onRequest(context) {
         tags TEXT,
         is_recommended INTEGER DEFAULT 0,
         is_hero INTEGER DEFAULT 0,
+        is_published INTEGER DEFAULT 1,
         createdAt TEXT
       )
     `).run();
 
-    // Migration: Add is_hero column if it doesn't exist
-    try {
-      await env.DB.prepare("ALTER TABLE sg_posts ADD COLUMN is_hero INTEGER DEFAULT 0").run();
-    } catch (e) {
-      // Column already exists, ignore error
+    // Migration: Add columns if they don't exist
+    const columns = ['is_hero', 'is_published'];
+    for (const col of columns) {
+      try { await env.DB.prepare(`ALTER TABLE sg_posts ADD COLUMN ${col} INTEGER DEFAULT 1`).run(); } catch (e) {}
     }
 
     // GET Request handling
     if (request.method === "GET") {
       // Fetch the special Hero Post
       if (isHeroParam === 'true') {
-        const hero = await env.DB.prepare("SELECT * FROM sg_posts WHERE is_hero = 1 ORDER BY id DESC LIMIT 1").first();
+        const hero = await env.DB.prepare("SELECT * FROM sg_posts WHERE is_hero = 1 AND is_published = 1 ORDER BY id DESC LIMIT 1").first();
         return Response.json(hero || {});
       }
 
@@ -48,15 +49,21 @@ export async function onRequest(context) {
         const item = await env.DB.prepare("SELECT * FROM sg_posts WHERE id = ?").bind(id).first();
         if (!item) return Response.json({ error: "Item not found" }, { status: 404 });
 
-        // Fetch Next & Prev
-        const next = await env.DB.prepare("SELECT id, title FROM sg_posts WHERE id > ? AND (category != 'HERO_CONFIG' OR category IS NULL) ORDER BY id ASC LIMIT 1").bind(id).first();
-        const prev = await env.DB.prepare("SELECT id, title FROM sg_posts WHERE id < ? AND (category != 'HERO_CONFIG' OR category IS NULL) ORDER BY id DESC LIMIT 1").bind(id).first();
+        // Fetch Next & Prev (Only published for public)
+        const visibilityFilter = adminMode ? "" : "AND is_published = 1";
+        const next = await env.DB.prepare(`SELECT id, title FROM sg_posts WHERE id > ? AND (category != 'HERO_CONFIG' OR category IS NULL) ${visibilityFilter} ORDER BY id ASC LIMIT 1`).bind(id).first();
+        const prev = await env.DB.prepare(`SELECT id, title FROM sg_posts WHERE id < ? AND (category != 'HERO_CONFIG' OR category IS NULL) ${visibilityFilter} ORDER BY id DESC LIMIT 1`).bind(id).first();
 
         return Response.json({ ...item, next, prev });
       }
 
       let query = "SELECT * FROM sg_posts WHERE (category != 'HERO_CONFIG' OR category IS NULL)"; 
       let params = [];
+      
+      if (!adminMode) {
+        query += " AND is_published = 1";
+      }
+
       if (recommended === 'true') {
         query += " AND is_recommended = 1";
       } else if (category && category !== 'all') {
@@ -74,6 +81,7 @@ export async function onRequest(context) {
       const data = await request.json();
       const isHero = data.is_hero ? 1 : 0;
       const isRec = data.is_recommended ? 1 : 0;
+      const isPub = data.is_published !== undefined ? (data.is_published ? 1 : 0) : 1;
 
       // If marking as hero, unmark all others
       if (isHero === 1) {
@@ -81,33 +89,17 @@ export async function onRequest(context) {
       }
 
       if (id) {
-        // UPDATE (Surgical update to match current schema)
         await env.DB.prepare(
-          "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ?, is_hero = ? WHERE id = ?"
+          "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ?, is_hero = ?, is_published = ? WHERE id = ?"
         ).bind(
-          data.title, 
-          data.category, 
-          data.image, 
-          data.description, 
-          data.content || "", 
-          isRec, 
-          isHero,
-          id
+          data.title, data.category, data.image, data.description, data.content || "", isRec, isHero, isPub, id
         ).run();
         return Response.json({ success: true, action: "update" });
       } else {
-        // INSERT
         await env.DB.prepare(
-          "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, is_hero, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+          "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, is_hero, is_published, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
         ).bind(
-          data.title, 
-          data.category, 
-          data.image, 
-          data.description, 
-          data.content || "", 
-          isRec, 
-          isHero,
-          new Date().toISOString()
+          data.title, data.category, data.image, data.description, data.content || "", isRec, isHero, isPub, new Date().toISOString()
         ).run();
         return Response.json({ success: true, action: "insert" });
       }

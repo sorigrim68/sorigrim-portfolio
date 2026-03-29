@@ -44,6 +44,15 @@ export async function onRequest(context) {
       }
     }
 
+    // 3.1 PUT: Update sort_order (New!)
+    if (request.method === "PUT") {
+      const { items } = await request.json(); // Array of {id, sort_order}
+      for (const item of items) {
+        await env.DB.prepare("UPDATE sg_categories SET sort_order = ? WHERE id = ?").bind(item.sort_order, item.id).run();
+      }
+      return Response.json({ success: true });
+    }
+
     // 4. DELETE: Remove Category
     if (request.method === "DELETE") {
       if (!id) return Response.json({ error: "ID required" }, { status: 400 });

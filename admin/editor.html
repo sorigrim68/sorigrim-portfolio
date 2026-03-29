@@ -126,7 +126,7 @@
                                     <input type="color" onchange="execCmd('foreColor', this.value)" title="글자 색상" style="width:30px; height:30px; padding:0; border:none; background:none; cursor:pointer;">
                                     <button type="button" onclick="execCmd('justifyLeft')" title="좌측 정렬">左</button>
                                     <button type="button" onclick="execCmd('justifyCenter')" title="중앙 정렬">中</button>
-                                    <button type="button" onclick="execCmd('justifyRight')" title="우측 정렬">右</button>
+                                    <button type="button" onclick="execCmd('justifyRight')" title="우측 정렬">Right</button>
                                 </div>
                                 <div class="toolbar-group">
                                     <button type="button" onclick="execCmd('formatBlock', 'H2')" title="소제목">제목</button>
@@ -145,12 +145,16 @@
 
                     <div class="form-group" style="background: var(--bg-light); padding: 1.5rem; border-radius: 4px; display: flex; flex-direction: column; gap: 1rem;">
                         <div style="display:flex; align-items:center; gap:1rem;">
+                            <input type="checkbox" id="is_published" checked style="width: auto;">
+                            <label style="margin-bottom:0; color: #000; font-weight:800;">🌐 웹사이트에 즉시 게시 (체크 해제 시 임시저장)</label>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:1rem;">
                             <input type="checkbox" id="is_hero" style="width: auto;">
                             <label style="margin-bottom:0; color: var(--primary); font-weight:700;">★ 이 게시글의 썸네일을 메인 히어로 이미지로 사용</label>
                         </div>
                         <div style="display:flex; align-items:center; gap:1rem;">
                             <input type="checkbox" id="is_recommended" style="width: auto;">
-                            <label style="margin-bottom:0; color: #28a745; font-weight:700;">✔ 이 게시글을 메인 페이지 추천 작품으로 등록 (최대 15개)</label>
+                            <label style="margin-bottom:0; color: #28a745; font-weight:700;">✔ 이 게시글을 메인 페이지 추천 작품으로 등록</label>
                         </div>
                     </div>
 
@@ -192,7 +196,6 @@
             const res = await fetch('/api/categories');
             const cats = await res.json();
             categorySelect.innerHTML = cats.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
-            
             if (editId) loadPostData();
         }
 
@@ -203,7 +206,6 @@
                 lastSelection = sel.getRangeAt(0);
             }
         }
-
         function restoreSelection() {
             if (lastSelection) {
                 const sel = window.getSelection();
@@ -211,12 +213,11 @@
                 sel.addRange(lastSelection);
             }
         }
-
         editor.addEventListener('blur', saveSelection);
         editor.addEventListener('keyup', saveSelection);
         editor.addEventListener('click', saveSelection);
 
-        // --- 3. Media Upload & Insertion (Multi-support) ---
+        // --- 3. Media Upload ---
         window.handleMediaUpload = (type) => {
             saveSelection();
             mediaInput.accept = type === 'image' ? 'image/*' : 'video/*';
@@ -224,17 +225,13 @@
                 const files = Array.from(mediaInput.files);
                 if (files.length > 0) {
                     overlay.style.display = 'flex';
-                    
                     for (let i = 0; i < files.length; i++) {
                         uploadText.innerText = `시각적 조각 전송 중... (${i + 1}/${files.length})`;
                         const url = await uploadFile(files[i]);
-                        if (url) {
-                            insertAtCursor(type, url);
-                        }
+                        if (url) insertAtCursor(type, url);
                     }
-                    
                     overlay.style.display = 'none';
-                    mediaInput.value = ''; // Reset input
+                    mediaInput.value = '';
                 }
             };
             mediaInput.click();
@@ -243,54 +240,23 @@
         function insertAtCursor(type, url) {
             editor.focus();
             restoreSelection();
-
             const sel = window.getSelection();
             if (!sel.rangeCount) return;
             const range = sel.getRangeAt(0);
             range.deleteContents();
-
-            let node;
-            if (type === 'image') {
-                node = document.createElement('img');
-                node.src = url;
-                node.alt = "AI ART SORIGRIM";
-                node.style.maxWidth = "100%";
-                node.style.display = "block";
-                node.style.margin = "2rem 0";
-            } else {
-                node = document.createElement('video');
-                node.src = url;
-                node.controls = true;
-                node.playsInline = true;
-                node.style.maxWidth = "100%";
-                node.style.display = "block";
-                node.style.margin = "2rem 0";
-            }
-
-            // 노드 삽입 및 커서 이동
+            let node = type === 'image' ? document.createElement('img') : document.createElement('video');
+            node.src = url; node.style.maxWidth = "100%"; node.style.display = "block"; node.style.margin = "2rem 0";
+            if (type === 'video') { node.controls = true; node.playsInline = true; }
             range.insertNode(node);
-            
-            const nextNode = document.createElement('p');
-            nextNode.innerHTML = '<br>';
-            node.after(nextNode);
-
-            range.setStartAfter(nextNode);
-            range.setEndAfter(nextNode);
-            sel.removeAllRanges();
-            sel.addRange(range);
-
-            saveSelection(); // 다음 삽입을 위해 현재 위치 저장
-            updateSEO();
+            const nextNode = document.createElement('p'); nextNode.innerHTML = '<br>'; node.after(nextNode);
+            range.setStartAfter(nextNode); range.setEndAfter(nextNode);
+            sel.removeAllRanges(); sel.addRange(range);
+            saveSelection(); updateSEO();
         }
 
         async function uploadFile(file) {
-            const formData = new FormData();
-            formData.append('file', file);
-            try {
-                const res = await fetch('/api/assets', { method: 'POST', body: formData });
-                const data = await res.json();
-                return data.url;
-            } catch (e) { return null; }
+            const formData = new FormData(); formData.append('file', file);
+            try { const res = await fetch('/api/assets', { method: 'POST', body: formData }); const data = await res.json(); return data.url; } catch (e) { return null; }
         }
 
         // --- 4. SEO & UI ---
@@ -302,74 +268,49 @@
             toggleCheck('check-length', text.trim().length > 100 ? 'pass' : 'warn');
             toggleCheck('check-h2', html.includes('<h2') ? 'pass' : 'fail');
         }
-
         function toggleCheck(id, status) {
             const el = document.getElementById(id);
             if (!el) return;
-            el.classList.remove('pass', 'warn', 'fail');
-            el.classList.add(status);
+            el.classList.remove('pass', 'warn', 'fail'); el.classList.add(status);
         }
-
         editor.addEventListener('input', updateSEO);
-
-        window.execCmd = (cmd, val = null) => {
-            document.execCommand(cmd, false, val);
-            editor.focus();
-            updateSEO();
-        };
+        window.execCmd = (cmd, val = null) => { document.execCommand(cmd, false, val); editor.focus(); updateSEO(); };
 
         // --- 5. Save & Load ---
         async function loadPostData() {
             const res = await fetch(`/api/portfolio?id=${editId}`);
             const data = await res.json();
             document.getElementById('title').value = data.title;
-            categorySelect.value = data.category; // 카테고리 로드 후 설정됨
+            categorySelect.value = data.category;
             editor.innerHTML = data.content || '';
-            if (document.getElementById('is_hero')) {
-                document.getElementById('is_hero').checked = data.is_hero === 1;
-            }
+            document.getElementById('is_hero').checked = data.is_hero === 1;
+            document.getElementById('is_recommended').checked = data.is_recommended === 1;
+            document.getElementById('is_published').checked = data.is_published === 1;
             updateSEO();
         }
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            saveBtn.disabled = true;
-            saveBtn.innerText = '저장 중...';
-
-            const div = document.createElement('div');
-            div.innerHTML = editor.innerHTML;
+            saveBtn.disabled = true; saveBtn.innerText = '저장 중...';
+            const div = document.createElement('div'); div.innerHTML = editor.innerHTML;
             const firstMedia = div.querySelector('img, video');
             const thumb = firstMedia ? firstMedia.src : "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?q=80&w=2564&auto=format&fit=crop";
-
             const data = {
                 title: document.getElementById('title').value,
                 category: categorySelect.value,
                 image: thumb,
                 description: editor.innerText.slice(0, 200),
                 content: editor.innerHTML,
-                is_recommended: 0,
-                is_hero: document.getElementById('is_hero').checked
+                is_recommended: document.getElementById('is_recommended').checked,
+                is_hero: document.getElementById('is_hero').checked,
+                is_published: document.getElementById('is_published').checked
             };
-            
             try {
-                const res = await fetch('/api/portfolio' + (editId ? `?id=${editId}` : ''), {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                if (res.ok) {
-                    alert('성공적으로 저장되었습니다.');
-                    window.location.href = 'dashboard.html';
-                } else {
-                    saveBtn.disabled = false;
-                    saveBtn.innerText = '작품 저장하기';
-                }
-            } catch (err) {
-                saveBtn.disabled = false;
-                saveBtn.innerText = '작품 저장하기';
-            }
+                const res = await fetch('/api/portfolio' + (editId ? `?id=${editId}` : ''), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+                if (res.ok) { alert('성공적으로 저장되었습니다.'); window.location.href = 'dashboard.html'; }
+                else { saveBtn.disabled = false; saveBtn.innerText = '작품 저장하기'; }
+            } catch (err) { saveBtn.disabled = false; saveBtn.innerText = '작품 저장하기'; }
         });
-
         document.addEventListener('DOMContentLoaded', loadCategories);
     </script>
 </body>
