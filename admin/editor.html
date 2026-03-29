@@ -97,6 +97,11 @@
                     </div>
 
                     <div class="form-group">
+                        <label>AI Prompt</label>
+                        <textarea id="prompt" rows="4" placeholder="작품 생성에 사용된 프롬프트를 입력하세요..."></textarea>
+                    </div>
+
+                    <div class="form-group">
                         <label>본문 내용</label>
                         <div class="editor-wrapper">
                             <div class="editor-toolbar">
@@ -202,15 +207,12 @@
         // --- 2. Selection Management ---
         function saveSelection() {
             const sel = window.getSelection();
-            if (sel.getRangeAt && sel.rangeCount) {
-                lastSelection = sel.getRangeAt(0);
-            }
+            if (sel.getRangeAt && sel.rangeCount) { lastSelection = sel.getRangeAt(0); }
         }
         function restoreSelection() {
             if (lastSelection) {
                 const sel = window.getSelection();
-                sel.removeAllRanges();
-                sel.addRange(lastSelection);
+                sel.removeAllRanges(); sel.addRange(lastSelection);
             }
         }
         editor.addEventListener('blur', saveSelection);
@@ -238,8 +240,7 @@
         };
 
         function insertAtCursor(type, url) {
-            editor.focus();
-            restoreSelection();
+            editor.focus(); restoreSelection();
             const sel = window.getSelection();
             if (!sel.rangeCount) return;
             const range = sel.getRangeAt(0);
@@ -261,16 +262,14 @@
 
         // --- 4. SEO & UI ---
         function updateSEO() {
-            const text = editor.innerText;
-            const html = editor.innerHTML;
+            const text = editor.innerText; const html = editor.innerHTML;
             const hasMedia = html.includes('<img') || html.includes('<video');
             toggleCheck('check-media', hasMedia ? 'pass' : 'fail');
             toggleCheck('check-length', text.trim().length > 100 ? 'pass' : 'warn');
             toggleCheck('check-h2', html.includes('<h2') ? 'pass' : 'fail');
         }
         function toggleCheck(id, status) {
-            const el = document.getElementById(id);
-            if (!el) return;
+            const el = document.getElementById(id); if (!el) return;
             el.classList.remove('pass', 'warn', 'fail'); el.classList.add(status);
         }
         editor.addEventListener('input', updateSEO);
@@ -283,6 +282,7 @@
             document.getElementById('title').value = data.title;
             categorySelect.value = data.category;
             editor.innerHTML = data.content || '';
+            document.getElementById('prompt').value = data.prompt || '';
             document.getElementById('is_hero').checked = data.is_hero === 1;
             document.getElementById('is_recommended').checked = data.is_recommended === 1;
             document.getElementById('is_published').checked = data.is_published === 1;
@@ -301,6 +301,7 @@
                 image: thumb,
                 description: editor.innerText.slice(0, 200),
                 content: editor.innerHTML,
+                prompt: document.getElementById('prompt').value,
                 is_recommended: document.getElementById('is_recommended').checked,
                 is_hero: document.getElementById('is_hero').checked,
                 is_published: document.getElementById('is_published').checked

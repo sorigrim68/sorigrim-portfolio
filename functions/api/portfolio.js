@@ -27,16 +27,19 @@ export async function onRequest(context) {
         is_recommended INTEGER DEFAULT 0,
         is_hero INTEGER DEFAULT 0,
         is_published INTEGER DEFAULT 1,
+        prompt TEXT,
         createdAt TEXT
       )
     `).run();
 
     // Migration: Add columns if they don't exist
-    const columns = ['is_hero', 'is_published', 'views'];
+    const columns = ['is_hero', 'is_published', 'views', 'prompt'];
     for (const col of columns) {
       try { 
         if (col === 'views') {
           await env.DB.prepare(`ALTER TABLE sg_posts ADD COLUMN ${col} INTEGER DEFAULT 0`).run();
+        } else if (col === 'prompt') {
+          await env.DB.prepare(`ALTER TABLE sg_posts ADD COLUMN ${col} TEXT`).run();
         } else {
           await env.DB.prepare(`ALTER TABLE sg_posts ADD COLUMN ${col} INTEGER DEFAULT 1`).run(); 
         }
@@ -102,16 +105,16 @@ export async function onRequest(context) {
 
       if (id) {
         await env.DB.prepare(
-          "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ?, is_hero = ?, is_published = ? WHERE id = ?"
+          "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ?, is_hero = ?, is_published = ?, prompt = ? WHERE id = ?"
         ).bind(
-          data.title, data.category, data.image, data.description, data.content || "", isRec, isHero, isPub, id
+          data.title, data.category, data.image, data.description, data.content || "", isRec, isHero, isPub, data.prompt || "", id
         ).run();
         return Response.json({ success: true, action: "update" });
       } else {
         await env.DB.prepare(
-          "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, is_hero, is_published, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
+          "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, is_hero, is_published, prompt, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
         ).bind(
-          data.title, data.category, data.image, data.description, data.content || "", isRec, isHero, isPub, new Date().toISOString()
+          data.title, data.category, data.image, data.description, data.content || "", isRec, isHero, isPub, data.prompt || "", new Date().toISOString()
         ).run();
         return Response.json({ success: true, action: "insert" });
       }
