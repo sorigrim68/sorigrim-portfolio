@@ -89,7 +89,7 @@ window.loadArchiveInternal = async function(category = 'all') {
   try {
     const res = await fetch(`/api/portfolio${category !== 'all' ? `?category=${category}` : ''}`);
     const works = await res.json();
-    grid.innerHTML = works.map((work, i) => renderTechnicalCard(work, i)).join('');
+    grid.innerHTML = works.map((work, i) => window.renderTechnicalCard(work, i)).join('');
     setTimeout(() => document.querySelectorAll('.reveal').forEach(el => el.classList.add('active')), 100);
   } catch (e) { console.error(e); }
 };
@@ -112,7 +112,7 @@ async function loadRecommendedByBoard() {
             <h3 class="reveal" style="font-size:1.5rem; font-weight:900; color:var(--text-main); text-transform:uppercase;">${cat.name}.</h3>
             <a href="/portfolio/index.html?category=${encodeURIComponent(cat.name)}" style="font-size:0.8rem; font-weight:800; color:var(--primary); text-decoration:none;">VIEW ALL →</a>
           </div>
-          <div class="grid-archive">${top4.map((work, i) => renderTechnicalCard(work, i)).join('')}</div>
+          <div class="grid-archive">${top4.map((work, i) => window.renderTechnicalCard(work, i)).join('')}</div>
         </div>
       `;
     });
@@ -121,7 +121,7 @@ async function loadRecommendedByBoard() {
   } catch (e) { console.error(e); }
 }
 
-function renderTechnicalCard(work, index) {
+window.renderTechnicalCard = function(work, index) {
   let thumbUrl = work.image;
   if (!thumbUrl && work.content) {
     const div = document.createElement('div'); div.innerHTML = work.content;
