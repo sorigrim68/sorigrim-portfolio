@@ -9,13 +9,19 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(initHeroBackground, 100); 
   loadRecommendedByBoard();
   trackVisit();
-  loadSiteTexts(); // 사이트 문구 로드
+  loadSiteTexts();
   
   if (document.getElementById('portfolio-list')) {
     const urlParams = new URLSearchParams(window.location.search);
     loadArchiveInternal(urlParams.get('category') || 'all');
   }
 });
+
+// --- URL 자동 링크 변환 (Linkify) ---
+window.linkify = function(text) {
+  const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+  return text.replace(urlPattern, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+};
 
 // --- 사이트 문구 동적 로드 ---
 async function loadSiteTexts() {
@@ -24,26 +30,22 @@ async function loadSiteTexts() {
     const settings = await res.json();
     const getVal = (key) => settings.find(s => s.key === key)?.value;
 
-    // 1. 메인 히어로 (index.html)
     const hTitle = getVal('site_hero_title');
     const hSub = getVal('site_hero_sub');
     if (hTitle && document.querySelector('#hero h1')) document.querySelector('#hero h1').innerHTML = hTitle.replace(/\n/g, '<br>');
     if (hSub && document.querySelector('#hero p')) document.querySelector('#hero p').innerHTML = hSub.replace(/\n/g, '<br>');
 
-    // 2. 추천 섹션 (index.html)
     const rTitle = getVal('site_rec_title');
     const rDesc = getVal('site_rec_desc');
     if (rTitle && document.querySelector('#recommended .section-title')) document.querySelector('#recommended .section-title').innerText = rTitle;
     if (rDesc && document.querySelector('#recommended .section-desc')) document.querySelector('#recommended .section-desc').innerText = rDesc;
 
-    // 3. 아카이브 헤더 (portfolio/index.html)
     const aTitle = getVal('site_archive_title');
     if (aTitle && document.querySelector('.archive-header .section-title')) document.querySelector('.archive-header .section-title').innerText = aTitle;
 
   } catch (e) { console.error("Site Text Load Error", e); }
 }
 
-// --- 테마 관리 (다크모드) ---
 function initTheme() {
   const savedTheme = localStorage.getItem('sg-theme');
   if (savedTheme === 'dark') document.body.classList.add('dark-mode');

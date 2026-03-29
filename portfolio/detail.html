@@ -26,6 +26,7 @@
         .detail-body { padding: 6rem 0; max-width: 900px; margin: 0 auto; }
         .rich-text { font-size: 1.1rem; line-height: 1.8; }
         .rich-text img, .rich-text video { max-width: 100%; height: auto; margin: 2.5rem 0; border-radius: 8px; }
+        .rich-text a { color: var(--primary); text-decoration: underline; }
 
         .prompt-section { margin: 6rem 0; background: #111; border-radius: 12px; padding: 3rem; color: #EEE; }
         .prompt-box { font-family: monospace; font-size: 1rem; color: #BBB; white-space: pre-wrap; word-break: break-all; }
@@ -68,7 +69,7 @@
                         <div class="tag-list">${(d.tags || '').split(',').filter(t => t.trim()).map(t => `<a href="/portfolio/index.html?tag=${encodeURIComponent(t.trim())}" class="tag-item">#${t.trim()}</a>`).join('')}</div>
                     </header>
                     <div class="detail-body reveal">
-                        <div class="rich-text">${d.content || ''}</div>
+                        <div class="rich-text">${window.linkify ? window.linkify(d.content || '') : (d.content || '')}</div>
                         <div class="engagement-bar">
                             <button id="like-btn" class="like-btn" onclick="handleLike()">❤️ <span id="like-count">${d.likes || 0}</span> LIKES</button>
                         </div>
@@ -76,6 +77,7 @@
                         <div class="share-section"><h4>Share this Fragment</h4><div class="share-buttons">
                             <a href="https://twitter.com/intent/tweet?url=${currentUrl}&text=${shareText}" target="_blank" class="share-btn">𝕏</a>
                             <a href="https://www.threads.net/intent/post?text=${shareText}%20${currentUrl}" target="_blank" class="share-btn">@</a>
+                            <a href="https://www.facebook.com/sharer/sharer.php?u=${currentUrl}" target="_blank" class="share-btn">f</a>
                             <a href="https://t.me/share/url?url=${currentUrl}&text=${shareText}" target="_blank" class="share-btn">✈</a>
                             <button onclick="copyLink()" class="share-btn">🔗</button>
                         </div></div>
