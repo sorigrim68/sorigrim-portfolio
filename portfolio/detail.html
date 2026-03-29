@@ -16,6 +16,7 @@
         
         .detail-header { padding: 6rem 0 4rem; border-bottom: 1px solid var(--border); }
         .detail-header .tag { color: var(--primary); font-weight: 800; font-size: 0.85rem; margin-bottom: 1rem; display: block; text-transform: uppercase; }
+        .detail-header .meta-info { display: flex; gap: 1.5rem; font-size: 0.8rem; font-weight: 700; color: #AAA; margin-bottom: 2rem; text-transform: uppercase; }
         .detail-header h1 { font-size: clamp(2.2rem, 6vw, 4rem); font-weight: 850; letter-spacing: -0.04em; margin-bottom: 1.5rem; color: var(--secondary); line-height: 1.1; }
         .detail-header .desc { font-size: clamp(1.1rem, 2vw, 1.4rem); color: var(--text-muted); line-height: 1.6; max-width: 800px; }
 
@@ -23,6 +24,16 @@
         .rich-text { font-size: 1.1rem; line-height: 1.8; color: #333; }
         .rich-text h2 { font-size: 1.8rem; font-weight: 800; margin: 4rem 0 1.5rem; color: var(--secondary); }
         .rich-text img, .rich-text video { max-width: 100%; height: auto; margin: 2.5rem 0; border-radius: 8px; box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+
+        .share-section { margin-top: 6rem; padding-top: 4rem; border-top: 1px solid var(--border); }
+        .share-section h4 { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 2.5rem; text-align: center; letter-spacing: 0.1em; }
+        .share-buttons { display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+        .share-btn {
+            width: 50px; height: 50px; border-radius: 50%; border: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: center; background: white;
+            cursor: pointer; transition: 0.3s; text-decoration: none; color: var(--text-main); font-size: 1.2rem;
+        }
+        .share-btn:hover { background: var(--primary); color: white; border-color: var(--primary); transform: translateY(-5px); }
 
         .post-nav {
             margin-top: 8rem; padding-top: 4rem; border-top: 1px solid var(--border);
@@ -68,9 +79,12 @@
             
             document.title = `${work.title} — SORIGRIM`;
 
+            const currentUrl = encodeURIComponent(window.location.href);
+            const shareText = encodeURIComponent(`SORIGRIM | ${work.title}`);
+
             document.getElementById('detail-target').innerHTML = `
                 <div class="detail-hero reveal">
-                    ${work.image && work.image.toLowerCase().match(/\.(mp4|webm)$/) 
+                    ${work.image && work.image.toLowerCase().match(/\.(mp4|webm|ogg)$/) 
                         ? `<video src="${work.image}" muted loop autoplay playsinline></video>`
                         : `<img src="${work.image || ''}" alt="${work.title}">`
                     }
@@ -79,12 +93,26 @@
                     <header class="detail-header reveal">
                         <span class="tag">${work.category}</span>
                         <h1>${work.title}</h1>
+                        <div class="meta-info">
+                            <span>CREATED: ${new Date(work.createdAt).toLocaleDateString()}</span>
+                            <span>VIEWS: ${work.views?.toLocaleString() || 0}</span>
+                        </div>
                         <p class="desc">${work.description || ''}</p>
                     </header>
                     
                     <div class="detail-body reveal">
                         <div class="rich-text">${work.content || '콘텐츠 준비 중입니다.'}</div>
                         
+                        <div class="share-section">
+                            <h4>Share this Fragment</h4>
+                            <div class="share-buttons">
+                                <a href="https://twitter.com/intent/tweet?url=${currentUrl}&text=${shareText}" target="_blank" class="share-btn" title="Twitter(X)">𝕏</a>
+                                <a href="https://www.facebook.com/sharer/sharer.php?u=${currentUrl}" target="_blank" class="share-btn" title="Facebook">f</a>
+                                <a href="https://t.me/share/url?url=${currentUrl}&text=${shareText}" target="_blank" class="share-btn" title="Telegram">✈</a>
+                                <button onclick="copyToClipboard()" class="share-btn" title="Link Copy">🔗</button>
+                            </div>
+                        </div>
+
                         <nav class="post-nav">
                             ${work.prev ? `
                                 <a href="/portfolio/detail.html?id=${work.prev.id}" class="nav-item prev">
@@ -100,16 +128,21 @@
                                 </a>
                             ` : '<div></div>'}
                         </nav>
-
-                        <div style="margin-top: 8rem; text-align: center;">
-                            <a href="/portfolio/" class="btn-premium">목록으로 돌아가기</a>
-                        </div>
                     </div>
                 </div>
             `;
             
-            setTimeout(() => document.querySelectorAll('.reveal').forEach(el => el.classList.add('active')), 100);
+            setTimeout(() => {
+                document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
+            }, 100);
         }
+
+        window.copyToClipboard = () => {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('링크가 복사되었습니다.');
+            });
+        };
+
         document.addEventListener('DOMContentLoaded', loadDetail);
     </script>
 </body>

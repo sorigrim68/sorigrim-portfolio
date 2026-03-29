@@ -32,9 +32,15 @@ export async function onRequest(context) {
     `).run();
 
     // Migration: Add columns if they don't exist
-    const columns = ['is_hero', 'is_published'];
+    const columns = ['is_hero', 'is_published', 'views'];
     for (const col of columns) {
-      try { await env.DB.prepare(`ALTER TABLE sg_posts ADD COLUMN ${col} INTEGER DEFAULT 1`).run(); } catch (e) {}
+      try { 
+        if (col === 'views') {
+          await env.DB.prepare(`ALTER TABLE sg_posts ADD COLUMN ${col} INTEGER DEFAULT 0`).run();
+        } else {
+          await env.DB.prepare(`ALTER TABLE sg_posts ADD COLUMN ${col} INTEGER DEFAULT 1`).run(); 
+        }
+      } catch (e) {}
     }
 
     // GET Request handling
@@ -46,6 +52,12 @@ export async function onRequest(context) {
       }
 
       if (id) {
+        // 1. Increment View Count
+        if (!adminMode) {
+          await env.DB.prepare("UPDATE sg_posts SET views = views + 1 WHERE id = ?").bind(id).run();
+        }
+
+        // 2. Fetch Item
         const item = await env.DB.prepare("SELECT * FROM sg_posts WHERE id = ?").bind(id).first();
         if (!item) return Response.json({ error: "Item not found" }, { status: 404 });
 
