@@ -39,17 +39,42 @@ export async function onRequest(context) {
       // A. Visitor Analytics
       const dailyUnique = await env.DB.prepare("SELECT date, COUNT(DISTINCT ip_hash) as count FROM sg_stats GROUP BY date ORDER BY date DESC LIMIT 30").all();
       const totalViews = await env.DB.prepare("SELECT COUNT(*) as count FROM sg_stats").first();
-      const topPages = await env.DB.prepare("SELECT page, COUNT(*) as count FROM sg_stats GROUP BY page ORDER BY count DESC LIMIT 10").all();
-      const topReferrers = await env.DB.prepare("SELECT referrer, COUNT(*) as count FROM sg_stats WHERE referrer != '' AND referrer NOT LIKE '%sorigrim.com%' GROUP BY referrer ORDER BY count DESC LIMIT 10").all();
+      
+      // B. Popular Pages with Titles
+      const topPagesRaw = await env.DB.prepare(`
+        SELECT page, COUNT(*) as count FROM sg_stats GROUP BY page ORDER BY count DESC LIMIT 15
+      `).all();
 
-      // B. Storage Usage (R2)
-      // Note: Iterating all objects might be slow if there are thousands, but for portfolio it's fine.
+      const topPagesEnriched = [];
+      for (const p of topPagesRaw.results) {
+        let label = p.page;
+        if (p.page.includes('/portfolio/detail.html?id=')) {
+          const postId = p.page.split('id=')[1];
+          if (postId) {
+            const post = await env.DB.prepare("SELECT title FROM sg_posts WHERE id = ?").bind(postId).first();
+            if (post) label = `[작품] ${post.title}`;
+          }
+        } else if (p.page === '/' || p.page === '/index.html') {
+          label = '[메인] 홈 페이지';
+        } else if (p.page.includes('/portfolio/')) {
+          label = '[목록] 아카이브';
+        } else if (p.page.includes('about.html')) {
+          label = '[소개] About';
+        }
+        topPagesEnriched.push({ page: label, count: p.count, rawPath: p.page });
+      }
+
+      const topReferrers = await env.DB.prepare(`
+        SELECT referrer, COUNT(*) as count FROM sg_stats WHERE referrer != '' AND referrer NOT LIKE '%sorigrim.com%' GROUP BY referrer ORDER BY count DESC LIMIT 10
+      `).all();
+
+      // C. Storage Usage (R2)
       const r2List = await env.BUCKET.list();
       let r2TotalSize = 0;
       r2List.objects.forEach(obj => r2TotalSize += obj.size);
       const r2Count = r2List.objects.length;
 
-      // C. Database Metrics (D1 Row Counts as proxy for size)
+      // D. Database Metrics
       const postCount = await env.DB.prepare("SELECT COUNT(*) as c FROM sg_posts").first("c") || 0;
       const catCount = await env.DB.prepare("SELECT COUNT(*) as c FROM sg_categories").first("c") || 0;
       const statsRowCount = await env.DB.prepare("SELECT COUNT(*) as c FROM sg_stats").first("c") || 0;
@@ -58,20 +83,20 @@ export async function onRequest(context) {
         analytics: {
           dailyUnique: dailyUnique.results,
           totalViews: totalViews.count,
-          topPages: topPages.results,
+          topPages: topPagesEnriched,
           topReferrers: topReferrers.results
         },
         storage: {
           r2: {
             used: r2TotalSize,
-            limit: 10 * 1024 * 1024 * 1024, // 10GB Free Tier Limit
+            limit: 10 * 1024 * 1024 * 1024,
             count: r2Count
           },
           d1: {
             posts: postCount,
             categories: catCount,
             statsRows: statsRowCount,
-            limit: 5 * 1024 * 1024 * 1024 // 5GB D1 Limit
+            limit: 5 * 1024 * 1024 * 1024
           }
         }
       });
