@@ -100,11 +100,11 @@
             <div class="section-content">
                 <form id="profile-form" style="display: flex; flex-direction: column; gap: 1.5rem;">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                        <div><label>이름/타이틀</label><textarea id="p-name" rows="2" data-key="profile_name"></textarea></div>
-                        <div><label>이미지 URL</label><input type="url" id="p-image" data-key="profile_image"></div>
+                        <div><label>이름/타이틀</label><textarea data-key="profile_name" rows="2"></textarea></div>
+                        <div><label>이미지 URL</label><input type="url" data-key="profile_image"></div>
                     </div>
-                    <div><label>소개 문단 1</label><textarea id="p-bio1" rows="3" data-key="profile_bio_1"></textarea></div>
-                    <div><label>소개 문단 2</label><textarea id="p-bio2" rows="3" data-key="profile_bio_2"></textarea></div>
+                    <div><label>소개 문단 1</label><textarea data-key="profile_bio_1" rows="3"></textarea></div>
+                    <div><label>소개 문단 2</label><textarea data-key="profile_bio_2" rows="3"></textarea></div>
                     <button type="submit" class="btn-premium" style="width: 150px; padding: 0.8rem;">프로필 저장</button>
                 </form>
             </div>
@@ -119,16 +119,16 @@
             <div class="section-content">
                 <form id="site-text-form" style="display: flex; flex-direction: column; gap: 2rem;">
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                        <div><label>메인 히어로 타이틀</label><textarea id="site_hero_title" rows="2" data-key="site_hero_title"></textarea></div>
-                        <div><label>메인 히어로 서브설명</label><textarea id="site_hero_sub" rows="2" data-key="site_hero_sub"></textarea></div>
+                        <div><label>메인 히어로 타이틀</label><textarea data-key="site_hero_title" rows="2"></textarea></div>
+                        <div><label>메인 히어로 서브설명</label><textarea data-key="site_hero_sub" rows="2"></textarea></div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                        <div><label>추천 섹션 제목</label><input type="text" id="site_rec_title" data-key="site_rec_title"></div>
-                        <div><label>추천 섹션 설명</label><input type="text" id="site_rec_desc" data-key="site_rec_desc"></div>
+                        <div><label>추천 섹션 제목</label><input type="text" data-key="site_rec_title"></div>
+                        <div><label>추천 섹션 설명</label><input type="text" data-key="site_rec_desc"></div>
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                        <div><label>아카이브 페이지 제목</label><input type="text" id="site_archive_title" data-key="site_archive_title"></div>
-                        <div><label>푸터 브랜드 설명</label><textarea id="site_footer_desc" rows="2" data-key="site_footer_desc"></textarea></div>
+                        <div><label>아카이브 페이지 제목</label><input type="text" data-key="site_archive_title"></div>
+                        <div><label>푸터 브랜드 설명</label><textarea data-key="site_footer_desc" rows="2"></textarea></div>
                     </div>
                     <button type="submit" class="btn-premium" style="width: 150px; padding: 0.8rem;">문구 설정 저장</button>
                 </form>
@@ -153,12 +153,12 @@
             <div class="section-content">
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
                     <div class="glass-box"><label>R2 Media Storage</label><div id="r2-usage-text" style="font-size: 1.5rem; font-weight: 900; margin: 0.5rem 0;">0 MB / 10 GB</div><div class="usage-bar"><div id="r2-usage-fill" class="usage-fill" style="width: 0%;"></div></div><p id="r2-count" style="font-size: 0.7rem; color:#999;">0 files</p></div>
-                    <div class="glass-box"><label>D1 Database</label><div id="d1-usage-text" style="font-size: 1.5rem; font-weight: 900; margin: 0.5rem 0;">정상</div><div class="usage-bar"><div id="d1-usage-fill" class="usage-fill" style="width: 1%;"></div></div><p id="d1-counts" style="font-size: 0.7rem; color:#999;">Posts: 0 | Logs: 0</p></div>
+                    <div class="glass-box"><label>D1 Database</label><div id="d1-usage-text" style="font-size: 1.5rem; font-weight: 900; margin: 0.5rem 0;">정상</div><div class="usage-bar"><div id="d1-usage-fill" class="usage-fill" style="width: 1%;"></div></div><p id="d1-counts" style="font-size: 0.7rem; color:#999;">게시글 0개 | 카테고리 0개</p></div>
                 </div>
             </div>
         </div>
 
-        <!-- 07. 보안 설정 -->
+        <!-- 07. 보안 및 SNS -->
         <div class="admin-section" id="sec-security">
             <header class="section-header" onclick="toggleSection('sec-security')">
                 <h2>07. 보안 및 SNS 관리</h2>
@@ -167,14 +167,14 @@
             <div class="section-content">
                 <form id="password-form" style="display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 3rem;">
                     <div style="flex:1;"><label>관리자 비밀번호 변경</label><input type="password" id="new-password"></div>
-                    <button type="submit" class="btn-premium" style="width:auto; padding: 0 2rem;">변경</button>
+                    <button type="submit" class="btn-premium" style="width:auto; padding: 0 2.5rem;">변경</button>
                 </form>
-                <form id="sns-form" style="display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 2rem;"><div style="flex:1;"><input type="text" id="sns-key" placeholder="플랫폼"></div><div style="flex:2;"><input type="url" id="sns-value" placeholder="URL"></div><button type="submit" class="btn-premium" style="width:auto; padding: 0 2rem;">추가</button></form>
+                <form id="sns-form" style="display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 2rem;"><div style="flex:1;"><input type="text" id="sns-key" placeholder="플랫폼 이름"></div><div style="flex:2;"><input type="url" id="sns-value" placeholder="URL (https://...)"></div><button type="submit" class="btn-premium" style="width:auto; padding: 0 2rem;">추가</button></form>
                 <table class="admin-table"><thead><tr><th>플랫폼</th><th>URL</th><th>관리</th></tr></thead><tbody id="sns-admin-list"></tbody></table>
             </div>
         </div>
 
-        <!-- 08. 방문 통계 -->
+        <!-- 08. 방문 통계 분석 (복구 완료!) -->
         <div class="admin-section" id="sec-stats">
             <header class="section-header" onclick="toggleSection('sec-stats')">
                 <h2>08. 방문 통계 분석</h2>
@@ -182,10 +182,13 @@
             </header>
             <div class="section-content">
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
-                    <div class="glass-box"><label>페이지 뷰</label><div id="total-views" style="font-size: 2rem; font-weight: 900; color: var(--primary);">0</div></div>
-                    <div class="glass-box"><label>오늘 방문자</label><div id="today-unique" style="font-size: 2rem; font-weight: 900; color: #28a745;">0</div></div>
+                    <div class="glass-box"><label>페이지 뷰</label><div id="total-views" style="font-size: 2.2rem; font-weight: 900; color: var(--primary);">0</div></div>
+                    <div class="glass-box"><label>오늘 방문자</label><div id="today-unique" style="font-size: 2.2rem; font-weight: 900; color: #28a745;">0</div></div>
                 </div>
-                <div class="glass-box"><label>인기 페이지 (Top 10)</label><table style="width: 100%; font-size: 0.85rem; margin-top: 1rem;"><tbody id="top-pages-list"></tbody></table></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                    <div class="glass-box"><label>인기 페이지 (Top 10)</label><table style="width: 100%; font-size: 0.85rem; margin-top: 1rem;"><tbody id="top-pages-list"></tbody></table></div>
+                    <div class="glass-box"><label>유입 경로 분석 (Top Referral)</label><table style="width: 100%; font-size: 0.85rem; margin-top: 1rem;"><tbody id="top-referrers-list"></tbody></table></div>
+                </div>
             </div>
         </div>
     </main>
@@ -197,7 +200,7 @@
         window.logout = () => { document.cookie = "sg_auth_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;"; window.location.href = "/login.html"; };
         window.toggleSection = (id) => { document.getElementById(id).classList.toggle('active'); if(id === 'sec-explorer') loadAssets(); };
 
-        // --- Core Logic ---
+        // --- Core Functions ---
         async function loadCategories() {
             const res = await fetch('/api/categories'); categoriesData = await res.json();
             document.getElementById('category-list-ui').innerHTML = categoriesData.map((cat, idx) => `<div style="background:#F8F9FA; border:1px solid var(--border); padding:0.8rem 1.5rem; border-radius:8px; display:flex; align-items:center; justify-content:space-between;"><span style="font-weight:800; font-size:0.95rem;">${cat.name}</span><div style="display:flex; gap:0.5rem;"><button class="sort-btn" onclick="renameCategory(${cat.id}, '${cat.name}')">이름수정</button><button class="sort-btn" onclick="moveCategory(${idx}, -1)">▲</button><button class="sort-btn" onclick="moveCategory(${idx}, 1)">▼</button><button onclick="deleteCategory(${cat.id})" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-weight:900; margin-left:1rem;">×</button></div></div>`).join('');
@@ -229,12 +232,13 @@
                 const today = new Date().toISOString().split('T')[0];
                 const tUnique = d.analytics.dailyUnique.find(u => u.date === today)?.count || 0;
                 document.getElementById('today-unique').innerText = tUnique.toLocaleString();
-                document.getElementById('top-pages-list').innerHTML = d.analytics.topPages.map(p => `<tr><td style="padding:0.8rem 0; border-bottom:1px solid #EEE; font-weight:700;">${p.page}</td><td style="text-align:right; font-weight:800; color:var(--primary);">${p.count} views</td></tr>`).join('');
+                document.getElementById('top-pages-list').innerHTML = d.analytics.topPages.map(p => `<tr><td style="padding:0.6rem 0; border-bottom:1px solid #EEE; font-weight:700;">${p.page}</td><td style="text-align:right; font-weight:800; color:var(--primary);">${p.count} views</td></tr>`).join('');
+                document.getElementById('top-referrers-list').innerHTML = d.analytics.topReferrers.length ? d.analytics.topReferrers.map(r => `<tr><td style="padding:0.6rem 0; border-bottom:1px solid #EEE; font-weight:700; word-break:break-all;">${r.referrer}</td><td style="text-align:right; font-weight:800; color:#28a745;">${r.count} visits</td></tr>`).join('') : '<tr><td style="color:#999; text-align:center; padding:2rem;">직접 유입</td></tr>';
                 const usedMB = (d.storage.r2.used / (1024*1024)).toFixed(2);
                 document.getElementById('r2-usage-text').innerText = `${usedMB} MB / 10 GB`;
                 document.getElementById('r2-usage-fill').style.width = `${Math.min(100, (d.storage.r2.used/d.storage.r2.limit)*100)}%`;
                 document.getElementById('r2-count').innerText = `${d.storage.r2.count} files stored`;
-                document.getElementById('d1-counts').innerText = `Posts: ${d.storage.d1.posts} | Categories: ${d.storage.d1.categories}`;
+                document.getElementById('d1-counts').innerText = `Posts: ${d.storage.d1.posts} | Categories: ${d.storage.d1.categories} | Logs: ${d.storage.d1.statsRows}`;
                 document.getElementById('d1-usage-fill').style.width = `${Math.min(100, (d.storage.d1.posts*10))}%`;
             } catch(e) {}
         }
@@ -249,32 +253,35 @@
         }
         window.deleteAsset = async (n) => { if(confirm(`${n} 삭제?`)) { await fetch(`/api/assets?name=${n}`, { method: 'DELETE' }); loadAssets(); loadStats(); } };
 
-        // --- Save Settings ---
-        document.getElementById('profile-form').onsubmit = async (e) => { e.preventDefault(); const ks = ['profile_name','profile_bio_1','profile_bio_2','profile_image']; for(const k of ks) { const el = Array.from(e.target.elements).find(i => i.dataset?.key === k); if(el) await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,value:el.value,type:'profile'})}); } alert('저장완료'); };
-        document.getElementById('site-text-form').onsubmit = async (e) => { e.preventDefault(); const ks = ['site_hero_title','site_hero_sub','site_rec_title','site_rec_desc','site_archive_title','site_footer_desc']; for(const k of ks) { const el = Array.from(e.target.elements).find(i => i.dataset?.key === k); if(el) await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:k,value:el.value,type:'site_text'})}); } alert('저장완료'); };
-        document.getElementById('password-form').onsubmit = async (e) => { e.preventDefault(); await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:'admin_password',value:document.getElementById('new-password').value,type:'security'})}); alert('변경완료'); e.target.reset(); };
-
-        // --- Load Initial Values ---
-        async function loadAllInitialSettings() {
+        // --- Settings Management ---
+        const loadAllInitialSettings = async () => {
             try {
-                const res = await fetch('/api/settings');
-                const settings = await res.json();
-                settings.forEach(s => {
-                    const el = document.querySelector(`[data-key="${s.key}"]`);
-                    if (el) el.value = s.value;
-                });
+                const res = await fetch('/api/settings'); const settings = await res.json();
+                settings.forEach(s => { const el = document.querySelector(`[data-key="${s.key}"]`); if (el) el.value = s.value; });
             } catch (e) {}
-        }
+        };
+
+        const saveHandler = async (form, type) => {
+            const elements = Array.from(form.querySelectorAll('[data-key]'));
+            for (const el of elements) {
+                await fetch('/api/settings', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ key: el.dataset.key, value: el.value, type }) });
+            }
+            alert('저장 완료');
+        };
+
+        document.getElementById('profile-form').onsubmit = (e) => { e.preventDefault(); saveHandler(e.target, 'profile'); };
+        document.getElementById('site-text-form').onsubmit = (e) => { e.preventDefault(); saveHandler(e.target, 'site_text'); };
+        document.getElementById('password-form').onsubmit = async (e) => { e.preventDefault(); await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:'admin_password',value:document.getElementById('new-password').value,type:'security'})}); alert('변경완료'); e.target.reset(); };
 
         document.addEventListener('DOMContentLoaded', async () => {
             await loadCategories(); loadStats(); loadAllInitialSettings();
-            async function loadSNSAdmin() {
+            const loadSNS = async () => {
                 const res = await fetch('/api/settings'); const data = await res.json();
                 document.getElementById('sns-admin-list').innerHTML = data.filter(s => s.type === 'sns').map(item => `<tr><td style="font-weight:800;">${item.key}</td><td style="color:var(--text-muted);">${item.value}</td><td class="admin-actions"><button class="del-btn" onclick="deleteSNS(${item.id})">제거</button></td></tr>`).join('');
-            }
-            window.deleteSNS = async (id) => { if (confirm('삭제?')) { await fetch(`/api/settings?id=${id}`, { method: 'DELETE' }); loadSNSAdmin(); } };
-            document.getElementById('sns-form').onsubmit = async (e) => { e.preventDefault(); await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: document.getElementById('sns-key').value, value: document.getElementById('sns-value').value, type: 'sns' }) }); e.target.reset(); loadSNSAdmin(); };
-            loadSNSAdmin();
+            };
+            window.deleteSNS = async (id) => { if (confirm('삭제?')) { await fetch(`/api/settings?id=${id}`, { method: 'DELETE' }); loadSNS(); } };
+            document.getElementById('sns-form').onsubmit = async (e) => { e.preventDefault(); await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: document.getElementById('sns-key').value, value: document.getElementById('sns-value').value, type: 'sns' }) }); e.target.reset(); loadSNS(); };
+            loadSNS();
         });
     </script>
 </body>
