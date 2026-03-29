@@ -104,24 +104,50 @@ export async function onRequest(context) {
     // POST Request: Save Post
     if (request.method === "POST") {
       const data = await request.json();
+      
+      // Ensure booleans/ints are correctly cast for D1
       const isHero = data.is_hero ? 1 : 0;
       const isRec = data.is_recommended ? 1 : 0;
-      const isPub = data.is_published !== undefined ? (data.is_published ? 1 : 0) : 1;
+      const isPub = (data.is_published === true || data.is_published === 1) ? 1 : 0;
 
-      if (isHero === 1) await env.DB.prepare("UPDATE sg_posts SET is_hero = 0").run();
+      if (isHero === 1) {
+        await env.DB.prepare("UPDATE sg_posts SET is_hero = 0").run();
+      }
 
       if (id) {
+        // UPDATE
         await env.DB.prepare(
           "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ?, is_hero = ?, is_published = ?, prompt = ?, tags = ? WHERE id = ?"
         ).bind(
-          data.title, data.category, data.image, data.description, data.content || "", isRec, isHero, isPub, data.prompt || "", data.tags || "", id
+          data.title, 
+          data.category, 
+          data.image, 
+          data.description, 
+          data.content || "", 
+          isRec, 
+          isHero, 
+          isPub, 
+          data.prompt || "", 
+          data.tags || "", 
+          id
         ).run();
         return Response.json({ success: true, action: "update" });
       } else {
+        // INSERT
         await env.DB.prepare(
-          "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, is_hero, is_published, prompt, tags, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+          "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, is_hero, is_published, prompt, tags, createdAt, views, likes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)"
         ).bind(
-          data.title, data.category, data.image, data.description, data.content || "", isRec, isHero, isPub, data.prompt || "", data.tags || "", new Date().toISOString()
+          data.title, 
+          data.category, 
+          data.image, 
+          data.description, 
+          data.content || "", 
+          isRec, 
+          isHero, 
+          isPub, 
+          data.prompt || "", 
+          data.tags || "", 
+          new Date().toISOString()
         ).run();
         return Response.json({ success: true, action: "insert" });
       }
@@ -133,6 +159,7 @@ export async function onRequest(context) {
     }
 
   } catch (e) {
+    console.error("D1 Error:", e.message);
     return Response.json({ error: e.message }, { status: 500 });
   }
   return new Response("Method not allowed", { status: 405 });
