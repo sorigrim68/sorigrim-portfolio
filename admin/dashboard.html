@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="/style.css">
     <style>
         .admin-main { padding: 8rem 4rem; }
-        .admin-table { width: 100%; border-collapse: collapse; margin-top: 4rem; background: rgba(255,255,255,0.01); }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 2rem; background: rgba(255,255,255,0.01); }
         .admin-table th, .admin-table td { padding: 1.5rem; text-align: left; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .admin-table th { font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.25em; font-weight: 800; }
         .admin-table td { font-size: 0.85rem; vertical-align: middle; }
@@ -27,6 +27,14 @@
         .asset-card { background: white; border: 1px solid var(--border); padding: 1rem; text-align: center; border-radius: 4px; }
         .asset-card img, .asset-card video { width: 100%; aspect-ratio: 1; object-fit: cover; margin-bottom: 1rem; }
         .asset-card p { font-size: 0.6rem; color: var(--text-muted); word-break: break-all; margin-bottom: 1rem; }
+
+        .board-selector { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; }
+        .board-btn { 
+            padding: 0.8rem 2rem; border: 1px solid var(--border); background: white; 
+            font-size: 0.9rem; font-weight: 700; cursor: pointer; border-radius: 30px; 
+            transition: 0.3s; color: var(--text-muted);
+        }
+        .board-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,85,255,0.2); }
     </style>
 </head>
 <body class="bg-surface">
@@ -57,17 +65,13 @@
                 <div style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid var(--border); grid-column: 1 / -1;">
                     <h4 style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem;">유입 경로 분석 (Top Referral)</h4>
                     <table style="width: 100%; font-size: 0.85rem;">
-                        <tbody id="top-referrers-list">
-                            <!-- 유입 경로 목록 -->
-                        </tbody>
+                        <tbody id="top-referrers-list"></tbody>
                     </table>
                 </div>
                 <div style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid var(--border); grid-column: 1 / -1;">
                     <h4 style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem;">인기 페이지 (Top 10)</h4>
                     <table style="width: 100%; font-size: 0.85rem;">
-                        <tbody id="top-pages-list">
-                            <!-- 인기 페이지 목록 -->
-                        </tbody>
+                        <tbody id="top-pages-list"></tbody>
                     </table>
                 </div>
             </div>
@@ -76,16 +80,14 @@
         <!-- 1. 카테고리(게시판) 관리 -->
         <section style="margin-bottom: 10rem;">
             <header class="section-header">
-                <h2>카테고리 관리.</h2>
+                <h2>게시판(카테고리) 설정.</h2>
             </header>
             <div class="glass-box">
                 <form id="category-form" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
-                    <input type="text" id="cat-name" placeholder="새 카테고리 이름 (예: AI ART)" style="flex: 1;" required>
-                    <button type="submit" class="btn-premium" style="padding: 1rem 3rem;">추가</button>
+                    <input type="text" id="cat-name" placeholder="새 게시판 이름 (예: AI IMAGE)" style="flex: 1;" required>
+                    <button type="submit" class="btn-premium" style="padding: 1rem 3rem;">게시판 추가</button>
                 </form>
-                <div id="category-list-ui" style="display: flex; flex-wrap: wrap; gap: 1rem;">
-                    <!-- 카테고리 버튼들이 여기에 표시됨 -->
-                </div>
+                <div id="category-list-ui" style="display: flex; flex-wrap: wrap; gap: 1rem;"></div>
             </div>
         </section>
 
@@ -96,24 +98,29 @@
                 <button id="toggle-assets-btn" class="btn-premium" style="padding: 0.6rem 1.5rem; font-size: 0.8rem; background: var(--bg-light); color: var(--text-main); border: 1px solid var(--border);">펼치기</button>
             </header>
             <div id="asset-container" class="glass-box" style="display: none;">
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 2rem;">R2 버킷에 업로드된 모든 파일을 관리합니다. 사용하지 않는 파일을 삭제하여 용량을 절약하세요.</p>
-                <div id="asset-list" class="asset-grid">
-                    <!-- 자산 목록 -->
-                </div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 2rem;">R2 버킷에 업로드된 모든 파일을 관리합니다.</p>
+                <div id="asset-list" class="asset-grid"></div>
             </div>
         </section>
 
-        <!-- 3. 아카이브 관리 -->
+        <!-- 3. 게시글 관리 (게시판별 분리) -->
         <section style="margin-bottom: 10rem;">
             <header class="section-header">
-                <h2>전체 게시글 관리.</h2>
+                <h2>게시글 통합 관리.</h2>
             </header>
-            <table class="admin-table">
-                <thead>
-                    <tr><th>썸네일</th><th>제목</th><th>카테고리</th><th>관리</th></tr>
-                </thead>
-                <tbody id="admin-list"></tbody>
-            </table>
+            <div class="board-selector" id="board-selector-ui">
+                <!-- 게시판 선택 버튼들이 여기에 동적으로 생성됨 -->
+            </div>
+            <div id="admin-list-container" class="glass-box" style="padding: 0; background: none; border: none;">
+                <table class="admin-table">
+                    <thead>
+                        <tr><th>썸네일</th><th>제목</th><th>관리</th></tr>
+                    </thead>
+                    <tbody id="admin-list">
+                        <tr><td colspan="3" style="text-align:center; padding:4rem; color:#999;">위의 게시판을 선택하여 글 목록을 확인하세요.</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </section>
 
         <!-- 4. SNS 관리 -->
@@ -136,10 +143,14 @@
     </main>
 
     <script type="module">
+        let currentBoard = null;
+
         // --- 1. Category Logic ---
         async function loadCategories() {
             const res = await fetch('/api/categories');
             const data = await res.json();
+            
+            // 카테고리 관리 UI
             const container = document.getElementById('category-list-ui');
             container.innerHTML = data.map(cat => `
                 <div style="background:white; border:1px solid var(--border); padding:0.8rem 1.5rem; border-radius:30px; display:flex; align-items:center; gap:1rem;">
@@ -147,7 +158,27 @@
                     <button onclick="deleteCategory(${cat.id})" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-weight:900;">×</button>
                 </div>
             `).join('');
+
+            // 게시글 관리 게시판 선택 UI
+            const selector = document.getElementById('board-selector-ui');
+            selector.innerHTML = data.map(cat => `
+                <button class="board-btn ${currentBoard === cat.name ? 'active' : ''}" onclick="selectBoard('${cat.name}')">${cat.name}</button>
+            `).join('');
+            
+            // 만약 현재 선택된 보드가 삭제되었다면 초기화
+            if (currentBoard && !data.find(c => c.name === currentBoard)) {
+                currentBoard = null;
+                document.getElementById('admin-list').innerHTML = '<tr><td colspan="3" style="text-align:center; padding:4rem; color:#999;">게시판을 선택하세요.</td></tr>';
+            }
         }
+
+        window.selectBoard = (name) => {
+            currentBoard = name;
+            document.querySelectorAll('.board-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.innerText === name);
+            });
+            loadAdminList(name);
+        };
 
         const catForm = document.getElementById('category-form');
         catForm.addEventListener('submit', async (e) => {
@@ -159,13 +190,13 @@
                 body: JSON.stringify({ name })
             });
             catForm.reset();
-            loadCategories();
+            await loadCategories();
         });
 
         window.deleteCategory = async (id) => {
-            if (confirm('이 카테고리를 삭제하시겠습니까? 관련 글들의 카테고리 정보가 유실될 수 있습니다.')) {
+            if (confirm('이 게시판을 삭제하시겠습니까? 관련 글들의 카테고리 정보가 유실될 수 있습니다.')) {
                 await fetch(`/api/categories?id=${id}`, { method: 'DELETE' });
-                loadCategories();
+                await loadCategories();
             }
         };
 
@@ -191,10 +222,18 @@
         };
 
         // --- 3. Post List Logic ---
-        async function loadAdminList() {
-            const res = await fetch('/api/portfolio');
-            const data = await res.json();
+        async function loadAdminList(category) {
             const list = document.getElementById('admin-list');
+            list.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:4rem; color:#999;">불러오는 중...</td></tr>';
+            
+            const res = await fetch(`/api/portfolio?category=${encodeURIComponent(category)}`);
+            const data = await res.json();
+            
+            if (data.length === 0) {
+                list.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:4rem; color:#999;">'${category}' 게시판에 등록된 글이 없습니다.</td></tr>`;
+                return;
+            }
+
             list.innerHTML = data.map(item => {
                 let thumbUrl = item.image;
                 if (!thumbUrl && item.content) {
@@ -211,8 +250,7 @@
                 return `
                     <tr>
                         <td>${mediaHtml}</td>
-                        <td style="font-weight: 700;">${item.title} ${item.is_hero ? '<span style="color:var(--primary)">[HERO]</span>' : ''}</td>
-                        <td style="font-size: 0.75rem; font-weight: 800; color: var(--primary);">${item.category}</td>
+                        <td style="font-weight: 700;">${item.title} ${item.is_hero ? '<span style="color:var(--primary)">[HERO]</span>' : ''} ${item.is_recommended ? '<span style="color:#28a745">[추천]</span>' : ''}</td>
                         <td class="admin-actions">
                             <a href="editor.html?id=${item.id}">수정</a>
                             <button class="del-btn" onclick="deleteItem(${item.id})">삭제</button>
@@ -225,7 +263,7 @@
         window.deleteItem = async (id) => {
             if (confirm('게시글을 삭제하시겠습니까?')) {
                 await fetch(`/api/portfolio?id=${id}`, { method: 'DELETE' });
-                loadAdminList();
+                if (currentBoard) loadAdminList(currentBoard);
             }
         };
 
@@ -271,39 +309,20 @@
             try {
                 const res = await fetch('/api/stats');
                 const data = await res.json();
-                
                 document.getElementById('total-views').innerText = data.totalViews.toLocaleString();
-                
                 const todayStr = new Date().toISOString().split('T')[0];
                 const todayStat = data.dailyUnique.find(d => d.date === todayStr);
                 document.getElementById('today-unique').innerText = todayStat ? todayStat.count.toLocaleString() : '0';
-
-                const topPagesList = document.getElementById('top-pages-list');
-                topPagesList.innerHTML = data.topPages.map(p => `
-                    <tr>
-                        <td style="padding: 0.8rem 0; border-bottom: 1px solid var(--border); font-weight: 700;">${p.page}</td>
-                        <td style="padding: 0.8rem 0; border-bottom: 1px solid var(--border); text-align: right; color: var(--primary); font-weight: 800;">${p.count.toLocaleString()} views</td>
-                    </tr>
-                `).join('');
-
-                const topRefList = document.getElementById('top-referrers-list');
-                topRefList.innerHTML = data.topReferrers.length > 0 ? data.topReferrers.map(r => `
-                    <tr>
-                        <td style="padding: 0.8rem 0; border-bottom: 1px solid var(--border); font-weight: 700; word-break: break-all;">${r.referrer}</td>
-                        <td style="padding: 0.8rem 0; border-bottom: 1px solid var(--border); text-align: right; color: #28a745; font-weight: 800;">${r.count.toLocaleString()} visits</td>
-                    </tr>
-                `).join('') : '<tr><td colspan="2" style="text-align:center; padding:2rem; color:#999;">직접 유입 또는 데이터 없음</td></tr>';
+                document.getElementById('top-pages-list').innerHTML = data.topPages.map(p => `<tr><td style="padding:0.8rem 0; border-bottom:1px solid var(--border); font-weight:700;">${p.page}</td><td style="padding:0.8rem 0; border-bottom:1px solid var(--border); text-align:right; color:var(--primary); font-weight:800;">${p.count.toLocaleString()} views</td></tr>`).join('');
+                document.getElementById('top-referrers-list').innerHTML = data.topReferrers.length > 0 ? data.topReferrers.map(r => `<tr><td style="padding:0.8rem 0; border-bottom:1px solid var(--border); font-weight:700; word-break:break-all;">${r.referrer}</td><td style="padding:0.8rem 0; border-bottom:1px solid var(--border); text-align:right; color:#28a745; font-weight:800;">${r.count.toLocaleString()} visits</td></tr>`).join('') : '<tr><td colspan="2" style="text-align:center; padding:2rem; color:#999;">직접 유입 또는 데이터 없음</td></tr>';
             } catch (e) { console.error("Stats Load Error", e); }
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             loadCategories();
             loadAssets();
-            loadAdminList();
             loadSNSAdmin();
             loadStats();
-
-            // Toggle Assets Logic
             const toggleBtn = document.getElementById('toggle-assets-btn');
             const assetContainer = document.getElementById('asset-container');
             toggleBtn.addEventListener('click', () => {
