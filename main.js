@@ -3,12 +3,13 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  initTheme(); // 테마 초기화
+  initTheme();
   initPageTransition();
   initStickyNav();
   setTimeout(initHeroBackground, 100); 
   loadRecommendedByBoard();
   trackVisit();
+  loadSiteTexts(); // 사이트 문구 로드
   
   if (document.getElementById('portfolio-list')) {
     const urlParams = new URLSearchParams(window.location.search);
@@ -16,12 +17,36 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
+// --- 사이트 문구 동적 로드 ---
+async function loadSiteTexts() {
+  try {
+    const res = await fetch('/api/settings');
+    const settings = await res.json();
+    const getVal = (key) => settings.find(s => s.key === key)?.value;
+
+    // 1. 메인 히어로 (index.html)
+    const hTitle = getVal('site_hero_title');
+    const hSub = getVal('site_hero_sub');
+    if (hTitle && document.querySelector('#hero h1')) document.querySelector('#hero h1').innerHTML = hTitle.replace(/\n/g, '<br>');
+    if (hSub && document.querySelector('#hero p')) document.querySelector('#hero p').innerHTML = hSub.replace(/\n/g, '<br>');
+
+    // 2. 추천 섹션 (index.html)
+    const rTitle = getVal('site_rec_title');
+    const rDesc = getVal('site_rec_desc');
+    if (rTitle && document.querySelector('#recommended .section-title')) document.querySelector('#recommended .section-title').innerText = rTitle;
+    if (rDesc && document.querySelector('#recommended .section-desc')) document.querySelector('#recommended .section-desc').innerText = rDesc;
+
+    // 3. 아카이브 헤더 (portfolio/index.html)
+    const aTitle = getVal('site_archive_title');
+    if (aTitle && document.querySelector('.archive-header .section-title')) document.querySelector('.archive-header .section-title').innerText = aTitle;
+
+  } catch (e) { console.error("Site Text Load Error", e); }
+}
+
 // --- 테마 관리 (다크모드) ---
 function initTheme() {
   const savedTheme = localStorage.getItem('sg-theme');
   if (savedTheme === 'dark') document.body.classList.add('dark-mode');
-  
-  // 테마 토글 버튼 주입 (네비게이션 우측)
   const navLinks = document.querySelector('.nav-links');
   if (navLinks && !document.querySelector('.theme-toggle')) {
     const toggle = document.createElement('button');
@@ -173,6 +198,8 @@ class SorigrimFooter extends HTMLElement {
   async render() {
     const res = await fetch('/api/settings'); const settings = await res.json();
     const sns = settings.filter(s => s.type === 'sns');
+    const footerDesc = settings.find(s => s.key === 'site_footer_desc')?.value || "AI 시각 예술과 프롬프트 엔지니어링의 정수를 담은 개인 포트폴리오입니다.";
+
     this.shadowRoot.innerHTML = `
       <style>
         :host { display: block; padding: 8rem 0; background: var(--bg-light); color: var(--text-main); font-family: sans-serif; border-top: 1px solid var(--border); }
@@ -184,7 +211,7 @@ class SorigrimFooter extends HTMLElement {
         .bottom { width: 100%; margin-top: 6rem; padding-top: 2rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: #999; }
       </style>
       <div class="container">
-        <div class="brand"><h2>SORIGRIM</h2><p style="max-width:300px; font-size:0.9rem;">AI 시각 예술과 프롬프트 엔지니어링의 정수를 담은 개인 포트폴리오입니다.</p></div>
+        <div class="brand"><h2>SORIGRIM</h2><p style="max-width:300px; font-size:0.9rem;">${footerDesc}</p></div>
         <div class="links">
           <div class="group"><h4>Explore</h4><a href="/">홈으로</a><a href="/portfolio/">아카이브</a><a href="/about.html">About</a></div>
           <div class="group"><h4>Social</h4>${sns.map(s => `<a href="${s.value}" target="_blank">${s.key}</a>`).join('')}</div>

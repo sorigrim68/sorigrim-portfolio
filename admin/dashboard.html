@@ -23,11 +23,6 @@
         input, select, textarea { background: white; border: 1px solid var(--border); color: var(--text-main); padding: 1rem; transition: 0.3s; border-radius: 4px; font-family: inherit; }
         input:focus, textarea:focus { border-color: var(--primary); outline: none; }
 
-        .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1.5rem; margin-top: 3rem; }
-        .asset-card { background: white; border: 1px solid var(--border); padding: 1rem; text-align: center; border-radius: 4px; }
-        .asset-card img, .asset-card video { width: 100%; aspect-ratio: 1; object-fit: cover; margin-bottom: 1rem; }
-        .asset-card p { font-size: 0.6rem; color: var(--text-muted); word-break: break-all; margin-bottom: 1rem; }
-
         .board-selector { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem; }
         .board-btn { padding: 0.8rem 2rem; border: 1px solid var(--border); background: white; font-size: 0.9rem; font-weight: 700; cursor: pointer; border-radius: 30px; transition: 0.3s; color: var(--text-muted); }
         .board-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 10px 20px rgba(0,85,255,0.2); }
@@ -89,9 +84,49 @@
             </div>
         </section>
 
-        <!-- 4. 보안 설정 (신규) -->
+        <!-- 4. 사이트 문구 설정 (신규) -->
         <section style="margin-bottom: 10rem;">
-            <header class="section-header"><h2>04. 보안 설정.</h2></header>
+            <header class="section-header"><h2>04. 사이트 문구 및 문구 설정.</h2></header>
+            <div class="glass-box">
+                <form id="site-text-form" style="display: flex; flex-direction: column; gap: 2rem;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <label style="font-size:0.8rem; font-weight:800; color:var(--text-muted);">메인 히어로 타이틀</label>
+                            <textarea id="site_hero_title" rows="2" placeholder="Sculpting Vision with AI & Prompt."></textarea>
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <label style="font-size:0.8rem; font-weight:800; color:var(--text-muted);">메인 히어로 서브설명</label>
+                            <textarea id="site_hero_sub" rows="2" placeholder="프롬프트와 알고리즘이 만나는 접점에서..."></textarea>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <label style="font-size:0.8rem; font-weight:800; color:var(--text-muted);">추천 섹션 제목 (Featured)</label>
+                            <input type="text" id="site_rec_title" placeholder="Featured Artworks.">
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <label style="font-size:0.8rem; font-weight:800; color:var(--text-muted);">추천 섹션 설명</label>
+                            <input type="text" id="site_rec_desc" placeholder="엄선된 작업물입니다.">
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <label style="font-size:0.8rem; font-weight:800; color:var(--text-muted);">아카이브 페이지 제목</label>
+                            <input type="text" id="site_archive_title" placeholder="Artistic Fragments.">
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                            <label style="font-size:0.8rem; font-weight:800; color:var(--text-muted);">푸터 브랜드 설명</label>
+                            <textarea id="site_footer_desc" rows="2" placeholder="AI 아티스트의 개인 포트폴리오 공간입니다."></textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-premium" style="width: 200px; padding: 1rem;">문구 설정 저장</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- 5. 보안 설정 -->
+        <section style="margin-bottom: 10rem;">
+            <header class="section-header"><h2>05. 보안 설정.</h2></header>
             <div class="glass-box">
                 <form id="password-form" style="display: flex; gap: 1.5rem; align-items: flex-end;">
                     <div style="flex: 1; display:flex; flex-direction:column; gap:0.5rem;">
@@ -103,9 +138,9 @@
             </div>
         </section>
 
-        <!-- 5. 저장소 현황 -->
+        <!-- 6. 저장소 현황 -->
         <section style="margin-bottom: 10rem;">
-            <header class="section-header"><h2>05. 스토리지 현황.</h2></header>
+            <header class="section-header"><h2>06. 스토리지 현황.</h2></header>
             <div class="glass-box" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
                 <div style="background: white; padding: 2.5rem; border-radius: 8px; border: 1px solid var(--border);">
                     <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform:uppercase;">R2 Media Storage</h4>
@@ -122,8 +157,7 @@
             </div>
         </section>
 
-        <!-- 6. SNS 및 기타 -->
-        <!-- 7. 통계 분석 -->
+        <!-- 7. 방문 통계 분석 -->
         <section>
             <header class="section-header"><h2>07. 방문 통계 분석.</h2></header>
             <div id="stats-ui" class="glass-box" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
@@ -139,9 +173,8 @@
         let currentBoard = null;
         let categoriesData = [];
 
-        window.logout = () => { document.cookie = "sg_auth_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;"; window.location.href = "/admin/login.html"; };
+        window.logout = () => { document.cookie = "sg_auth_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;"; window.location.href = "/login.html"; };
 
-        // --- Logic implementations (Categories, Posts, Profile, Stats) ---
         async function loadCategories() {
             const res = await fetch('/api/categories'); categoriesData = await res.json();
             document.getElementById('category-list-ui').innerHTML = categoriesData.map((cat, idx) => `<div style="background:white; border:1px solid var(--border); padding:1rem 2rem; border-radius:8px; display:flex; align-items:center; justify-content:space-between;"><span style="font-weight:800; font-size:1rem; color:var(--text-main);">${cat.name}</span><div style="display:flex; gap:0.5rem; align-items:center;"><button class="sort-btn" onclick="renameCategory(${cat.id}, '${cat.name}')">이름 수정</button><button class="sort-btn" onclick="moveCategory(${idx}, -1)">▲</button><button class="sort-btn" onclick="moveCategory(${idx}, 1)">▼</button><button onclick="deleteCategory(${cat.id})" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-weight:900; margin-left:1rem;">삭제</button></div></div>`).join('');
@@ -166,14 +199,30 @@
                 return `<tr><td>${mediaHtml}</td><td>${statusHtml}</td><td style="font-weight:700;">${item.title}</td><td class="admin-actions"><a href="editor.html?id=${item.id}">수정</a><button class="del-btn" onclick="deleteItem(${item.id})">삭제</button></td></tr>`;
             }).join('');
         }
-        window.deleteItem = async (id) => { if (confirm('삭제하시겠습니까?')) { await fetch(`/api/portfolio?id=${id}`, { method: 'DELETE' }); if (currentBoard) loadAdminList(currentBoard); loadStats(); } };
+        window.deleteItem = async (id) => { if (confirm('게시글을 삭제하시겠습니까?')) { await fetch(`/api/portfolio?id=${id}`, { method: 'DELETE' }); if (currentBoard) loadAdminList(currentBoard); loadStats(); } };
+
+        const siteTextForm = document.getElementById('site-text-form');
+        async function loadSiteAdmin() {
+            try {
+                const res = await fetch('/api/settings'); const settings = await res.json();
+                const getVal = (key) => settings.find(s => s.key === key)?.value || '';
+                const keys = ['site_hero_title', 'site_hero_sub', 'site_rec_title', 'site_rec_desc', 'site_archive_title', 'site_footer_desc'];
+                keys.forEach(k => document.getElementById(k).value = getVal(k));
+                
+                document.getElementById('p-name').value = getVal('profile_name');
+                document.getElementById('p-bio1').value = getVal('profile_bio_1');
+                document.getElementById('p-bio2').value = getVal('profile_bio_2');
+                document.getElementById('p-image').value = getVal('profile_image');
+            } catch (e) {}
+        }
+        siteTextForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const keys = ['site_hero_title', 'site_hero_sub', 'site_rec_title', 'site_rec_desc', 'site_archive_title', 'site_footer_desc'];
+            for (const key of keys) { const val = document.getElementById(key).value; await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key, value: val, type: 'site_text' }) }); }
+            alert('사이트 문구가 저장되었습니다.');
+        });
 
         const profileForm = document.getElementById('profile-form');
-        async function loadProfileAdmin() {
-            const res = await fetch('/api/settings'); const settings = await res.json();
-            const getVal = (key) => settings.find(s => s.key === key)?.value || '';
-            document.getElementById('p-name').value = getVal('profile_name'); document.getElementById('p-bio1').value = getVal('profile_bio_1'); document.getElementById('p-bio2').value = getVal('profile_bio_2'); document.getElementById('p-image').value = getVal('profile_image');
-        }
         profileForm.addEventListener('submit', async (e) => {
             e.preventDefault(); const keys = ['profile_name', 'profile_bio_1', 'profile_bio_2', 'profile_image'];
             for (const key of keys) { const val = document.getElementById(`p-${key.replace('profile_', '')}`).value; await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key, value: val, type: 'profile' }) }); }
@@ -184,7 +233,7 @@
         passForm.addEventListener('submit', async (e) => {
             e.preventDefault(); const newPass = document.getElementById('new-password').value;
             await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: 'admin_password', value: newPass, type: 'security' }) });
-            alert('비밀번호가 변경되었습니다. 다음 로그인부터 적용됩니다.'); passForm.reset();
+            alert('비밀번호가 변경되었습니다.'); passForm.reset();
         });
 
         async function loadStats() {
@@ -204,7 +253,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            loadCategories(); loadProfileAdmin(); loadStats();
+            loadCategories(); loadSiteAdmin(); loadStats();
             const toggleBtn = document.getElementById('toggle-assets-btn');
             const assetContainer = document.getElementById('asset-container');
             toggleBtn.addEventListener('click', () => {
