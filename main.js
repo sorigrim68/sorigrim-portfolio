@@ -10,8 +10,12 @@ document.addEventListener('DOMContentLoaded', () => {
   trackVisit(); // 방문 통계 트래킹
   
   if (document.getElementById('portfolio-list')) {
-    // 초기 로딩 (전체보기)
-    loadArchiveInternal('all');
+    // URL 파라미터 확인 (카테고리 필터 연동)
+    const urlParams = new URLSearchParams(window.location.search);
+    const category = urlParams.get('category') || 'all';
+    
+    // 초기 로딩 (파라미터가 있으면 해당 카테고리, 없으면 전체)
+    loadArchiveInternal(category);
   }
 });
 
@@ -97,7 +101,7 @@ async function loadRecommendedByBoard() {
     const catRes = await fetch('/api/categories');
     const categories = await catRes.json();
 
-    // 2. 모든 글 가져오기 (메모리상에서 분류하는 것이 여러번 API 호출보다 효율적일 수 있음)
+    // 2. 모든 글 가져오기
     const postRes = await fetch('/api/portfolio');
     const allPosts = await postRes.json();
 
@@ -133,7 +137,6 @@ async function loadRecommendedByBoard() {
     });
 
     container.innerHTML = finalHtml;
-    container.classList.remove('grid-archive'); // 이제 하위에서 그리드를 가짐
     
     setTimeout(() => {
       document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));

@@ -53,14 +53,29 @@
     <script defer src="/main.js" type="module"></script>
     <script type="module">
         async function initDynamicFilters() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const activeCat = urlParams.get('category') || 'all';
+
             try {
                 const res = await fetch('/api/categories');
                 const cats = await res.json();
                 const nav = document.getElementById('dynamic-filter-nav');
+                
+                // 전체보기 버튼 상태 처리
+                const allBtn = nav.querySelector('button[data-filter="all"]');
+                if (activeCat === 'all') allBtn.classList.add('active');
+                else allBtn.classList.remove('active');
+                allBtn.onclick = () => {
+                    nav.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+                    allBtn.classList.add('active');
+                    if (window.loadArchiveInternal) window.loadArchiveInternal('all');
+                };
+
                 cats.forEach(cat => {
                     const btn = document.createElement('button');
                     btn.textContent = cat.name;
                     btn.setAttribute('data-filter', cat.name);
+                    if (cat.name === activeCat) btn.classList.add('active');
                     btn.onclick = () => {
                         nav.querySelectorAll('button').forEach(b => b.classList.remove('active'));
                         btn.classList.add('active');
