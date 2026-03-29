@@ -40,6 +40,31 @@
 
     <main class="admin-main container">
         
+        <!-- 0. 방문 통계 분석 -->
+        <section style="margin-bottom: 10rem;">
+            <header class="section-header">
+                <h2>방문 통계 분석.</h2>
+            </header>
+            <div class="glass-box" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid var(--border);">
+                    <h4 style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">누적 페이지 뷰</h4>
+                    <div id="total-views" style="font-size: 2.5rem; font-weight: 900; color: var(--primary);">0</div>
+                </div>
+                <div style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid var(--border);">
+                    <h4 style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">오늘의 유니크 방문자</h4>
+                    <div id="today-unique" style="font-size: 2.5rem; font-weight: 900; color: #28a745;">0</div>
+                </div>
+                <div style="background: white; padding: 2rem; border-radius: 8px; border: 1px solid var(--border); grid-column: 1 / -1;">
+                    <h4 style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem;">인기 페이지 (Top 10)</h4>
+                    <table style="width: 100%; font-size: 0.85rem;">
+                        <tbody id="top-pages-list">
+                            <!-- 인기 페이지 목록 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
         <!-- 1. 카테고리(게시판) 관리 -->
         <section style="margin-bottom: 10rem;">
             <header class="section-header">
@@ -233,11 +258,34 @@
             }
         };
 
+        // --- 0. Stats Logic ---
+        async function loadStats() {
+            try {
+                const res = await fetch('/api/stats');
+                const data = await res.json();
+                
+                document.getElementById('total-views').innerText = data.totalViews.toLocaleString();
+                
+                const todayStr = new Date().toISOString().split('T')[0];
+                const todayStat = data.dailyUnique.find(d => d.date === todayStr);
+                document.getElementById('today-unique').innerText = todayStat ? todayStat.count.toLocaleString() : '0';
+
+                const topPagesList = document.getElementById('top-pages-list');
+                topPagesList.innerHTML = data.topPages.map(p => `
+                    <tr>
+                        <td style="padding: 0.8rem 0; border-bottom: 1px solid var(--border); font-weight: 700;">${p.page}</td>
+                        <td style="padding: 0.8rem 0; border-bottom: 1px solid var(--border); text-align: right; color: var(--primary); font-weight: 800;">${p.count.toLocaleString()} views</td>
+                    </tr>
+                `).join('');
+            } catch (e) { console.error("Stats Load Error", e); }
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             loadCategories();
             loadAssets();
             loadAdminList();
             loadSNSAdmin();
+            loadStats();
 
             // Toggle Assets Logic
             const toggleBtn = document.getElementById('toggle-assets-btn');

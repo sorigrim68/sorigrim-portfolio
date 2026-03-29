@@ -21,6 +21,11 @@
 *   **Result:** 스토리지 탐색기(Asset Explorer)를 기본 '접힘' 상태로 변경하고 펼치기 기능을 추가하여 관리자 대시보드 가시성 최적화.
 *   **Result:** Git Push 연동을 통한 실시간 클라우드플레어 페이지 배포(Automated Deployment) 워크플로우 확립.
 
+### **Phase 9: Landing Page Expansion & Advanced Analytics**
+*   **Result:** 랜딩 페이지 추천 작품 노출 수를 기존 9개에서 15개로 확대하여 콘텐츠 가독성 및 노출 기회 증대.
+*   **Result:** 게시글 에디터에 '추천 작품 등록' 체크박스를 추가하여 수동으로 메인 페이지 노출 제어 기능 구현.
+*   **Result:** 방문자 통계 분석 시스템(`sg_stats`) 구축: 누적 페이지 뷰, 일일 유니크 방문자, 인기 페이지 순위 실시간 대시보드 제공.
+
 ## **5. Verification & Testing**
 1.  게시글 수정 시 `is_hero` 체크를 통해 메인 배경이 즉시 변경되는지 확인.
 2.  스크롤 시 내비게이션 바의 배경색 전환 확인.

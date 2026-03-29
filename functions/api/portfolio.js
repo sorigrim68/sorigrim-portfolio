@@ -49,13 +49,13 @@ export async function onRequest(context) {
         if (!item) return Response.json({ error: "Item not found" }, { status: 404 });
 
         // Fetch Next & Prev
-        const next = await env.DB.prepare("SELECT id, title FROM sg_posts WHERE id > ? AND category != 'HERO_CONFIG' ORDER BY id ASC LIMIT 1").bind(id).first();
-        const prev = await env.DB.prepare("SELECT id, title FROM sg_posts WHERE id < ? AND category != 'HERO_CONFIG' ORDER BY id DESC LIMIT 1").bind(id).first();
+        const next = await env.DB.prepare("SELECT id, title FROM sg_posts WHERE id > ? AND (category != 'HERO_CONFIG' OR category IS NULL) ORDER BY id ASC LIMIT 1").bind(id).first();
+        const prev = await env.DB.prepare("SELECT id, title FROM sg_posts WHERE id < ? AND (category != 'HERO_CONFIG' OR category IS NULL) ORDER BY id DESC LIMIT 1").bind(id).first();
 
         return Response.json({ ...item, next, prev });
       }
 
-      let query = "SELECT * FROM sg_posts WHERE category != 'HERO_CONFIG'"; 
+      let query = "SELECT * FROM sg_posts WHERE (category != 'HERO_CONFIG' OR category IS NULL)"; 
       let params = [];
       if (recommended === 'true') {
         query += " AND is_recommended = 1";

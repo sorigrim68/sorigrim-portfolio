@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initStickyNav();
   setTimeout(initHeroBackground, 100); 
   loadRecommended();
+  trackVisit(); // 방문 통계 트래킹
   
   if (document.getElementById('portfolio-list')) {
     // 초기 로딩 (전체보기)
@@ -88,10 +89,10 @@ async function loadRecommended() {
   const grid = document.getElementById('recommended-grid');
   if (!grid) return;
   try {
-    const res = await fetch('/api/portfolio');
+    const res = await fetch('/api/portfolio?recommended=true');
     const works = await res.json();
     if (works && works.length > 0) {
-      grid.innerHTML = works.slice(0, 9).map((work, i) => renderTechnicalCard(work, i)).join('');
+      grid.innerHTML = works.slice(0, 15).map((work, i) => renderTechnicalCard(work, i)).join('');
       setTimeout(() => {
         document.querySelectorAll('.reveal').forEach(el => el.classList.add('active'));
       }, 100);
@@ -128,6 +129,17 @@ window.navigate = (url) => {
   if (overlay) overlay.classList.remove('hidden');
   setTimeout(() => { window.location.href = url; }, 500);
 };
+
+// --- 방문 통계 트래킹 ---
+async function trackVisit() {
+  try {
+    fetch('/api/stats', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ page: window.location.pathname })
+    });
+  } catch (e) {}
+}
 
 class SorigrimFooter extends HTMLElement {
   constructor() { super(); this.attachShadow({ mode: 'open' }); }
