@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SORIGRIM | Pro Editor</title>
+    <title>SORIGRIM | Full-Featured Pro Editor</title>
     <link rel="stylesheet" href="/style.css">
     <style>
         .editor-layout { display: grid; grid-template-columns: 1fr 350px; gap: 2rem; padding: 8rem 0; align-items: start; }
@@ -15,6 +15,7 @@
             color: var(--text-main); font-family: inherit; font-size: 1rem; border-radius: 4px;
         }
         
+        /* 툴바 스타일 완벽 복구 */
         .editor-toolbar {
             display: flex; gap: 0.5rem; padding: 0.8rem; background: var(--bg-light); 
             border-bottom: 1px solid var(--border); flex-wrap: wrap;
@@ -40,7 +41,8 @@
         }
 
         .rich-editor { height: 700px; overflow-y: auto; padding: 3rem; outline: none; font-size: 1.1rem; line-height: 1.8; background: white; }
-        
+
+        /* 사이드바 SEO 복구 */
         .editor-sidebar { position: sticky; top: 120px; display: flex; flex-direction: column; gap: 1.5rem; }
         .sidebar-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; }
         .sidebar-card h4 { font-size: 0.9rem; font-weight: 800; margin-bottom: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.8rem; }
@@ -50,13 +52,15 @@
         .seo-check.warn .status { background: #ffc107; }
         .seo-check.fail .status { background: #dc3545; }
 
+        /* 하단 옵션 정렬 완벽 복구 */
         .bottom-options { background: var(--bg-light); padding: 2rem; border-radius: 8px; margin-top: 2rem; display: flex; flex-direction: column; gap: 1.2rem; }
-        .option-item { display: flex; align-items: center; gap: 1rem; cursor: pointer; }
-        .option-item input { width: 20px; height: 20px; }
+        .option-item { display: flex; align-items: center; gap: 1rem; cursor: pointer; user-select: none; }
+        .option-item input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; margin: 0; }
+        .option-item span { font-size: 0.95rem; font-weight: 700; color: var(--text-main); }
 
         #save-btn { width: 100%; padding: 1.5rem; font-size: 1.1rem; font-weight: 800; margin-top: 2rem; }
         
-        /* Modal for Template */
+        /* 모달 스타일 */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 10000; }
         .modal-content { background: white; padding: 3rem; border-radius: 12px; width: 90%; max-width: 600px; }
         .template-item { padding: 1rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 1rem; cursor: pointer; transition: 0.3s; }
@@ -65,6 +69,8 @@
         .upload-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); display: none; align-items: center; justify-content: center; z-index: 10000; flex-direction: column; gap: 2rem; }
         .spinner { width: 40px; height: 40px; border: 3px solid #eee; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 1200px) { .editor-layout { grid-template-columns: 1fr; } .editor-sidebar { position: static; order: 2; } }
     </style>
 </head>
 <body>
@@ -74,14 +80,10 @@
         <div class="modal-content">
             <h3 style="margin-bottom:2rem;">프롬프트 템플릿</h3>
             <div id="template-list">
-                <div class="template-item" onclick="applyTemplate('cinematic')">
-                    <strong>🎬 Cinematic Photo</strong><br><small>초고화질, 8k, 영화적 조명, 얕은 심도...</small>
-                </div>
-                <div class="template-item" onclick="applyTemplate('negative')">
-                    <strong>🚫 Standard Negative</strong><br><small>blur, distorted, low quality, text, watermark...</small>
-                </div>
+                <div class="template-item" onclick="applyTemplate('cinematic')"><strong>🎬 Cinematic Photo</strong><br><small>high quality, 8k, cinematic lighting...</small></div>
+                <div class="template-item" onclick="applyTemplate('negative')"><strong>🚫 Standard Negative</strong><br><small>blur, low quality, distorted...</small></div>
             </div>
-            <button class="btn-premium" style="width:100%;" onclick="closeModal()">닫기</button>
+            <button class="btn-premium" style="width:100%; margin-top:1rem;" onclick="closeModal()">닫기</button>
         </div>
     </div>
 
@@ -95,17 +97,14 @@
         <div class="editor-layout">
             <div class="editor-main">
                 <form id="editor-form">
-                    <div class="form-group"><label>작품 제목</label><input type="text" id="title" required></div>
+                    <div class="form-group"><label>작품 제목</label><input type="text" id="title" required placeholder="제목을 입력하세요"></div>
                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:2rem;">
                         <div class="form-group"><label>카테고리</label><select id="category" required></select></div>
-                        <div class="form-group"><label>태그 (쉼표 구분)</label><input type="text" id="tags"></div>
+                        <div class="form-group"><label>태그 (쉼표 구분)</label><input type="text" id="tags" placeholder="Cyberpunk, Realistic"></div>
                     </div>
                     <div class="form-group">
-                        <div style="display:flex; justify-content:space-between;">
-                            <label>AI Prompt</label>
-                            <button type="button" onclick="openTemplates()" style="font-size:0.7rem; font-weight:800; color:var(--primary); border:none; background:none; cursor:pointer;">+ 템플릿 불러오기</button>
-                        </div>
-                        <textarea id="prompt" rows="4"></textarea>
+                        <div style="display:flex; justify-content:space-between;"><label>AI Prompt</label><button type="button" onclick="openTemplates()" style="font-size:0.7rem; font-weight:800; color:var(--primary); border:none; background:none; cursor:pointer;">+ 템플릿 불러오기</button></div>
+                        <textarea id="prompt" rows="4" placeholder="사용된 프롬프트..."></textarea>
                     </div>
 
                     <div class="form-group">
@@ -113,22 +112,30 @@
                         <div class="editor-wrapper">
                             <div class="editor-toolbar">
                                 <div class="toolbar-group">
-                                    <select onchange="execCmd('fontName', this.value)"><option value="Pretendard Variable">기본 글꼴</option><option value="serif">명조체</option></select>
-                                    <select onchange="execCmd('fontSize', this.value)"><option value="3">보통</option><option value="5">크게</option></select>
+                                    <select onchange="execCmd('fontName', this.value)"><option value="Pretendard Variable">기본 글꼴</option><option value="serif">명조체</option><option value="monospace">코드체</option></select>
+                                    <select onchange="execCmd('fontSize', this.value)"><option value="3">보통</option><option value="1">매우작게</option><option value="5">크게</option><option value="7">최대</option></select>
                                 </div>
                                 <div class="toolbar-group">
                                     <button type="button" onclick="execCmd('bold')">B</button>
                                     <button type="button" onclick="execCmd('italic')">I</button>
+                                    <button type="button" onclick="execCmd('underline')">U</button>
                                     <input type="color" onchange="execCmd('foreColor', this.value)" style="width:25px; height:25px; border:none; padding:0; background:none; cursor:pointer;">
                                 </div>
                                 <div class="toolbar-group">
+                                    <button type="button" onclick="execCmd('justifyLeft')">左</button>
+                                    <button type="button" onclick="execCmd('justifyCenter')">中</button>
+                                    <button type="button" onclick="execCmd('justifyRight')">右</button>
+                                </div>
+                                <div class="toolbar-group">
                                     <button type="button" onclick="execCmd('formatBlock', 'H2')">제목</button>
+                                    <button type="button" onclick="execCmd('formatBlock', 'P')">본문</button>
                                     <button type="button" onclick="insertColumns()" style="color:var(--primary);">2단 레이아웃</button>
                                 </div>
                                 <div class="toolbar-group">
                                     <button type="button" onclick="handleMediaUpload('image')">이미지</button>
                                     <button type="button" onclick="handleMediaUpload('video')">영상</button>
                                     <button type="button" onclick="promptLink()">🔗</button>
+                                    <button type="button" onclick="execCmd('removeFormat')">Clear</button>
                                 </div>
                             </div>
                             <div id="content-editor" class="rich-editor" contenteditable="true" spellcheck="false"></div>
@@ -136,9 +143,9 @@
                     </div>
 
                     <div class="bottom-options">
-                        <label class="option-item"><input type="checkbox" id="is_published" checked><span>🌐 웹사이트에 즉시 게시</span></label>
-                        <label class="option-item"><input type="checkbox" id="is_hero"><span>★ 메인 히어로 사용</span></label>
-                        <label class="option-item"><input type="checkbox" id="is_recommended"><span>✔ 추천 작품 등록</span></label>
+                        <label class="option-item"><input type="checkbox" id="is_published" checked><span>🌐 웹사이트에 즉시 게시 (체크 해제 시 임시저장)</span></label>
+                        <label class="option-item"><input type="checkbox" id="is_hero"><span>★ 이 게시글의 썸네일을 메인 히어로 이미지로 사용</span></label>
+                        <label class="option-item"><input type="checkbox" id="is_recommended"><span>✔ 이 게시글을 메인 페이지 추천 작품으로 등록</span></label>
                     </div>
                     <button type="submit" id="save-btn" class="btn-premium">작품 저장하기</button>
                 </form>
@@ -150,12 +157,12 @@
                     <div id="seo-score-list">
                         <div id="check-media" class="seo-check"><div class="status"></div> 미디어 포함</div>
                         <div id="check-length" class="seo-check"><div class="status"></div> 글자 수</div>
-                        <div id="check-prompt" class="seo-check"><div class="status"></div> 프롬프트</div>
+                        <div id="check-prompt" class="seo-check"><div class="status"></div> 프롬프트 작성</div>
                     </div>
                 </div>
                 <div class="sidebar-card">
-                    <h4>이미지 캡션 도움말</h4>
-                    <p style="font-size:0.75rem; color:#666;">이미지를 삽입하면 아래에 자동으로 캡션란이 생성됩니다. 클릭하여 수정하세요.</p>
+                    <h4>편집 도움말</h4>
+                    <p style="font-size:0.75rem; color:#666; line-height:1.6;">- 이미지를 넣으면 하단에 캡션란이 생깁니다.<br>- 2단 레이아웃으로 잡지 같은 구성을 해보세요.<br>- 본문에 주소만 적어도 자동 링크가 됩니다.</p>
                 </div>
             </div>
         </div>
@@ -167,7 +174,7 @@
         const form = document.getElementById('editor-form'); const editor = document.getElementById('content-editor'); const mediaInput = document.getElementById('editor-media-upload');
         const urlParams = new URLSearchParams(window.location.search); const editId = urlParams.get('id');
 
-        // --- 1. Core Functions ---
+        // --- 1. 초기 데이터 로드 ---
         async function loadCategories() { 
             const res = await fetch('/api/categories'); const cats = await res.json(); 
             document.getElementById('category').innerHTML = cats.map(c => `<option value="${c.name}">${c.name}</option>`).join(''); 
@@ -187,16 +194,14 @@
 
         window.execCmd = (c, v = null) => { document.execCommand(c, false, v); editor.focus(); updateSEO(); };
 
-        // --- 2. Advanced Layout: Columns ---
+        // --- 2. 다단 레이아웃 ---
         window.insertColumns = () => {
-            const row = document.createElement('div');
-            row.className = 'sg-row';
+            const row = document.createElement('div'); row.className = 'sg-row';
             row.innerHTML = '<div class="sg-col" contenteditable="true"></div><div class="sg-col" contenteditable="true"></div>';
-            editor.appendChild(row);
-            editor.appendChild(document.createElement('p')).innerHTML = '<br>';
+            editor.appendChild(row); editor.appendChild(document.createElement('p')).innerHTML = '<br>';
         };
 
-        // --- 3. Media & Captions ---
+        // --- 3. 미디어 및 캡션 ---
         window.handleMediaUpload = (t) => {
             mediaInput.accept = t === 'image' ? 'image/*' : 'video/*';
             mediaInput.onchange = async () => {
@@ -215,22 +220,13 @@
         };
 
         function insertMediaWithCaption(t, url) {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'sg-image-wrapper';
+            const wrapper = document.createElement('div'); wrapper.className = 'sg-image-wrapper';
             const media = t === 'image' ? document.createElement('img') : document.createElement('video');
             media.src = url; media.style.maxWidth = "100%";
-            if (t === 'video') { media.controls = true; }
-            
-            const caption = document.createElement('div');
-            caption.className = 'sg-caption';
-            caption.contentEditable = "true";
-            caption.innerText = "여기에 설명을 입력하세요...";
-
-            wrapper.appendChild(media);
-            wrapper.appendChild(document.createElement('br'));
-            wrapper.appendChild(caption);
-            editor.appendChild(wrapper);
-            editor.appendChild(document.createElement('p')).innerHTML = '<br>';
+            if (t === 'video') media.controls = true;
+            const caption = document.createElement('div'); caption.className = 'sg-caption'; caption.contentEditable = "true"; caption.innerText = "설명을 입력하세요...";
+            wrapper.appendChild(media); wrapper.appendChild(document.createElement('br')); wrapper.appendChild(caption);
+            editor.appendChild(wrapper); editor.appendChild(document.createElement('p')).innerHTML = '<br>';
             updateSEO();
         }
 
@@ -239,34 +235,47 @@
             try { const res = await fetch('/api/assets', { method: 'POST', body: fd }); const d = await res.json(); return d.url; } catch (e) { return null; }
         }
 
-        // --- 4. Templates ---
-        window.openTemplates = () => document.getElementById('template-modal').style.display = 'flex';
-        window.closeModal = () => document.getElementById('template-modal').style.display = 'none';
-        window.applyTemplate = (type) => {
-            const p = document.getElementById('prompt');
-            if (type === 'cinematic') p.value += "high quality, 8k, cinematic lighting, shallow depth of field, masterpiece, highly detailed";
-            if (type === 'negative') p.value += " (negative): blur, distorted, low quality, text, watermark, bad anatomy, grainy";
-            closeModal();
+        // --- 4. 링크 및 SEO ---
+        window.promptLink = () => {
+            const url = prompt("URL:", "https://");
+            if (url && url !== "https://") {
+                document.execCommand("createLink", false, url);
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const el = selection.getRangeAt(0).commonAncestorContainer.parentElement;
+                    if (el.tagName === 'A') { el.target = "_blank"; el.rel = "noopener noreferrer"; }
+                }
+            }
         };
 
-        // --- 5. Auto Save ---
-        setInterval(() => {
-            const data = { title: document.getElementById('title').value, content: editor.innerHTML };
-            localStorage.setItem('sg-autosave', JSON.stringify(data));
-            document.getElementById('autosave-status').innerText = '작성 중 자동 저장됨 (' + new Date().toLocaleTimeString() + ')';
-            setTimeout(() => document.getElementById('autosave-status').innerText = '', 3000);
-        }, 30000);
-
-        // --- 6. SEO & Link ---
         function updateSEO() {
             const text = editor.innerText.trim(); const html = editor.innerHTML;
-            toggleCheck('check-media', (html.includes('<img') || html.includes('<video')) ? 'pass' : 'fail');
+            toggleCheck('check-media', html.includes('<img') || html.includes('<video') ? 'pass' : 'fail');
             toggleCheck('check-length', text.length > 50 ? 'pass' : 'warn');
             toggleCheck('check-prompt', document.getElementById('prompt').value.trim().length > 0 ? 'pass' : 'fail');
         }
         function toggleCheck(id, s) { const el = document.getElementById(id); if (el) { el.classList.remove('pass', 'warn', 'fail'); el.classList.add(s); } }
-        window.promptLink = () => { const url = prompt("URL:", "https://"); if (url) document.execCommand("createLink", false, url); };
+        editor.addEventListener('input', updateSEO);
+        document.getElementById('prompt').addEventListener('input', updateSEO);
 
+        // --- 5. 템플릿 및 자동저장 ---
+        window.openTemplates = () => document.getElementById('template-modal').style.display = 'flex';
+        window.closeModal = () => document.getElementById('template-modal').style.display = 'none';
+        window.applyTemplate = (t) => {
+            const p = document.getElementById('prompt');
+            if (t === 'cinematic') p.value += "high quality, 8k, cinematic lighting, shallow depth of field, masterpiece";
+            if (t === 'negative') p.value += " (negative): blur, distorted, low quality, text, watermark, grainy";
+            closeModal(); updateSEO();
+        };
+
+        setInterval(() => {
+            const d = { title: document.getElementById('title').value, content: editor.innerHTML };
+            localStorage.setItem('sg-autosave', JSON.stringify(d));
+            document.getElementById('autosave-status').innerText = '자동 저장됨 (' + new Date().toLocaleTimeString() + ')';
+            setTimeout(() => document.getElementById('autosave-status').innerText = '', 3000);
+        }, 30000);
+
+        // --- 6. 저장 제출 ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const div = document.createElement('div'); div.innerHTML = editor.innerHTML;
@@ -281,6 +290,7 @@
             };
             const res = await fetch('/api/portfolio' + (editId ? `?id=${editId}` : ''), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
             if (res.ok) { localStorage.removeItem('sg-autosave'); window.location.href = 'dashboard.html'; }
+            else alert('저장 오류');
         });
 
         document.addEventListener('DOMContentLoaded', loadCategories);
