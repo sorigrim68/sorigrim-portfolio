@@ -255,18 +255,14 @@
         }
 
         async function uploadFile(f) {
-            try {
-                // Large File Optimization: Use Stream (raw body) instead of FormData
-                const res = await fetch(`/api/assets?name=${encodeURIComponent(f.name)}`, {
-                    method: 'POST',
-                    body: f, // Direct file stream
-                    headers: { 'Content-Type': f.type }
-                });
-                const d = await res.json();
-                return d.url;
-            } catch (e) {
+            const fd = new FormData(); fd.append('file', f);
+            try { 
+                const res = await fetch('/api/assets', { method: 'POST', body: fd }); 
+                const d = await res.json(); 
+                return d.url; 
+            } catch (e) { 
                 console.error("Upload Error:", e);
-                return null;
+                return null; 
             }
         }
 

@@ -8,36 +8,22 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const name = url.searchParams.get('name');
 
-  // 1. POST: Handle File Uploads (Optimized for large files)
+  // 1. POST: Handle File Uploads
   if (request.method === "POST") {
     try {
-      let fileBody, originalName, contentType;
-      const urlName = url.searchParams.get('name');
-
-      if (urlName) {
-        // Direct stream upload (more efficient for large files)
-        fileBody = request.body;
-        originalName = urlName;
-        contentType = request.headers.get("content-type") || 'application/octet-stream';
-      } else {
-        // Fallback to FormData
-        const formData = await request.formData();
-        const file = formData.get('file');
-        if (!file) return new Response("No file uploaded", { status: 400 });
-        fileBody = file.stream();
-        originalName = file.name;
-        contentType = file.type || 'application/octet-stream';
-      }
+      const formData = await request.formData();
+      const file = formData.get('file');
+      if (!file) return new Response("No file uploaded", { status: 400 });
 
       // Sanitize filename
-      const safeName = decodeURIComponent(originalName)
+      const safeName = file.name
         .replace(/[^a-zA-Z0-9.\-_]/g, '_')
         .replace(/\s+/g, '-');
       
       const fileName = `${Date.now()}-${safeName}`;
       
-      await env.BUCKET.put(fileName, fileBody, {
-        httpMetadata: { contentType },
+      await env.BUCKET.put(fileName, file.stream(), {
+        httpMetadata: { contentType: file.type || 'application/octet-stream' },
       });
 
       return Response.json({ success: true, name: fileName, url: `/api/assets?name=${fileName}` });
