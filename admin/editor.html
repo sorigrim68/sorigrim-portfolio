@@ -255,13 +255,22 @@
         }
 
         async function uploadFile(f) {
-            const fd = new FormData(); fd.append('file', f);
             try { 
-                const res = await fetch('/api/assets', { method: 'POST', body: fd }); 
+                // High-performance direct stream upload (bypasses memory buffering)
+                const res = await fetch('/api/assets', { 
+                    method: 'POST', 
+                    body: f, // Direct file (Blob/Stream)
+                    headers: { 
+                        'X-FileName': encodeURIComponent(f.name),
+                        'Content-Type': f.type 
+                    }
+                }); 
                 const d = await res.json(); 
-                return d.url; 
+                if (d.success) return d.url;
+                else throw new Error(d.error || 'Upload failed');
             } catch (e) { 
                 console.error("Upload Error:", e);
+                alert(`업로드 실패: ${f.name} (${e.message})`);
                 return null; 
             }
         }

@@ -8,22 +8,36 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const name = url.searchParams.get('name');
 
-  // 1. POST: Handle File Uploads
+  // 1. POST: Handle File Uploads (Hybrid: Stream or FormData)
   if (request.method === "POST") {
     try {
-      const formData = await request.formData();
-      const file = formData.get('file');
-      if (!file) return new Response("No file uploaded", { status: 400 });
+      const fileNameHeader = request.headers.get("X-FileName");
+      let fileBody, originalName, contentType;
+
+      if (fileNameHeader) {
+        // --- High-Performance Stream Mode (Memory Efficient) ---
+        fileBody = request.body;
+        originalName = decodeURIComponent(fileNameHeader);
+        contentType = request.headers.get("Content-Type") || 'application/octet-stream';
+      } else {
+        // --- Legacy/Small File Mode ---
+        const formData = await request.formData();
+        const file = formData.get('file');
+        if (!file) return new Response("No file uploaded", { status: 400 });
+        fileBody = file.stream();
+        originalName = file.name;
+        contentType = file.type || 'application/octet-stream';
+      }
 
       // Sanitize filename
-      const safeName = file.name
+      const safeName = originalName
         .replace(/[^a-zA-Z0-9.\-_]/g, '_')
         .replace(/\s+/g, '-');
       
       const fileName = `${Date.now()}-${safeName}`;
       
-      await env.BUCKET.put(fileName, file.stream(), {
-        httpMetadata: { contentType: file.type || 'application/octet-stream' },
+      await env.BUCKET.put(fileName, fileBody, {
+        httpMetadata: { contentType },
       });
 
       return Response.json({ success: true, name: fileName, url: `/api/assets?name=${fileName}` });
