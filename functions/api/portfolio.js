@@ -129,10 +129,10 @@ export async function onRequest(context) {
         await env.DB.prepare(
           "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ?, is_hero = ?, is_published = ?, prompt = ?, tags = ? WHERE id = ?"
         ).bind(
-          data.title, 
-          data.category, 
-          data.image, 
-          data.description, 
+          data.title || "Untitled", 
+          data.category || "General", 
+          data.image || "", 
+          data.description || "", 
           data.content || "", 
           isRec, 
           isHero, 
@@ -147,10 +147,10 @@ export async function onRequest(context) {
         await env.DB.prepare(
           "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, is_hero, is_published, prompt, tags, createdAt, views, likes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)"
         ).bind(
-          data.title, 
-          data.category, 
-          data.image, 
-          data.description, 
+          data.title || "Untitled", 
+          data.category || "General", 
+          data.image || "", 
+          data.description || "", 
           data.content || "", 
           isRec, 
           isHero, 

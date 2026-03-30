@@ -474,6 +474,7 @@
                 category: document.getElementById('category').value || "General", 
                 tags: document.getElementById('tags').value || "", 
                 prompt: document.getElementById('prompt').value || "", 
+                description: editor.innerText.substring(0, 160).trim() || "", // New field for D1
                 content: processedContent || "", 
                 image: (first ? first.src : "") || "", 
                 is_published: document.getElementById('is_published').checked ? 1 : 0, 
