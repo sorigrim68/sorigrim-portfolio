@@ -97,6 +97,16 @@ export async function onRequest(context) {
       }
 
       query += " ORDER BY id DESC";
+
+      // --- Pagination Support ---
+      const limit = parseInt(url.searchParams.get('limit'));
+      const page = parseInt(url.searchParams.get('page')) || 1;
+      if (!isNaN(limit) && limit > 0) {
+        const offset = (page - 1) * limit;
+        query += " LIMIT ? OFFSET ?";
+        params.push(limit, offset);
+      }
+
       const { results } = await env.DB.prepare(query).bind(...params).all();
       return Response.json(results);
     }

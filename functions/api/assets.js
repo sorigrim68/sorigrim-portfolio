@@ -8,16 +8,36 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const name = url.searchParams.get('name');
 
-  // 1. POST: Handle File Uploads
+  // 1. POST: Handle File Uploads (Optimized for large files)
   if (request.method === "POST") {
     try {
-      const formData = await request.formData();
-      const file = formData.get('file');
-      if (!file) return new Response("No file uploaded", { status: 400 });
+      let fileBody, originalName, contentType;
+      const urlName = url.searchParams.get('name');
 
-      const fileName = `${Date.now()}-${file.name}`;
-      await env.BUCKET.put(fileName, file.stream(), {
-        httpMetadata: { contentType: file.type },
+      if (urlName) {
+        // Direct stream upload (more efficient for large files)
+        fileBody = request.body;
+        originalName = urlName;
+        contentType = request.headers.get("content-type") || 'application/octet-stream';
+      } else {
+        // Fallback to FormData
+        const formData = await request.formData();
+        const file = formData.get('file');
+        if (!file) return new Response("No file uploaded", { status: 400 });
+        fileBody = file.stream();
+        originalName = file.name;
+        contentType = file.type || 'application/octet-stream';
+      }
+
+      // Sanitize filename
+      const safeName = decodeURIComponent(originalName)
+        .replace(/[^a-zA-Z0-9.\-_]/g, '_')
+        .replace(/\s+/g, '-');
+      
+      const fileName = `${Date.now()}-${safeName}`;
+      
+      await env.BUCKET.put(fileName, fileBody, {
+        httpMetadata: { contentType },
       });
 
       return Response.json({ success: true, name: fileName, url: `/api/assets?name=${fileName}` });
@@ -53,7 +73,11 @@ export async function onRequest(context) {
     const headers = new Headers();
     object.writeHttpMetadata(headers);
     headers.set("etag", object.httpEtag);
-    headers.set("cache-control", "public, max-age=31536000");
+    headers.set("cache-control", "public, max-age=31536000, immutable");
+    headers.set("Timing-Allow-Origin", "*");
+    headers.set("Accept-Ranges", "bytes");
+    headers.set("Vary", "Accept");
+    
     return new Response(object.body, { headers });
   } catch (e) { return new Response(e.message, { status: 500 }); }
 }

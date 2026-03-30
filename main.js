@@ -109,16 +109,33 @@ async function initHeroBackground() {
   }
 }
 
-window.loadArchiveInternal = async function(category = 'all') {
+window.loadArchiveInternal = async function(category = 'all', page = 1, limit = 12) {
   const grid = document.getElementById('portfolio-list');
   if (!grid) return;
+  
+  // Show skeleton during load
   grid.innerHTML = Array(8).fill('<div class="archive-card skeleton" style="height:400px; border-radius:8px;"></div>').join('');
+  
   try {
-    const res = await fetch(`/api/portfolio${category !== 'all' ? `?category=${category}` : ''}`);
+    const url = new URL('/api/portfolio', window.location.origin);
+    if (category !== 'all') url.searchParams.set('category', category);
+    url.searchParams.set('page', page);
+    url.searchParams.set('limit', limit);
+    
+    const res = await fetch(url.toString());
     const works = await res.json();
+    
+    if (works.length === 0 && page === 1) {
+      grid.innerHTML = '<p style="text-align:center; padding: 5rem 0; width:100%; color:var(--text-muted);">등록된 작품이 없습니다.</p>';
+      return;
+    }
+    
     grid.innerHTML = works.map((work, i) => window.renderTechnicalCard(work, i)).join('');
     setTimeout(() => document.querySelectorAll('.reveal').forEach(el => el.classList.add('active')), 100);
-  } catch (e) { console.error(e); }
+  } catch (e) { 
+    console.error(e); 
+    grid.innerHTML = '<p style="text-align:center; padding: 5rem 0; width:100%; color:var(--text-muted);">데이터를 불러오는 중 오류가 발생했습니다.</p>';
+  }
 };
 
 async function loadRecommendedByBoard() {
@@ -198,19 +215,34 @@ class SorigrimFooter extends HTMLElement {
   constructor() { super(); this.attachShadow({ mode: 'open' }); }
   connectedCallback() { this.render(); }
   async render() {
-    const res = await fetch('/api/settings'); const settings = await res.json();
-    const sns = settings.filter(s => s.type === 'sns');
-    const footerDesc = settings.find(s => s.key === 'site_footer_desc')?.value || "AI 시각 예술과 프롬프트 엔지니어링의 정수를 담은 개인 포트폴리오입니다.";
+    let sns = [];
+    let footerDesc = "AI 시각 예술과 프롬프트 엔지니어링의 정수를 담은 개인 포트폴리오입니다.";
+    
+    try {
+      const res = await fetch('/api/settings');
+      if (res.ok) {
+        const settings = await res.json();
+        sns = settings.filter(s => s.type === 'sns') || [];
+        footerDesc = settings.find(s => s.key === 'site_footer_desc')?.value || footerDesc;
+      }
+    } catch (e) { console.error("Footer fetch error", e); }
 
     this.shadowRoot.innerHTML = `
       <style>
-        :host { display: block; padding: 8rem 0; background: var(--bg-light); color: var(--text-main); font-family: sans-serif; border-top: 1px solid var(--border); }
+        :host { display: block; padding: 8rem 0; background: #F8F9FA; color: #1A1A1A; font-family: sans-serif; border-top: 1px solid #E9ECEF; }
         .container { max-width: 1400px; margin: 0 auto; padding: 0 4rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4rem; }
         .brand h2 { font-size: 1.5rem; font-weight: 900; color: #0055FF; margin-bottom: 1rem; text-transform: uppercase; }
         .links { display: flex; gap: 5rem; }
         .group h4 { font-size: 0.8rem; font-weight: 800; margin-bottom: 1.5rem; text-transform: uppercase; }
         .group a { display: block; font-size: 0.9rem; color: #666; text-decoration: none; margin-bottom: 0.8rem; }
-        .bottom { width: 100%; margin-top: 6rem; padding-top: 2rem; border-top: 1px solid var(--border); font-size: 0.8rem; color: #999; }
+        .bottom { width: 100%; margin-top: 6rem; padding-top: 2rem; border-top: 1px solid #E9ECEF; font-size: 0.8rem; color: #999; display: flex; align-items: center; justify-content: space-between; }
+        .admin-access-btn {
+          font-size: 0.7rem; font-weight: 800; color: #0055FF; text-decoration: none; 
+          letter-spacing: 0.1em; transition: all 0.3s ease; border: 1px solid #0055FF; 
+          padding: 4px 12px; border-radius: 4px; display: inline-block;
+        }
+        .admin-access-btn:hover { background: #0055FF; color: white; }
+        @media (max-width: 768px) { .container { padding: 0 1.5rem; } .links { gap: 2rem; } .bottom { flex-direction: column; gap: 1.5rem; text-align: center; } }
       </style>
       <div class="container">
         <div class="brand"><h2>SORIGRIM</h2><p style="max-width:300px; font-size:0.9rem;">${footerDesc}</p></div>
@@ -218,7 +250,10 @@ class SorigrimFooter extends HTMLElement {
           <div class="group"><h4>Explore</h4><a href="/">홈으로</a><a href="/portfolio/">아카이브</a><a href="/about.html">About</a></div>
           <div class="group"><h4>Social</h4>${sns.map(s => `<a href="${s.value}" target="_blank">${s.key}</a>`).join('')}</div>
         </div>
-        <div class="bottom"><p>&copy; ${new Date().getFullYear()} SORIGRIM. All rights reserved.</p></div>
+        <div class="bottom">
+          <p>&copy; ${new Date().getFullYear()} SORIGRIM. All rights reserved.</p>
+          <a href="/admin/dashboard.html" class="admin-access-btn">ADMIN ACCESS</a>
+        </div>
       </div>
     `;
   }

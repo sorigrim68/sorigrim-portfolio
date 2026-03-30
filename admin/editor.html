@@ -112,30 +112,53 @@
                         <div class="editor-wrapper">
                             <div class="editor-toolbar">
                                 <div class="toolbar-group">
-                                    <select onchange="execCmd('fontName', this.value)"><option value="Pretendard Variable">기본 글꼴</option><option value="serif">명조체</option><option value="monospace">코드체</option></select>
-                                    <select onchange="execCmd('fontSize', this.value)"><option value="3">보통</option><option value="1">매우작게</option><option value="5">크게</option><option value="7">최대</option></select>
+                                    <select onchange="execCmd('fontName', this.value)" style="width:120px;">
+                                        <option value="Pretendard Variable">Pretendard</option>
+                                        <option value="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">System Sans</option>
+                                        <option value="'Times New Roman', Times, serif">System Serif</option>
+                                        <option value="'Courier New', Courier, monospace">Monospace</option>
+                                        <option value='Georgia, serif'>Georgia</option>
+                                        <option value='Verdana, sans-serif'>Verdana</option>
+                                    </select>
+                                    <select onchange="execCmd('fontSize', this.value)">
+                                        <option value="3">Normal</option>
+                                        <option value="1">Small</option>
+                                        <option value="5">Large</option>
+                                        <option value="7">Huge</option>
+                                    </select>
                                 </div>
                                 <div class="toolbar-group">
-                                    <button type="button" onclick="execCmd('bold')">B</button>
-                                    <button type="button" onclick="execCmd('italic')">I</button>
-                                    <button type="button" onclick="execCmd('underline')">U</button>
-                                    <input type="color" onchange="execCmd('foreColor', this.value)" style="width:25px; height:25px; border:none; padding:0; background:none; cursor:pointer;">
+                                    <button type="button" title="Bold" onclick="execCmd('bold')"><b>B</b></button>
+                                    <button type="button" title="Italic" onclick="execCmd('italic')"><i>I</i></button>
+                                    <button type="button" title="Underline" onclick="execCmd('underline')"><u>U</u></button>
+                                    <button type="button" title="Strikethrough" onclick="execCmd('strikeThrough')"><s>S</s></button>
+                                    <input type="color" title="Text Color" onchange="execCmd('foreColor', this.value)" style="width:25px; height:25px; border:none; padding:0; background:none; cursor:pointer;">
                                 </div>
                                 <div class="toolbar-group">
-                                    <button type="button" onclick="execCmd('justifyLeft')">左</button>
-                                    <button type="button" onclick="execCmd('justifyCenter')">中</button>
-                                    <button type="button" onclick="execCmd('justifyRight')">右</button>
+                                    <button type="button" title="Align Left" onclick="execCmd('justifyLeft')">Left</button>
+                                    <button type="button" title="Align Center" onclick="execCmd('justifyCenter')">Center</button>
+                                    <button type="button" title="Align Right" onclick="execCmd('justifyRight')">Right</button>
                                 </div>
                                 <div class="toolbar-group">
-                                    <button type="button" onclick="execCmd('formatBlock', 'H2')">제목</button>
-                                    <button type="button" onclick="execCmd('formatBlock', 'P')">본문</button>
-                                    <button type="button" onclick="insertColumns()" style="color:var(--primary);">2단 레이아웃</button>
+                                    <button type="button" title="Heading 2" onclick="execCmd('formatBlock', 'H2')">H2</button>
+                                    <button type="button" title="Heading 3" onclick="execCmd('formatBlock', 'H3')">H3</button>
+                                    <button type="button" title="Quote" onclick="execCmd('formatBlock', 'BLOCKQUOTE')" style="font-style:italic;">Quote</button>
+                                    <button type="button" title="Bullet List" onclick="execCmd('insertUnorderedList')">• List</button>
+                                    <button type="button" title="Numbered List" onclick="execCmd('insertOrderedList')">1. List</button>
+                                    <button type="button" title="Horizontal Rule" onclick="execCmd('insertHorizontalRule')">— HR</button>
                                 </div>
                                 <div class="toolbar-group">
-                                    <button type="button" onclick="handleMediaUpload('image')">이미지</button>
-                                    <button type="button" onclick="handleMediaUpload('video')">영상</button>
+                                    <button type="button" onclick="insertColumns()" style="color:var(--primary); font-weight:800;">2-Columns</button>
+                                    <button type="button" onclick="handleMediaUpload('image')">Image</button>
+                                    <button type="button" onclick="handleMediaUpload('video')">Video</button>
                                     <button type="button" onclick="promptLink()">🔗</button>
-                                    <button type="button" onclick="execCmd('removeFormat')">Clear</button>
+                                    <button type="button" onclick="execCmd('removeFormat')" style="color:#d9534f;">Clear</button>
+                                </div>
+                                <div class="toolbar-group">
+                                    <span style="font-size:0.65rem; font-weight:800; color:#AAA; margin-right:5px;">MEDIA SIZE:</span>
+                                    <button type="button" onclick="resizeSelectedMedia('25%')">25%</button>
+                                    <button type="button" onclick="resizeSelectedMedia('50%')">50%</button>
+                                    <button type="button" onclick="resizeSelectedMedia('100%')">100%</button>
                                 </div>
                             </div>
                             <div id="content-editor" class="rich-editor" contenteditable="true" spellcheck="false"></div>
@@ -221,8 +244,9 @@
 
         function insertMediaWithCaption(t, url) {
             const wrapper = document.createElement('div'); wrapper.className = 'sg-image-wrapper';
+            wrapper.style.transition = "width 0.4s ease"; // Smooth resize
             const media = t === 'image' ? document.createElement('img') : document.createElement('video');
-            media.src = url; media.style.maxWidth = "100%";
+            media.src = url; media.style.width = "100%"; // Media takes wrapper width
             if (t === 'video') media.controls = true;
             const caption = document.createElement('div'); caption.className = 'sg-caption'; caption.contentEditable = "true"; caption.innerText = "설명을 입력하세요...";
             wrapper.appendChild(media); wrapper.appendChild(document.createElement('br')); wrapper.appendChild(caption);
@@ -231,9 +255,35 @@
         }
 
         async function uploadFile(f) {
-            const fd = new FormData(); fd.append('file', f);
-            try { const res = await fetch('/api/assets', { method: 'POST', body: fd }); const d = await res.json(); return d.url; } catch (e) { return null; }
+            try {
+                // Large File Optimization: Use Stream (raw body) instead of FormData
+                const res = await fetch(`/api/assets?name=${encodeURIComponent(f.name)}`, {
+                    method: 'POST',
+                    body: f, // Direct file stream
+                    headers: { 'Content-Type': f.type }
+                });
+                const d = await res.json();
+                return d.url;
+            } catch (e) {
+                console.error("Upload Error:", e);
+                return null;
+            }
         }
+
+        window.resizeSelectedMedia = (width) => {
+            const selection = window.getSelection();
+            if (selection.rangeCount > 0) {
+                let node = selection.getRangeAt(0).commonAncestorContainer;
+                if (node.nodeType === 3) node = node.parentElement;
+                
+                // Find nearest wrapper
+                const wrapper = node.closest('.sg-image-wrapper');
+                if (wrapper) {
+                    wrapper.style.width = width;
+                    wrapper.style.margin = "2.5rem auto"; // Centering resized content
+                }
+            }
+        };
 
         // --- 4. 링크 및 SEO ---
         window.promptLink = () => {
@@ -254,6 +304,51 @@
             toggleCheck('check-length', text.length > 50 ? 'pass' : 'warn');
             toggleCheck('check-prompt', document.getElementById('prompt').value.trim().length > 0 ? 'pass' : 'fail');
         }
+
+        // --- Automatic Linkification ---
+        editor.addEventListener('keyup', (e) => {
+            if (e.key === ' ' || e.key === 'Enter') {
+                autoLinkify();
+            }
+        });
+
+        function autoLinkify() {
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+            const range = selection.getRangeAt(0);
+            const container = range.startContainer;
+
+            if (container.nodeType === Node.TEXT_NODE) {
+                const text = container.textContent;
+                const urlRegex = /(https?:\/\/[^\s]+)/g;
+                if (urlRegex.test(text)) {
+                    const offset = range.startOffset;
+                    const newHtml = text.replace(urlRegex, (url) => {
+                        return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+                    });
+                    
+                    // Only update if changes are made to avoid infinite loop/cursor jump
+                    if (newHtml !== text) {
+                        const tempDiv = document.createElement('div');
+                        tempDiv.innerHTML = newHtml;
+                        
+                        // Replace text node with new nodes (text + links)
+                        const fragment = document.createDocumentFragment();
+                        while (tempDiv.firstChild) fragment.appendChild(tempDiv.firstChild);
+                        
+                        container.parentNode.replaceChild(fragment, container);
+                        
+                        // Restore cursor to the end
+                        const newRange = document.createRange();
+                        newRange.setStartAfter(editor.lastChild);
+                        newRange.collapse(true);
+                        selection.removeAllRanges();
+                        selection.addRange(newRange);
+                    }
+                }
+            }
+        }
+
         function toggleCheck(id, s) { const el = document.getElementById(id); if (el) { el.classList.remove('pass', 'warn', 'fail'); el.classList.add(s); } }
         editor.addEventListener('input', updateSEO);
         document.getElementById('prompt').addEventListener('input', updateSEO);
@@ -280,6 +375,7 @@
             e.preventDefault();
             const div = document.createElement('div'); div.innerHTML = editor.innerHTML;
             const first = div.querySelector('img, video');
+            
             const data = { 
                 title: document.getElementById('title').value, category: document.getElementById('category').value, 
                 tags: document.getElementById('tags').value, prompt: document.getElementById('prompt').value, 
