@@ -236,14 +236,14 @@ class SorigrimFooter extends HTMLElement {
         .group h4 { font-size: 0.7rem; font-weight: 850; margin-bottom: 0.8rem; text-transform: uppercase; color: #333; }
         .group a { display: block; font-size: 0.85rem; color: #666; text-decoration: none; margin-bottom: 0.4rem; transition: 0.2s; }
         .group a:hover { color: #0055FF; }
-        .bottom { width: 100%; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #EEEEEE; font-size: 0.75rem; color: #999; display: flex; align-items: center; justify-content: space-between; }
+        .bottom { width: 100%; margin-top: 3rem; font-size: 0.75rem; color: #999; display: flex; align-items: center; justify-content: space-between; }
         .admin-access-btn {
           font-size: 0.65rem; font-weight: 900; color: #0055FF; text-decoration: none; 
           border: 1px solid #0055FF; padding: 3px 10px; border-radius: 4px; 
           transition: 0.3s; background: transparent; text-transform: uppercase;
         }
         .admin-access-btn:hover { background: #0055FF; color: white; }
-        @media (max-width: 768px) { .container { padding: 0 1.5rem; gap: 2.5rem; } .links { gap: 2.5rem; } .bottom { flex-direction: column; gap: 1rem; text-align: center; } }
+        @media (max-width: 768px) { .container { padding: 0 1.5rem; gap: 2.5rem; } .links { gap: 2.5rem; } .bottom { flex-direction: column; gap: 1rem; text-align: center; margin-top: 2rem; } }
       </style>
       <div class="container">
         <div class="brand"><h2>SORIGRIM</h2><p style="max-width:300px; font-size:0.85rem; opacity:0.8;">${footerDesc}</p></div>
