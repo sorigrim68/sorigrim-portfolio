@@ -407,18 +407,30 @@
         }
 
         // --- Automatic Linkification ---
-        // --- Automatic Linkification (Refined for Stability) ---
+        // --- Automatic Linkification (Refined for Precision) ---
         function finalLinkify(html) {
             const div = document.createElement('div');
             div.innerHTML = html;
+            
             const walk = (node) => {
-                if (node.nodeType === 3 && node.parentNode.tagName !== 'A') {
+                // Skip if parent is <a> or if it's not a text node
+                if (node.nodeType === 3) {
+                    const parent = node.parentNode;
+                    if (parent && parent.tagName === 'A') return;
+                    if (parent && (parent.tagName === 'IMG' || parent.tagName === 'VIDEO')) return;
+
                     const text = node.textContent;
-                    const urlRegex = /(https?:\/\/[^\s<]+)/g;
+                    // Precise URL Regex: starts with http, ends at space or tag end
+                    const urlRegex = /(https?:\/\/[^\s<"']+)/g;
+                    
                     if (urlRegex.test(text)) {
                         const newHtml = text.replace(urlRegex, (url) => {
-                            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+                            // Secondary check: avoid punctuation at the end of URL
+                            const cleanUrl = url.replace(/[.,;!]+$/, '');
+                            const trailing = url.substring(cleanUrl.length);
+                            return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">${cleanUrl}</a>${trailing}`;
                         });
+                        
                         const tempDiv = document.createElement('div');
                         tempDiv.innerHTML = newHtml;
                         const fragment = document.createDocumentFragment();
@@ -426,8 +438,11 @@
                         node.parentNode.replaceChild(fragment, node);
                     }
                 } else if (node.nodeType === 1) {
-                    for (let i = node.childNodes.length - 1; i >= 0; i--) {
-                        walk(node.childNodes[i]);
+                    // Don't walk inside <a> tags to avoid nested links
+                    if (node.tagName !== 'A') {
+                        for (let i = node.childNodes.length - 1; i >= 0; i--) {
+                            walk(node.childNodes[i]);
+                        }
                     }
                 }
             };

@@ -19,6 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // --- URL 자동 링크 변환 (Linkify) ---
 window.linkify = function(text) {
+  if (!text) return "";
+  // If the text already contains HTML tags, skip linkification to avoid breaking them
+  if (/<[a-z][\s\S]*>/i.test(text)) return text;
+  
   const urlPattern = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
   return text.replace(urlPattern, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
 };

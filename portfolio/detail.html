@@ -69,7 +69,7 @@
                         <div class="tag-list">${(d.tags || '').split(',').filter(t => t.trim()).map(t => `<a href="/portfolio/index.html?tag=${encodeURIComponent(t.trim())}" class="tag-item">#${t.trim()}</a>`).join('')}</div>
                     </header>
                     <div class="detail-body reveal">
-                        <div class="rich-text">${window.linkify ? window.linkify(d.content || '') : (d.content || '')}</div>
+                        <div class="rich-text">${d.content || ''}</div>
                         <div class="engagement-bar">
                             <button id="like-btn" class="like-btn" onclick="handleLike()">❤️ <span id="like-count">${d.likes || 0}</span> LIKES</button>
                         </div>
