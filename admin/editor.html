@@ -224,35 +224,23 @@
             editor.appendChild(row); editor.appendChild(document.createElement('p')).innerHTML = '<br>';
         };
 
-        // --- 3. 미디어 및 캡션 ---
+        // --- 3. 미디어 및 조절 ---
+        let lastSelectedMedia = null;
+
         window.handleMediaUpload = (t) => {
             mediaInput.accept = t === 'image' ? 'image/*' : 'video/*';
             mediaInput.onchange = async () => {
                 const files = Array.from(mediaInput.files);
                 if (files.length > 0) {
-                    document.getElementById('upload-overlay').style.display='flex';
                     for (const f of files) {
                         const url = await uploadFile(f);
-                        if (url) insertMediaWithCaption(t, url);
+                        if (url) insertMedia(t, url);
                     }
-                    document.getElementById('upload-overlay').style.display='none';
                     mediaInput.value='';
                 }
             };
             mediaInput.click();
         };
-
-        function insertMediaWithCaption(t, url) {
-            const wrapper = document.createElement('div'); wrapper.className = 'sg-image-wrapper';
-            wrapper.style.transition = "width 0.4s ease"; // Smooth resize
-            const media = t === 'image' ? document.createElement('img') : document.createElement('video');
-            media.src = url; media.style.width = "100%"; // Media takes wrapper width
-            if (t === 'video') media.controls = true;
-            const caption = document.createElement('div'); caption.className = 'sg-caption'; caption.contentEditable = "true"; caption.innerText = "설명을 입력하세요...";
-            wrapper.appendChild(media); wrapper.appendChild(document.createElement('br')); wrapper.appendChild(caption);
-            editor.appendChild(wrapper); editor.appendChild(document.createElement('p')).innerHTML = '<br>';
-            updateSEO();
-        }
 
         async function uploadFile(f) {
             return new Promise((resolve, reject) => {
@@ -287,7 +275,6 @@
 
                 xhr.onerror = () => { overlay.style.display = 'none'; reject(new Error("네트워크 오류")); };
                 
-                // Optimized Stream Upload
                 xhr.open('POST', `/api/assets?name=${encodeURIComponent(f.name)}`);
                 xhr.setRequestHeader('Content-Type', f.type || 'application/octet-stream');
                 xhr.send(f);
@@ -297,20 +284,67 @@
             });
         }
 
+        function insertMedia(t, url) {
+            const wrapper = document.createElement('div'); 
+            wrapper.className = 'sg-image-wrapper';
+            wrapper.style.width = "100%";
+            wrapper.style.margin = "2.5rem auto";
+            wrapper.style.transition = "width 0.4s ease";
+            wrapper.contentEditable = "false"; // Prevent cursor inside wrapper
+            
+            const media = t === 'image' ? document.createElement('img') : document.createElement('video');
+            media.src = url; 
+            media.style.width = "100%";
+            media.style.display = "block";
+            media.style.cursor = "pointer";
+            media.style.borderRadius = "8px";
+            if (t === 'video') media.controls = true;
+
+            // Media Click Selection
+            media.onclick = (e) => {
+                e.stopPropagation();
+                if (lastSelectedMedia) lastSelectedMedia.style.outline = "none";
+                lastSelectedMedia = wrapper;
+                wrapper.style.outline = "3px solid var(--primary)";
+                wrapper.style.outlineOffset = "5px";
+            };
+
+            wrapper.appendChild(media);
+            
+            // Add Remove Button
+            const delBtn = document.createElement('button');
+            delBtn.innerText = "×";
+            delBtn.style.cssText = "position:absolute; top:-15px; right:-15px; width:30px; height:30px; background:#d9534f; color:white; border:none; border-radius:50%; cursor:pointer; font-size:20px; font-weight:bold; display:none; z-index:100;";
+            delBtn.onclick = () => wrapper.remove();
+            wrapper.style.position = "relative";
+            wrapper.appendChild(delBtn);
+
+            // Show delBtn on hover/select
+            wrapper.onmouseenter = () => delBtn.style.display = "block";
+            wrapper.onmouseleave = () => { if(lastSelectedMedia !== wrapper) delBtn.style.display = "none"; };
+
+            editor.appendChild(wrapper);
+            editor.appendChild(document.createElement('p')).innerHTML = '<br>';
+            updateSEO();
+        }
+
         window.resizeSelectedMedia = (width) => {
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
-                let node = selection.getRangeAt(0).commonAncestorContainer;
-                if (node.nodeType === 3) node = node.parentElement;
-                
-                // Find nearest wrapper
-                const wrapper = node.closest('.sg-image-wrapper');
-                if (wrapper) {
-                    wrapper.style.width = width;
-                    wrapper.style.margin = "2.5rem auto"; // Centering resized content
-                }
+            if (lastSelectedMedia) {
+                lastSelectedMedia.style.width = width;
+                lastSelectedMedia.style.margin = "2.5rem auto";
+            } else {
+                alert("조절할 이미지를 먼저 클릭해 주세요.");
             }
         };
+
+        // Click outside to deselect
+        document.addEventListener('click', () => {
+            if (lastSelectedMedia) {
+                lastSelectedMedia.style.outline = "none";
+                // Don't hide delBtn here to allow clicking it, handled by mouseleave
+            }
+            lastSelectedMedia = null;
+        });
 
         // --- 4. 링크 및 SEO ---
         window.promptLink = () => {
