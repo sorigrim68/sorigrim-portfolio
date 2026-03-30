@@ -247,12 +247,17 @@ class SorigrimFooter extends HTMLElement {
       <div class="container">
         <div class="brand"><h2>SORIGRIM</h2><p style="max-width:300px; font-size:0.9rem;">${footerDesc}</p></div>
         <div class="links">
-          <div class="group"><h4>Explore</h4><a href="/">홈으로</a><a href="/portfolio/">아카이브</a><a href="/about.html">About</a></div>
+          <div class="group">
+            <h4>Explore</h4>
+            <a href="/">홈으로</a>
+            <a href="/portfolio/">아카이브</a>
+            <a href="/about.html">About</a>
+            <a href="/admin/dashboard.html" style="margin-top:2rem; opacity:0.5; font-size:0.7rem; font-weight:800; color:var(--primary);">ADMIN ACCESS</a>
+          </div>
           <div class="group"><h4>Social</h4>${sns.map(s => `<a href="${s.value}" target="_blank">${s.key}</a>`).join('')}</div>
         </div>
         <div class="bottom">
-          <p style="color:#999; font-size:0.8rem;">&copy; ${new Date().getFullYear()} SORIGRIM. All rights reserved.</p>
-          <a href="/admin/dashboard.html" class="admin-access-btn">Admin Dashboard Access</a>
+          <p>&copy; ${new Date().getFullYear()} SORIGRIM. All rights reserved.</p>
         </div>
       </div>
     `;
