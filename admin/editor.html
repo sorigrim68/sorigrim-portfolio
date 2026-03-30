@@ -285,12 +285,28 @@
         }
 
         function insertMedia(t, url) {
+            const selection = window.getSelection();
+            let range;
+            if (selection.rangeCount > 0) {
+                range = selection.getRangeAt(0);
+                // Ensure we are inside the editor
+                if (!editor.contains(range.commonAncestorContainer)) {
+                    range = document.createRange();
+                    range.selectNodeContents(editor);
+                    range.collapse(false);
+                }
+            } else {
+                range = document.createRange();
+                range.selectNodeContents(editor);
+                range.collapse(false);
+            }
+
             const wrapper = document.createElement('div'); 
             wrapper.className = 'sg-image-wrapper';
             wrapper.style.width = "100%";
             wrapper.style.margin = "2.5rem auto";
             wrapper.style.transition = "width 0.4s ease";
-            wrapper.contentEditable = "false"; // Prevent cursor inside wrapper
+            wrapper.contentEditable = "false";
             
             const media = t === 'image' ? document.createElement('img') : document.createElement('video');
             media.src = url; 
@@ -300,7 +316,6 @@
             media.style.borderRadius = "8px";
             if (t === 'video') media.controls = true;
 
-            // Media Click Selection
             media.onclick = (e) => {
                 e.stopPropagation();
                 if (lastSelectedMedia) lastSelectedMedia.style.outline = "none";
@@ -311,20 +326,45 @@
 
             wrapper.appendChild(media);
             
-            // Add Remove Button
             const delBtn = document.createElement('button');
             delBtn.innerText = "×";
             delBtn.style.cssText = "position:absolute; top:-15px; right:-15px; width:30px; height:30px; background:#d9534f; color:white; border:none; border-radius:50%; cursor:pointer; font-size:20px; font-weight:bold; display:none; z-index:100;";
-            delBtn.onclick = () => wrapper.remove();
+            
+            delBtn.onclick = async (e) => {
+                e.stopPropagation();
+                if (confirm('이 파일을 서버에서도 영구 삭제하시겠습니까?')) {
+                    const fileName = url.split('name=')[1];
+                    if (fileName) {
+                        try {
+                            await fetch(`/api/assets?name=${fileName}`, { method: 'DELETE' });
+                            wrapper.remove();
+                        } catch (err) { alert('파일 삭제 중 오류가 발생했습니다.'); }
+                    } else { wrapper.remove(); }
+                }
+            };
+            
             wrapper.style.position = "relative";
             wrapper.appendChild(delBtn);
 
-            // Show delBtn on hover/select
             wrapper.onmouseenter = () => delBtn.style.display = "block";
             wrapper.onmouseleave = () => { if(lastSelectedMedia !== wrapper) delBtn.style.display = "none"; };
 
-            editor.appendChild(wrapper);
-            editor.appendChild(document.createElement('p')).innerHTML = '<br>';
+            // --- Insert at Cursor ---
+            range.deleteContents();
+            range.insertNode(wrapper);
+            
+            // Add a new line after the image to keep typing easy
+            const p = document.createElement('p');
+            p.innerHTML = '<br>';
+            wrapper.after(p);
+            
+            // Move cursor after the new line
+            const newRange = document.createRange();
+            newRange.setStartAfter(p);
+            newRange.collapse(true);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+            
             updateSEO();
         }
 
