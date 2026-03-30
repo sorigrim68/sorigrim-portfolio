@@ -367,47 +367,32 @@
         }
 
         // --- Automatic Linkification ---
-        editor.addEventListener('keyup', (e) => {
-            if (e.key === ' ' || e.key === 'Enter') {
-                autoLinkify();
-            }
-        });
-
-        function autoLinkify() {
-            const selection = window.getSelection();
-            if (!selection.rangeCount) return;
-            const range = selection.getRangeAt(0);
-            const container = range.startContainer;
-
-            if (container.nodeType === Node.TEXT_NODE) {
-                const text = container.textContent;
-                const urlRegex = /(https?:\/\/[^\s]+)/g;
-                if (urlRegex.test(text)) {
-                    const offset = range.startOffset;
-                    const newHtml = text.replace(urlRegex, (url) => {
-                        return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-                    });
-                    
-                    // Only update if changes are made to avoid infinite loop/cursor jump
-                    if (newHtml !== text) {
+        // --- Automatic Linkification (Refined for Stability) ---
+        function finalLinkify(html) {
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            const walk = (node) => {
+                if (node.nodeType === 3 && node.parentNode.tagName !== 'A') {
+                    const text = node.textContent;
+                    const urlRegex = /(https?:\/\/[^\s<]+)/g;
+                    if (urlRegex.test(text)) {
+                        const newHtml = text.replace(urlRegex, (url) => {
+                            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+                        });
                         const tempDiv = document.createElement('div');
                         tempDiv.innerHTML = newHtml;
-                        
-                        // Replace text node with new nodes (text + links)
                         const fragment = document.createDocumentFragment();
                         while (tempDiv.firstChild) fragment.appendChild(tempDiv.firstChild);
-                        
-                        container.parentNode.replaceChild(fragment, container);
-                        
-                        // Restore cursor to the end
-                        const newRange = document.createRange();
-                        newRange.setStartAfter(editor.lastChild);
-                        newRange.collapse(true);
-                        selection.removeAllRanges();
-                        selection.addRange(newRange);
+                        node.parentNode.replaceChild(fragment, node);
+                    }
+                } else if (node.nodeType === 1) {
+                    for (let i = node.childNodes.length - 1; i >= 0; i--) {
+                        walk(node.childNodes[i]);
                     }
                 }
-            }
+            };
+            walk(div);
+            return div.innerHTML;
         }
 
         function toggleCheck(id, s) { const el = document.getElementById(id); if (el) { el.classList.remove('pass', 'warn', 'fail'); el.classList.add(s); } }
@@ -434,20 +419,41 @@
         // --- 6. 저장 제출 ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const div = document.createElement('div'); div.innerHTML = editor.innerHTML;
+            
+            // Process Auto-Links before saving
+            const processedContent = finalLinkify(editor.innerHTML);
+            const div = document.createElement('div'); 
+            div.innerHTML = processedContent;
             const first = div.querySelector('img, video');
             
             const data = { 
-                title: document.getElementById('title').value, category: document.getElementById('category').value, 
-                tags: document.getElementById('tags').value, prompt: document.getElementById('prompt').value, 
-                content: editor.innerHTML, image: first ? first.src : '', 
+                title: document.getElementById('title').value, 
+                category: document.getElementById('category').value, 
+                tags: document.getElementById('tags').value, 
+                prompt: document.getElementById('prompt').value, 
+                content: processedContent, 
+                image: first ? first.src : '', 
                 is_published: document.getElementById('is_published').checked, 
                 is_hero: document.getElementById('is_hero').checked, 
                 is_recommended: document.getElementById('is_recommended').checked 
             };
-            const res = await fetch('/api/portfolio' + (editId ? `?id=${editId}` : ''), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
-            if (res.ok) { localStorage.removeItem('sg-autosave'); window.location.href = 'dashboard.html'; }
-            else alert('저장 오류');
+            
+            try {
+                const res = await fetch('/api/portfolio' + (editId ? `?id=${editId}` : ''), { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify(data) 
+                });
+                if (res.ok) { 
+                    localStorage.removeItem('sg-autosave'); 
+                    window.location.href = 'dashboard.html'; 
+                } else {
+                    const err = await res.json();
+                    alert('저장 오류: ' + (err.error || '상태 코드 ' + res.status));
+                }
+            } catch (err) {
+                alert('네트워크 오류: ' + err.message);
+            }
         });
 
         document.addEventListener('DOMContentLoaded', loadCategories);
