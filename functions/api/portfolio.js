@@ -164,6 +164,26 @@ export async function onRequest(context) {
     }
 
     if (request.method === "DELETE") {
+      // 1. Get post content to find associated files in R2
+      const post = await env.DB.prepare("SELECT content, image FROM sg_posts WHERE id = ?").bind(id).first();
+      if (post) {
+        const filesToDelete = new Set();
+        // Extract from thumbnail
+        if (post.image && post.image.includes('name=')) filesToDelete.add(post.image.split('name=')[1]);
+        
+        // Extract from rich text content
+        const fileMatches = post.content.matchAll(/name=([^"'\s&>]+)/g);
+        for (const match of fileMatches) {
+          filesToDelete.add(match[1]);
+        }
+
+        // 2. Delete files from R2 Bucket
+        for (const fileName of filesToDelete) {
+          try { await env.BUCKET.delete(decodeURIComponent(fileName)); } catch (e) { console.error("R2 Delete Error:", e); }
+        }
+      }
+
+      // 3. Delete from D1 Database
       await env.DB.prepare("DELETE FROM sg_posts WHERE id = ?").bind(id).run();
       return Response.json({ success: true });
     }
