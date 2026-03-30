@@ -229,35 +229,36 @@ class SorigrimFooter extends HTMLElement {
 
     this.shadowRoot.innerHTML = `
       <style>
-        :host { display: block; padding: 3rem 0; background: #F8F9FA; color: #111111; font-family: sans-serif; border-top: 1px solid #EEEEEE; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 0 4rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 4rem; }
-        .brand h2 { font-size: 1.5rem; font-weight: 900; color: #0055FF; margin-bottom: 1rem; text-transform: uppercase; }
-        .links { display: flex; gap: 5rem; }
-        .group h4 { font-size: 0.8rem; font-weight: 800; margin-bottom: 1.5rem; text-transform: uppercase; }
-        .group a { display: block; font-size: 0.9rem; color: #666; text-decoration: none; margin-bottom: 0.8rem; }
-        .bottom { width: 100%; margin-top: 4rem; padding-top: 2rem; border-top: 1px solid #EEEEEE; display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
+        :host { display: block; padding: 2.5rem 0; background: #F8F9FA; color: #111111; font-family: sans-serif; border-top: 1px solid #EEEEEE; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 4rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 2rem; }
+        .brand h2 { font-size: 1.3rem; font-weight: 950; color: #0055FF; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: -0.02em; }
+        .links { display: flex; gap: 4rem; }
+        .group h4 { font-size: 0.7rem; font-weight: 850; margin-bottom: 0.8rem; text-transform: uppercase; color: #333; }
+        .group a { display: block; font-size: 0.85rem; color: #666; text-decoration: none; margin-bottom: 0.4rem; transition: 0.2s; }
+        .group a:hover { color: #0055FF; }
+        .bottom { width: 100%; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #EEEEEE; font-size: 0.75rem; color: #999; display: flex; align-items: center; justify-content: space-between; }
         .admin-access-btn {
-          font-size: 0.75rem; font-weight: 900; color: #0055FF; text-decoration: none; 
-          border: 2px solid #0055FF; padding: 8px 20px; border-radius: 6px; 
-          transition: 0.3s; background: white; text-transform: uppercase;
+          font-size: 0.65rem; font-weight: 900; color: #0055FF; text-decoration: none; 
+          border: 1px solid #0055FF; padding: 3px 10px; border-radius: 4px; 
+          transition: 0.3s; background: transparent; text-transform: uppercase;
         }
         .admin-access-btn:hover { background: #0055FF; color: white; }
-        @media (max-width: 768px) { .container { padding: 0 1.5rem; } .links { gap: 2rem; } }
+        @media (max-width: 768px) { .container { padding: 0 1.5rem; gap: 2.5rem; } .links { gap: 2.5rem; } .bottom { flex-direction: column; gap: 1rem; text-align: center; } }
       </style>
       <div class="container">
-        <div class="brand"><h2>SORIGRIM</h2><p style="max-width:300px; font-size:0.9rem;">${footerDesc}</p></div>
+        <div class="brand"><h2>SORIGRIM</h2><p style="max-width:300px; font-size:0.85rem; opacity:0.8;">${footerDesc}</p></div>
         <div class="links">
           <div class="group">
             <h4>Explore</h4>
             <a href="/">홈으로</a>
             <a href="/portfolio/">아카이브</a>
             <a href="/about.html">About</a>
-            <a href="/admin/dashboard.html" style="margin-top:2rem; opacity:0.5; font-size:0.7rem; font-weight:800; color:var(--primary);">ADMIN ACCESS</a>
           </div>
           <div class="group"><h4>Social</h4>${sns.map(s => `<a href="${s.value}" target="_blank">${s.key}</a>`).join('')}</div>
         </div>
         <div class="bottom">
           <p>&copy; ${new Date().getFullYear()} SORIGRIM. All rights reserved.</p>
+          <a href="/admin/dashboard.html" class="admin-access-btn">Admin Access</a>
         </div>
       </div>
     `;
