@@ -460,22 +460,25 @@
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // Process Auto-Links before saving
-            const processedContent = finalLinkify(editor.innerHTML);
+            // Apply Auto-Link before saving
+            const contentRaw = editor.innerHTML || "";
+            const processedContent = finalLinkify(contentRaw);
+            
             const div = document.createElement('div'); 
             div.innerHTML = processedContent;
             const first = div.querySelector('img, video');
             
+            // Ensure no 'undefined' values are sent to D1
             const data = { 
-                title: document.getElementById('title').value, 
-                category: document.getElementById('category').value, 
-                tags: document.getElementById('tags').value, 
-                prompt: document.getElementById('prompt').value, 
-                content: processedContent, 
-                image: first ? first.src : '', 
-                is_published: document.getElementById('is_published').checked, 
-                is_hero: document.getElementById('is_hero').checked, 
-                is_recommended: document.getElementById('is_recommended').checked 
+                title: document.getElementById('title').value || "Untitled", 
+                category: document.getElementById('category').value || "General", 
+                tags: document.getElementById('tags').value || "", 
+                prompt: document.getElementById('prompt').value || "", 
+                content: processedContent || "", 
+                image: (first ? first.src : "") || "", 
+                is_published: document.getElementById('is_published').checked ? 1 : 0, 
+                is_hero: document.getElementById('is_hero').checked ? 1 : 0, 
+                is_recommended: document.getElementById('is_recommended').checked ? 1 : 0 
             };
             
             try {
