@@ -8,40 +8,29 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const name = url.searchParams.get('name');
 
-  // 1. POST: Handle File Uploads (Hybrid: Stream or FormData)
+  // 1. POST: Handle File Uploads (Optimized Stream)
   if (request.method === "POST") {
     try {
-      const fileNameHeader = request.headers.get("X-FileName");
-      let fileBody, originalName, contentType;
-
-      if (fileNameHeader) {
-        // --- High-Performance Stream Mode (Memory Efficient) ---
-        fileBody = request.body;
-        originalName = decodeURIComponent(fileNameHeader);
-        contentType = request.headers.get("Content-Type") || 'application/octet-stream';
-      } else {
-        // --- Legacy/Small File Mode ---
-        const formData = await request.formData();
-        const file = formData.get('file');
-        if (!file) return new Response("No file uploaded", { status: 400 });
-        fileBody = file.stream();
-        originalName = file.name;
-        contentType = file.type || 'application/octet-stream';
-      }
+      const urlName = url.searchParams.get('name');
+      if (!urlName) return new Response("Filename required in query (?name=...)", { status: 400 });
 
       // Sanitize filename
-      const safeName = originalName
+      const safeName = decodeURIComponent(urlName)
         .replace(/[^a-zA-Z0-9.\-_]/g, '_')
         .replace(/\s+/g, '-');
       
       const fileName = `${Date.now()}-${safeName}`;
-      
-      await env.BUCKET.put(fileName, fileBody, {
+      const contentType = request.headers.get("Content-Type") || 'application/octet-stream';
+
+      // Stream directly to R2
+      await env.BUCKET.put(fileName, request.body, {
         httpMetadata: { contentType },
       });
 
       return Response.json({ success: true, name: fileName, url: `/api/assets?name=${fileName}` });
-    } catch (e) { return Response.json({ error: e.message }, { status: 500 }); }
+    } catch (e) { 
+      return Response.json({ error: e.message }, { status: 500 }); 
+    }
   }
 
   // 2. DELETE: Remove File from R2
