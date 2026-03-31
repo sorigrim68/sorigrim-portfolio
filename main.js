@@ -233,27 +233,27 @@ class SorigrimFooter extends HTMLElement {
 
     this.shadowRoot.innerHTML = `
       <style>
-        :host { display: block; padding: 3rem 0 2rem; background: #F8F9FA; color: #111111; font-family: sans-serif; border-top: 1px solid #EEEEEE; }
+        :host { display: block; padding: 2.5rem 0 1.5rem; background: #F8F9FA; color: #111111; font-family: sans-serif; border-top: 1px solid #EEEEEE; }
         .container { max-width: 1400px; margin: 0 auto; padding: 0 4rem; }
-        .top-row { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 3rem; margin-bottom: 2rem; }
-        .brand { flex: 1; min-width: 250px; }
-        .brand h2 { font-size: 1.5rem; font-weight: 900; color: #0055FF; margin: 0 0 0.5rem 0; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1; }
-        .brand p { font-size: 0.9rem; color: #666; line-height: 1.5; margin: 0; opacity: 0.8; }
-        .links-wrap { display: flex; gap: 5rem; }
-        .group h4 { font-size: 0.8rem; font-weight: 850; margin: 0 0 1rem 0; text-transform: uppercase; color: #333; }
-        .group a { display: block; font-size: 0.95rem; color: #555; text-decoration: none; margin-bottom: 0.6rem; transition: 0.2s; }
+        .footer-main { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 3rem; }
+        .brand { flex: 1; min-width: 280px; }
+        .brand h2 { font-size: 1.4rem; font-weight: 900; color: #0055FF; margin: 0 0 0.5rem 0; text-transform: uppercase; letter-spacing: -0.02em; }
+        .brand p { font-size: 0.85rem; color: #666; line-height: 1.5; margin: 0; opacity: 0.8; }
+        .links-wrap { display: flex; gap: 4rem; }
+        .group h4 { font-size: 0.75rem; font-weight: 850; margin: 0 0 1rem 0; text-transform: uppercase; color: #333; }
+        .group a { display: block; font-size: 0.9rem; color: #555; text-decoration: none; margin-bottom: 0.5rem; transition: 0.2s; }
         .group a:hover { color: #0055FF; }
-        .bottom-row { width: 100%; padding-top: 2rem; border-top: 1px solid #EEEEEE; text-align: center; }
-        .copyright { font-size: 0.85rem; color: #999; margin: 0; }
+        .unified-bottom { width: 100%; margin-top: 2.5rem; text-align: center; }
+        .copyright { font-size: 0.8rem; color: #BBB; margin: 0; }
+        @media (max-width: 900px) { .links-wrap { gap: 2rem; } }
         @media (max-width: 768px) { 
           .container { padding: 0 1.5rem; }
-          .top-row { flex-direction: column; gap: 2rem; }
-          .links-wrap { gap: 3rem; }
-          .bottom-row { padding-top: 1.5rem; }
+          .footer-main { flex-direction: column; gap: 2rem; }
+          .links-wrap { width: 100%; justify-content: space-between; }
         }
       </style>
       <div class="container">
-        <div class="top-row">
+        <div class="footer-main">
           <div class="brand">
             <h2>SORIGRIM</h2>
             <p>${footerDesc}</p>
@@ -261,18 +261,21 @@ class SorigrimFooter extends HTMLElement {
           <div class="links-wrap">
             <div class="group">
               <h4>Explore</h4>
-              <a href="/">홈으로</a>
-              <a href="/portfolio/">아카이브</a>
+              <a href="/">Home</a>
+              <a href="/portfolio/">Archive</a>
               <a href="/about.html">About</a>
-              <a href="/admin/dashboard.html">Admin Access</a>
             </div>
             <div class="group">
               <h4>Social</h4>
               ${sns.map(s => `<a href="${s.value}" target="_blank">${s.key}</a>`).join('')}
             </div>
+            <div class="group">
+              <h4>Admin</h4>
+              <a href="/admin/dashboard.html" style="color:#0055FF; font-weight:700;">Dashboard</a>
+            </div>
           </div>
         </div>
-        <div class="bottom-row">
+        <div class="unified-bottom">
           <p class="copyright">&copy; ${new Date().getFullYear()} SORIGRIM. All rights reserved.</p>
         </div>
       </div>
