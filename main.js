@@ -233,22 +233,22 @@ class SorigrimFooter extends HTMLElement {
 
     this.shadowRoot.innerHTML = `
       <style>
-        :host { display: block; padding: 1.2rem 0; background: #F8F9FA; color: #111111; font-family: sans-serif; border-top: 1px solid #EEEEEE; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 0 4rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; align-items: flex-start; }
-        .brand h2 { font-size: 1.1rem; font-weight: 950; color: #0055FF; margin-bottom: 0.2rem; text-transform: uppercase; letter-spacing: -0.02em; }
-        .brand p { max-width: 280px; font-size: 0.75rem; opacity: 0.7; line-height: 1.4; margin: 0; }
-        .links { display: flex; gap: 3rem; }
-        .group h4 { font-size: 0.65rem; font-weight: 850; margin-bottom: 0.5rem; text-transform: uppercase; color: #333; }
-        .group a { display: block; font-size: 0.8rem; color: #666; text-decoration: none; margin-bottom: 0.2rem; transition: 0.2s; }
+        :host { display: block; padding: 0.8rem 0; background: #F8F9FA; color: #111111; font-family: sans-serif; border-top: 1px solid #EEEEEE; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 4rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
+        .brand h2 { font-size: 1.1rem; font-weight: 950; color: #0055FF; margin-bottom: 0.1rem; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1; }
+        .brand p { max-width: 280px; font-size: 0.7rem; opacity: 0.6; line-height: 1.3; margin: 0; }
+        .links { display: flex; gap: 2.5rem; }
+        .group h4 { font-size: 0.65rem; font-weight: 850; margin-bottom: 0.3rem; text-transform: uppercase; color: #333; line-height: 1; }
+        .group a { display: block; font-size: 0.75rem; color: #666; text-decoration: none; margin-bottom: 0.1rem; transition: 0.2s; line-height: 1.2; }
         .group a:hover { color: #0055FF; }
-        .bottom { width: 100%; margin-top: 1rem; padding-top: 0.8rem; border-top: 1px solid #F0F0F0; font-size: 0.7rem; color: #AAA; display: flex; align-items: center; justify-content: space-between; }
+        .bottom { width: 100%; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #F0F0F0; font-size: 0.65rem; color: #AAA; display: flex; align-items: center; justify-content: space-between; }
         .admin-access-btn {
           font-size: 0.6rem; font-weight: 800; color: #0055FF; text-decoration: none; 
-          border: 1px solid #0055FF; padding: 2px 8px; border-radius: 3px; 
+          border: 1px solid #0055FF; padding: 1px 6px; border-radius: 3px; 
           transition: 0.3s; text-transform: uppercase;
         }
         .admin-access-btn:hover { background: #0055FF; color: white; }
-        @media (max-width: 768px) { .container { padding: 0 1.5rem; gap: 1rem; } .links { gap: 1.5rem; } .bottom { flex-direction: column; gap: 0.5rem; text-align: center; } }
+        @media (max-width: 768px) { .container { padding: 0 1.2rem; gap: 0.8rem; } .links { gap: 1.2rem; } .bottom { flex-direction: column; gap: 0.4rem; text-align: center; } }
       </style>
       <div class="container">
         <div class="brand"><h2>SORIGRIM</h2><p>${footerDesc}</p></div>
