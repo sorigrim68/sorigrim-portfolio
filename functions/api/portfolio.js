@@ -69,8 +69,8 @@ export async function onRequest(context) {
         if (!item) return Response.json({ error: "Not found" }, { status: 404 });
         
         const visibilityFilter = adminMode ? "" : "AND is_published = 1";
-        const next = await env.DB.prepare(`SELECT id, title FROM sg_posts WHERE id > ? AND (category != 'HERO_CONFIG' OR category IS NULL) ${visibilityFilter} ORDER BY id ASC LIMIT 1`).bind(id).first();
-        const prev = await env.DB.prepare(`SELECT id, title FROM sg_posts WHERE id < ? AND (category != 'HERO_CONFIG' OR category IS NULL) ${visibilityFilter} ORDER BY id DESC LIMIT 1`).bind(id).first();
+        const next = await env.DB.prepare(`SELECT id, title, image FROM sg_posts WHERE id > ? AND (category != 'HERO_CONFIG' OR category IS NULL) ${visibilityFilter} ORDER BY id ASC LIMIT 1`).bind(id).first();
+        const prev = await env.DB.prepare(`SELECT id, title, image FROM sg_posts WHERE id < ? AND (category != 'HERO_CONFIG' OR category IS NULL) ${visibilityFilter} ORDER BY id DESC LIMIT 1`).bind(id).first();
         return Response.json({ ...item, next, prev });
       }
 
