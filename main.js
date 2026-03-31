@@ -233,37 +233,47 @@ class SorigrimFooter extends HTMLElement {
 
     this.shadowRoot.innerHTML = `
       <style>
-        :host { display: block; padding: 0.8rem 0; background: #F8F9FA; color: #111111; font-family: sans-serif; border-top: 1px solid #EEEEEE; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 0 4rem; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
-        .brand h2 { font-size: 1.1rem; font-weight: 950; color: #0055FF; margin-bottom: 0.1rem; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1; }
-        .brand p { max-width: 280px; font-size: 0.7rem; opacity: 0.6; line-height: 1.3; margin: 0; }
-        .links { display: flex; gap: 2.5rem; }
-        .group h4 { font-size: 0.65rem; font-weight: 850; margin-bottom: 0.3rem; text-transform: uppercase; color: #333; line-height: 1; }
-        .group a { display: block; font-size: 0.75rem; color: #666; text-decoration: none; margin-bottom: 0.1rem; transition: 0.2s; line-height: 1.2; }
+        :host { display: block; padding: 3rem 0 2rem; background: #F8F9FA; color: #111111; font-family: sans-serif; border-top: 1px solid #EEEEEE; }
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 4rem; }
+        .top-row { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 3rem; margin-bottom: 2rem; }
+        .brand { flex: 1; min-width: 250px; }
+        .brand h2 { font-size: 1.5rem; font-weight: 900; color: #0055FF; margin: 0 0 0.5rem 0; text-transform: uppercase; letter-spacing: -0.02em; line-height: 1; }
+        .brand p { font-size: 0.9rem; color: #666; line-height: 1.5; margin: 0; opacity: 0.8; }
+        .links-wrap { display: flex; gap: 5rem; }
+        .group h4 { font-size: 0.8rem; font-weight: 850; margin: 0 0 1rem 0; text-transform: uppercase; color: #333; }
+        .group a { display: block; font-size: 0.95rem; color: #555; text-decoration: none; margin-bottom: 0.6rem; transition: 0.2s; }
         .group a:hover { color: #0055FF; }
-        .bottom { width: 100%; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #F0F0F0; font-size: 0.65rem; color: #AAA; display: flex; align-items: center; justify-content: space-between; }
-        .admin-access-btn {
-          font-size: 0.6rem; font-weight: 800; color: #0055FF; text-decoration: none; 
-          border: 1px solid #0055FF; padding: 1px 6px; border-radius: 3px; 
-          transition: 0.3s; text-transform: uppercase;
+        .bottom-row { width: 100%; padding-top: 2rem; border-top: 1px solid #EEEEEE; text-align: center; }
+        .copyright { font-size: 0.85rem; color: #999; margin: 0; }
+        @media (max-width: 768px) { 
+          .container { padding: 0 1.5rem; }
+          .top-row { flex-direction: column; gap: 2rem; }
+          .links-wrap { gap: 3rem; }
+          .bottom-row { padding-top: 1.5rem; }
         }
-        .admin-access-btn:hover { background: #0055FF; color: white; }
-        @media (max-width: 768px) { .container { padding: 0 1.2rem; gap: 0.8rem; } .links { gap: 1.2rem; } .bottom { flex-direction: column; gap: 0.4rem; text-align: center; } }
       </style>
       <div class="container">
-        <div class="brand"><h2>SORIGRIM</h2><p>${footerDesc}</p></div>
-        <div class="links">
-          <div class="group">
-            <h4>Explore</h4>
-            <a href="/">홈으로</a>
-            <a href="/portfolio/">아카이브</a>
-            <a href="/about.html">About</a>
+        <div class="top-row">
+          <div class="brand">
+            <h2>SORIGRIM</h2>
+            <p>${footerDesc}</p>
           </div>
-          <div class="group"><h4>Social</h4>${sns.map(s => `<a href="${s.value}" target="_blank">${s.key}</a>`).join('')}</div>
+          <div class="links-wrap">
+            <div class="group">
+              <h4>Explore</h4>
+              <a href="/">홈으로</a>
+              <a href="/portfolio/">아카이브</a>
+              <a href="/about.html">About</a>
+              <a href="/admin/dashboard.html">Admin Access</a>
+            </div>
+            <div class="group">
+              <h4>Social</h4>
+              ${sns.map(s => `<a href="${s.value}" target="_blank">${s.key}</a>`).join('')}
+            </div>
+          </div>
         </div>
-        <div class="bottom">
-          <p>&copy; ${new Date().getFullYear()} SORIGRIM. All rights reserved.</p>
-          <a href="/admin/dashboard.html" class="admin-access-btn">Admin Access</a>
+        <div class="bottom-row">
+          <p class="copyright">&copy; ${new Date().getFullYear()} SORIGRIM. All rights reserved.</p>
         </div>
       </div>
     `;
