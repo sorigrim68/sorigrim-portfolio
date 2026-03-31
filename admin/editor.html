@@ -579,17 +579,28 @@
             
             const div = document.createElement('div'); 
             div.innerHTML = processedContent;
-            const first = div.querySelector('img, video');
             
-            // Ensure no 'undefined' values are sent to D1
+            // --- Smart Thumbnail Extraction ---
+            let thumbnail = "";
+            const firstMedia = div.querySelector('img, video, iframe');
+            if (firstMedia) {
+                if (firstMedia.tagName === 'IFRAME' && firstMedia.src.includes('youtube.com/embed/')) {
+                    // Extract YouTube ID for thumbnail
+                    const ytId = firstMedia.src.split('embed/')[1]?.split('?')[0];
+                    if (ytId) thumbnail = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
+                } else {
+                    thumbnail = firstMedia.src;
+                }
+            }
+            
             const data = { 
                 title: document.getElementById('title').value || "Untitled", 
                 category: document.getElementById('category').value || "General", 
                 tags: document.getElementById('tags').value || "", 
                 prompt: document.getElementById('prompt').value || "", 
-                description: editor.innerText.substring(0, 160).trim() || "", // New field for D1
+                description: editor.innerText.substring(0, 160).trim() || "", 
                 content: processedContent || "", 
-                image: (first ? first.src : "") || "", 
+                image: thumbnail || "", 
                 is_published: document.getElementById('is_published').checked ? 1 : 0, 
                 is_hero: document.getElementById('is_hero').checked ? 1 : 0, 
                 is_recommended: document.getElementById('is_recommended').checked ? 1 : 0 
