@@ -408,46 +408,54 @@
         // --- Automatic Linkification ---
         // --- Smart Media & Link Detection ---
         editor.addEventListener('keyup', (e) => {
-            if (e.key === ' ' || e.key === 'Enter') {
-                checkSmartMedia();
-            }
+            if (e.key === ' ' || e.key === 'Enter') checkSmartMedia();
+        });
+
+        editor.addEventListener('paste', (e) => {
+            // Wait a bit for the paste to settle in the DOM
+            setTimeout(checkSmartMedia, 10);
         });
 
         function checkSmartMedia() {
             const selection = window.getSelection();
             if (!selection.rangeCount) return;
+            
+            // 1. Check direct text nodes (during typing)
             const range = selection.getRangeAt(0);
             const container = range.startContainer;
-
             if (container.nodeType === 3) {
                 const text = container.textContent.substring(0, range.startOffset);
                 const words = text.split(/\s+/);
-                const lastWord = words[words.length - 1] || words[words.length - 2];
-                
-                if (lastWord && lastWord.startsWith('http')) {
-                    const url = lastWord.replace(/[.,;!]+$/, '');
-                    const isImage = url.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|svg)$/);
-                    const isVideo = url.toLowerCase().match(/\.(mp4|webm|ogg)$/);
-                    const isYouTube = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
-
-                    if (isImage || isVideo || isYouTube) {
-                        // Delete the URL text
-                        const startPos = text.lastIndexOf(lastWord);
-                        const endPos = startPos + lastWord.length;
-                        
-                        range.setStart(container, startPos);
-                        range.setEnd(container, endPos);
-                        range.deleteContents();
-                        
-                        // Insert actual media or YouTube embed
-                        if (isYouTube) {
-                            insertYouTube(isYouTube[1]);
-                        } else {
-                            insertMedia(isImage ? 'image' : 'video', url);
-                        }
-                    }
+                const url = (words[words.length - 1] || words[words.length - 2] || "").replace(/[.,;!]+$/, '');
+                if (url.startsWith('http') && tryTransformMedia(url)) {
+                    // If transformed, delete the source text
+                    const startPos = container.textContent.lastIndexOf(url);
+                    range.setStart(container, startPos);
+                    range.setEnd(container, startPos + url.length);
+                    range.deleteContents();
+                    return;
                 }
             }
+
+            // 2. Check for <a> tags that might contain media URLs (after paste or auto-link)
+            const links = editor.querySelectorAll('a');
+            links.forEach(link => {
+                const url = link.href || link.innerText;
+                if (tryTransformMedia(url)) {
+                    link.remove(); // Replace link with actual media
+                }
+            });
+        }
+
+        function tryTransformMedia(url) {
+            const isImage = url.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|svg)(?:\?.*)?$/);
+            const isVideo = url.toLowerCase().match(/\.(mp4|webm|ogg)(?:\?.*)?$/);
+            const isYouTube = url.match(/(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]+)/);
+
+            if (isImage) { insertMedia('image', url); return true; }
+            if (isVideo) { insertMedia('video', url); return true; }
+            if (isYouTube) { insertYouTube(isYouTube[1]); return true; }
+            return false;
         }
 
         function insertYouTube(id) {
