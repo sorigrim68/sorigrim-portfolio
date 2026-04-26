@@ -115,7 +115,6 @@ export async function onRequest(context) {
     if (request.method === "POST") {
       const data = await request.json();
       
-      // Ensure booleans/ints are correctly cast for D1
       const isHero = data.is_hero ? 1 : 0;
       const isRec = data.is_recommended ? 1 : 0;
       const isPub = (data.is_published === true || data.is_published === 1) ? 1 : 0;
@@ -125,7 +124,7 @@ export async function onRequest(context) {
       }
 
       if (id) {
-        // UPDATE: 11 SET fields + 1 WHERE id = 12 params
+        // UPDATE
         await env.DB.prepare(
           "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ?, is_hero = ?, is_published = ?, prompt = ?, tags = ?, attachments = ? WHERE id = ?"
         ).bind(
@@ -144,7 +143,7 @@ export async function onRequest(context) {
         ).run();
         return Response.json({ success: true, action: "update" });
       } else {
-        // INSERT: 12 placeholders for ? + 2 constants = 14 columns
+        // INSERT
         await env.DB.prepare(
           "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, is_hero, is_published, prompt, tags, attachments, createdAt, views, likes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)"
         ).bind(
@@ -166,26 +165,16 @@ export async function onRequest(context) {
     }
 
     if (request.method === "DELETE") {
-      // 1. Get post content to find associated files in R2
       const post = await env.DB.prepare("SELECT content, image FROM sg_posts WHERE id = ?").bind(id).first();
       if (post) {
         const filesToDelete = new Set();
-        // Extract from thumbnail
         if (post.image && post.image.includes('name=')) filesToDelete.add(post.image.split('name=')[1]);
-        
-        // Extract from rich text content
         const fileMatches = post.content.matchAll(/name=([^"'\s&>]+)/g);
-        for (const match of fileMatches) {
-          filesToDelete.add(match[1]);
-        }
-
-        // 2. Delete files from R2 Bucket
+        for (const match of fileMatches) { filesToDelete.add(match[1]); }
         for (const fileName of filesToDelete) {
-          try { await env.BUCKET.delete(decodeURIComponent(fileName)); } catch (e) { console.error("R2 Delete Error:", e); }
+          try { await env.BUCKET.delete(decodeURIComponent(fileName)); } catch (e) {}
         }
       }
-
-      // 3. Delete from D1 Database
       await env.DB.prepare("DELETE FROM sg_posts WHERE id = ?").bind(id).run();
       return Response.json({ success: true });
     }
