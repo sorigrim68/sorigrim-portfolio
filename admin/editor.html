@@ -15,7 +15,6 @@
             color: var(--text-main); font-family: inherit; font-size: 1rem; border-radius: 4px;
         }
         
-        /* 툴바 스타일 완벽 복구 */
         .editor-toolbar {
             display: flex; gap: 0.5rem; padding: 0.8rem; background: var(--bg-light); 
             border-bottom: 1px solid var(--border); flex-wrap: wrap;
@@ -42,7 +41,6 @@
 
         .rich-editor { height: 700px; overflow-y: auto; padding: 3rem; outline: none; font-size: 1.1rem; line-height: 1.8; background: white; }
 
-        /* 사이드바 SEO 복구 */
         .editor-sidebar { position: sticky; top: 120px; display: flex; flex-direction: column; gap: 1.5rem; }
         .sidebar-card { background: white; border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; }
         .sidebar-card h4 { font-size: 0.9rem; font-weight: 800; margin-bottom: 1.2rem; border-bottom: 1px solid var(--border); padding-bottom: 0.8rem; }
@@ -52,7 +50,6 @@
         .seo-check.warn .status { background: #ffc107; }
         .seo-check.fail .status { background: #dc3545; }
 
-        /* 하단 옵션 정렬 완벽 복구 */
         .bottom-options { background: var(--bg-light); padding: 2rem; border-radius: 8px; margin-top: 2rem; display: flex; flex-direction: column; gap: 1.2rem; }
         .option-item { display: flex; align-items: center; gap: 1rem; cursor: pointer; user-select: none; }
         .option-item input[type="checkbox"] { width: 20px; height: 20px; cursor: pointer; margin: 0; }
@@ -60,18 +57,15 @@
 
         #save-btn { width: 100%; padding: 1.5rem; font-size: 1.1rem; font-weight: 800; margin-top: 2rem; }
         
-        /* 모달 스타일 */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 10000; }
         .modal-content { background: white; padding: 3rem; border-radius: 12px; width: 90%; max-width: 800px; max-height: 80vh; overflow-y: auto; }
         
-        /* 자산 탐색기 스타일 */
         .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 1rem; margin-top: 1.5rem; }
         .asset-card { border: 1px solid var(--border); border-radius: 6px; overflow: hidden; cursor: pointer; transition: 0.2s; position: relative; }
         .asset-card:hover { border-color: var(--primary); transform: translateY(-3px); }
         .asset-thumb { width: 100%; aspect-ratio: 1; object-fit: cover; background: #f0f0f0; }
         .asset-info { padding: 0.5rem; font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: white; }
 
-        /* 툴바 하단 첨부파일 영역 */
         .toolbar-attachments { background: #f8f9fa; border-bottom: 1px solid var(--border); padding: 0.5rem 1rem; display: none; gap: 0.8rem; align-items: center; flex-wrap: wrap; }
         .attachment-tag { display: inline-flex; align-items: center; gap: 0.5rem; background: white; border: 1px solid var(--border); padding: 0.3rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; }
         .attachment-tag .remove { color: #d9534f; cursor: pointer; }
@@ -97,7 +91,6 @@
         </div>
     </div>
 
-    <!-- 서버 자산 선택 모달 -->
     <div id="asset-modal" class="modal">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
@@ -235,7 +228,6 @@
 
         let attachedFiles = [];
 
-        // --- 1. 초기 데이터 로드 ---
         async function loadCategories() { 
             const res = await fetch('/api/categories'); const cats = await res.json(); 
             document.getElementById('category').innerHTML = cats.map(c => `<option value="${c.name}">${c.name}</option>`).join(''); 
@@ -250,20 +242,13 @@
             document.getElementById('is_published').checked = d.is_published === 1;
             document.getElementById('is_hero').checked = d.is_hero === 1; 
             document.getElementById('is_recommended').checked = d.is_recommended === 1;
-            
-            if (d.attachments) {
-                try { attachedFiles = JSON.parse(d.attachments); renderAttachments(); } catch(e) {}
-            }
+            if (d.attachments) { try { attachedFiles = JSON.parse(d.attachments); renderAttachments(); } catch(e) {} }
             updateSEO();
         }
 
         window.execCmd = (c, v = null) => { document.execCommand(c, false, v); editor.focus(); updateSEO(); };
 
-        // --- 2. 서버 자산 관리 (Select from Server) ---
-        window.openAssets = () => {
-            document.getElementById('asset-modal').style.display = 'flex';
-            loadAssets();
-        };
+        window.openAssets = () => { document.getElementById('asset-modal').style.display = 'flex'; loadAssets(); };
 
         async function loadAssets() {
             const listEl = document.getElementById('asset-list');
@@ -274,74 +259,38 @@
                 listEl.innerHTML = files.map(f => {
                     const isImg = f.name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i);
                     const isVid = f.name.match(/\.(mp4|webm|ogg)$/i);
-                    let thumb = '';
-                    if (isImg) thumb = `<img src="/api/assets?name=${f.name}" class="asset-thumb">`;
-                    else if (isVid) thumb = `<div class="asset-thumb" style="display:flex; align-items:center; justify-content:center; background:#000; color:#fff; font-size:0.6rem;">VIDEO</div>`;
-                    else thumb = `<div class="asset-thumb" style="display:flex; align-items:center; justify-content:center; background:#eee; color:#666; font-size:0.6rem;">FILE</div>`;
-
-                    return `
-                        <div class="asset-card" onclick="selectAsset('${f.name}')">
-                            ${thumb}
-                            <div class="asset-info">${f.name.split('-').slice(1).join('-')}</div>
-                        </div>
-                    `;
+                    let thumb = isImg ? `<img src="/api/assets?name=${f.name}" class="asset-thumb">` : `<div class="asset-thumb" style="display:flex; align-items:center; justify-content:center; background:#000; color:#fff; font-size:0.6rem;">${isVid?'VIDEO':'FILE'}</div>`;
+                    return `<div class="asset-card" onclick="selectAsset('${f.name}')">${thumb}<div class="asset-info">${f.name.split('-').slice(1).join('-')}</div></div>`;
                 }).join('');
-            } catch (err) {
-                listEl.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding:3rem; color:#d9534f;">불러오기 실패</p>';
-            }
+            } catch (err) { listEl.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding:3rem; color:#d9534f;">불러오기 실패</p>'; }
         }
 
         window.selectAsset = (name) => {
             const url = `/api/assets?name=${name}`;
-            const isImg = name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i);
-            const isVid = name.match(/\.(mp4|webm|ogg)$/i);
-            
-            if (isImg) insertMedia('image', url);
-            else if (isVid) insertMedia('video', url);
-            else {
-                // If selected a non-media file from server, treat it as an attachment
-                if (!attachedFiles.some(f => f.serverName === name)) {
-                    attachedFiles.push({ name: name.split('-').slice(1).join('-'), serverName: name, url: url });
-                    renderAttachments();
-                }
-            }
+            if (name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) insertMedia('image', url);
+            else if (name.match(/\.(mp4|webm|ogg)$/i)) insertMedia('video', url);
+            else if (!attachedFiles.some(f => f.serverName === name)) { attachedFiles.push({ name: name.split('-').slice(1).join('-'), serverName: name, url: url }); renderAttachments(); }
             closeModal('asset-modal');
         };
 
-        // --- 3. 파일 첨부 관리 (Toolbar Attach) ---
         window.handleAttachmentUpload = () => attachInput.click();
         attachInput.onchange = async () => {
-            const files = Array.from(attachInput.files);
-            for (const f of files) {
+            for (const f of Array.from(attachInput.files)) {
                 const res = await uploadFile(f);
-                if (res) {
-                    attachedFiles.push({ name: f.name, serverName: res.split('name=')[1], url: res });
-                    renderAttachments();
-                }
+                if (res) { attachedFiles.push({ name: f.name, serverName: res.split('name=')[1], url: res }); renderAttachments(); }
             }
             attachInput.value = '';
         };
 
         function renderAttachments() {
             const previewEl = document.getElementById('attachment-preview');
-            if (attachedFiles.length === 0) {
-                previewEl.style.display = 'none';
-                return;
-            }
+            if (attachedFiles.length === 0) { previewEl.style.display = 'none'; return; }
             previewEl.style.display = 'flex';
-            previewEl.innerHTML = '<span style="font-size:0.7rem; font-weight:800; color:#888;">첨부됨:</span>' + attachedFiles.map((f, i) => `
-                <div class="attachment-tag">
-                    📎 ${f.name} <span class="remove" onclick="removeAttachment(${i})">×</span>
-                </div>
-            `).join('');
+            previewEl.innerHTML = '<span style="font-size:0.7rem; font-weight:800; color:#888;">첨부됨:</span>' + attachedFiles.map((f, i) => `<div class="attachment-tag">📎 ${f.name} <span class="remove" onclick="removeAttachment(${i})">×</span></div>`).join('');
         }
 
-        window.removeAttachment = (i) => {
-            attachedFiles.splice(i, 1);
-            renderAttachments();
-        };
+        window.removeAttachment = (i) => { attachedFiles.splice(i, 1); renderAttachments(); };
 
-        // --- 4. 기존 미디어 로직 유지 ---
         window.insertColumns = () => {
             const row = document.createElement('div'); row.className = 'sg-row';
             row.innerHTML = '<div class="sg-col" contenteditable="true"></div><div class="sg-col" contenteditable="true"></div>';
@@ -349,15 +298,10 @@
         };
 
         let lastSelectedMedia = null;
-
         window.handleMediaUpload = (t) => {
             mediaInput.accept = t === 'image' ? 'image/*' : 'video/*';
             mediaInput.onchange = async () => {
-                const files = Array.from(mediaInput.files);
-                for (const f of files) {
-                    const url = await uploadFile(f);
-                    if (url) insertMedia(t, url);
-                }
+                for (const f of Array.from(mediaInput.files)) { const url = await uploadFile(f); if (url) insertMedia(t, url); }
                 mediaInput.value='';
             };
             mediaInput.click();
@@ -369,20 +313,8 @@
                 const overlay = document.getElementById('upload-overlay');
                 const msg = document.getElementById('upload-msg');
                 overlay.style.display = 'flex';
-                xhr.upload.onprogress = (e) => {
-                    if (e.lengthComputable) {
-                        const percent = Math.round((e.loaded / e.total) * 100);
-                        msg.innerText = `업로드 중: ${percent}% (${(f.size / (1024*1024)).toFixed(1)}MB)`;
-                    }
-                };
-                xhr.onload = () => {
-                    overlay.style.display = 'none';
-                    if (xhr.status === 200) {
-                        const d = JSON.parse(xhr.responseText);
-                        if (d.success) resolve(d.url);
-                        else reject(new Error(d.error));
-                    } else reject(new Error(`서버 오류 (${xhr.status})`));
-                };
+                xhr.upload.onprogress = (e) => { if (e.lengthComputable) msg.innerText = `업로드 중: ${Math.round((e.loaded / e.total) * 100)}% (${(f.size / (1024*1024)).toFixed(1)}MB)`; };
+                xhr.onload = () => { overlay.style.display = 'none'; if (xhr.status === 200) resolve(JSON.parse(xhr.responseText).url); else reject(new Error(`서버 오류 (${xhr.status})`)); };
                 xhr.onerror = () => { overlay.style.display = 'none'; reject(new Error("네트워크 오류")); };
                 xhr.open('POST', `/api/assets?name=${encodeURIComponent(f.name)}`);
                 xhr.setRequestHeader('Content-Type', f.type || 'application/octet-stream');
@@ -392,42 +324,24 @@
 
         function insertMedia(t, url) {
             const selection = window.getSelection();
-            let range;
-            if (selection.rangeCount > 0) {
-                range = selection.getRangeAt(0);
-                if (!editor.contains(range.commonAncestorContainer)) {
-                    range = document.createRange(); range.selectNodeContents(editor); range.collapse(false);
-                }
-            } else {
-                range = document.createRange(); range.selectNodeContents(editor); range.collapse(false);
-            }
+            let range = selection.rangeCount > 0 ? selection.getRangeAt(0) : document.createRange();
+            if (!editor.contains(range.commonAncestorContainer)) { range.selectNodeContents(editor); range.collapse(false); }
 
             const wrapper = document.createElement('div'); 
-            wrapper.className = 'sg-image-wrapper';
-            wrapper.style.width = "100%"; wrapper.style.margin = "2.5rem auto";
-            wrapper.style.transition = "width 0.4s ease"; wrapper.contentEditable = "false";
-            wrapper.style.position = "relative";
+            wrapper.className = 'sg-image-wrapper'; wrapper.style.cssText = "width:100%; margin:2.5rem auto; transition:width 0.4s ease; position:relative;";
+            wrapper.contentEditable = "false";
             
-            const media = t === 'image' ? document.createElement('img') : document.createElement('video');
-            media.src = url; media.style.width = "100%"; media.style.display = "block";
-            media.style.cursor = "pointer"; media.style.borderRadius = "8px";
+            const media = document.createElement(t === 'image' ? 'img' : 'video');
+            media.src = url; media.style.cssText = "width:100%; display:block; cursor:pointer; border-radius:8px;";
             if (t === 'video') media.controls = true;
 
-            media.onclick = (e) => {
-                e.stopPropagation();
-                if (lastSelectedMedia) lastSelectedMedia.style.outline = "none";
-                lastSelectedMedia = wrapper;
-                wrapper.style.outline = "3px solid var(--primary)";
-                wrapper.style.outlineOffset = "5px";
-            };
+            media.onclick = (e) => { e.stopPropagation(); if (lastSelectedMedia) lastSelectedMedia.style.outline = "none"; lastSelectedMedia = wrapper; wrapper.style.outline = "3px solid var(--primary)"; wrapper.style.outlineOffset = "5px"; };
 
             const delBtn = document.createElement('button');
-            delBtn.innerText = "×";
-            delBtn.style.cssText = "position:absolute; top:-15px; right:-15px; width:30px; height:30px; background:#d9534f; color:white; border:none; border-radius:50%; cursor:pointer; font-size:20px; font-weight:bold; display:none; z-index:100;";
+            delBtn.innerText = "×"; delBtn.style.cssText = "position:absolute; top:-15px; right:-15px; width:30px; height:30px; background:#d9534f; color:white; border:none; border-radius:50%; cursor:pointer; font-size:20px; font-weight:bold; display:none; z-index:100;";
             delBtn.onclick = (e) => { e.stopPropagation(); wrapper.remove(); };
 
-            wrapper.appendChild(media);
-            wrapper.appendChild(delBtn);
+            wrapper.appendChild(media); wrapper.appendChild(delBtn);
             wrapper.onmouseenter = () => delBtn.style.display = "block";
             wrapper.onmouseleave = () => { if(lastSelectedMedia !== wrapper) delBtn.style.display = "none"; };
 
@@ -438,18 +352,14 @@
             updateSEO();
         }
 
-        window.resizeSelectedMedia = (width) => {
-            if (lastSelectedMedia) lastSelectedMedia.style.width = width;
-            else alert("이미지를 먼저 클릭해 주세요.");
-        };
-
+        window.resizeSelectedMedia = (width) => { if (lastSelectedMedia) lastSelectedMedia.style.width = width; else alert("이미지를 먼저 클릭해 주세요."); };
         window.closeModal = (id) => document.getElementById(id).style.display = 'none';
         window.openTemplates = () => document.getElementById('template-modal').style.display = 'flex';
 
         function updateSEO() {
-            const text = editor.innerText.trim(); const html = editor.innerHTML;
+            const html = editor.innerHTML;
             toggleCheck('check-media', html.includes('<img') || html.includes('<video') ? 'pass' : 'fail');
-            toggleCheck('check-length', text.length > 50 ? 'pass' : 'warn');
+            toggleCheck('check-length', editor.innerText.trim().length > 50 ? 'pass' : 'warn');
             toggleCheck('check-prompt', document.getElementById('prompt').value.trim().length > 0 ? 'pass' : 'fail');
         }
 
@@ -464,79 +374,39 @@
             closeModal('template-modal'); updateSEO();
         };
 
-        // --- Automatic Linkification & Paste Handling ---
+        // --- Automatic Media Handling (Paste & Drop) ---
+        async function handleFileInput(files) {
+            for (const f of Array.from(files)) {
+                if (f.type.startsWith('image/')) { const url = await uploadFile(f); if (url) insertMedia('image', url); }
+                else if (f.type.startsWith('video/')) { const url = await uploadFile(f); if (url) insertMedia('video', url); }
+            }
+        }
+
         editor.addEventListener('paste', async (e) => {
-            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
-            let imageFound = false;
-
-            for (const item of items) {
-                if (item.type.indexOf('image') !== -1) {
-                    imageFound = true;
-                    e.preventDefault(); 
-                    const file = item.getAsFile();
-                    const url = await uploadFile(file);
-                    if (url) insertMedia('image', url);
-                }
-            }
-
-            if (!imageFound) {
-                setTimeout(checkSmartMedia, 10);
-            }
+            const items = (e.clipboardData || window.clipboardData).items;
+            let hasImg = false;
+            for (const item of items) { if (item.type.indexOf('image') !== -1) { hasImg = true; e.preventDefault(); handleFileInput([item.getAsFile()]); } }
+            if (!hasImg) setTimeout(checkSmartMedia, 10);
         });
 
-        editor.addEventListener('keyup', (e) => {
-            if (e.key === ' ' || e.key === 'Enter') checkSmartMedia();
-        });
+        editor.addEventListener('drop', async (e) => { e.preventDefault(); handleFileInput(e.dataTransfer.files); });
+        editor.addEventListener('dragover', (e) => e.preventDefault());
 
         function checkSmartMedia() {
-            const selection = window.getSelection();
-            if (!selection.rangeCount) return;
-            const range = selection.getRangeAt(0);
-            const container = range.startContainer;
-            if (container.nodeType === 3) {
-                const text = container.textContent.substring(0, range.startOffset);
-                const words = text.split(/\s+/);
-                const url = (words[words.length - 1] || words[words.length - 2] || "").replace(/[.,;!]+$/, '');
-                if (url.startsWith('http') && tryTransformMedia(url)) {
-                    const startPos = container.textContent.lastIndexOf(url);
-                    range.setStart(container, startPos);
-                    range.setEnd(container, startPos + url.length);
-                    range.deleteContents();
-                    return;
-                }
-            }
             const links = editor.querySelectorAll('a');
-            links.forEach(link => {
-                const url = link.href || link.innerText;
-                if (tryTransformMedia(url)) link.remove();
-            });
+            links.forEach(link => { const url = link.href || link.innerText; if (url.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|svg|mp4|webm|ogg)$/)) link.remove(); });
         }
 
-        function tryTransformMedia(url) {
-            const isImage = url.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|svg)(?:\?.*)?$/);
-            const isVideo = url.toLowerCase().match(/\.(mp4|webm|ogg)(?:\?.*)?$/);
-            if (isImage) { insertMedia('image', url); return true; }
-            if (isVideo) { insertMedia('video', url); return true; }
-            return false;
-        }
-
-        // --- 5. 저장 제출 ---
+        // --- Final Save Logic ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
-            let thumbnail = "";
-            const firstImg = editor.querySelector('img');
-            if (firstImg) thumbnail = firstImg.src;
-            
             const contentHtml = editor.innerHTML || "";
             
-            // SQLITE_TOOBIG 방지: 붙여넣기된 base64 데이터가 여전히 본문에 남아있는지 체크
-            if (contentHtml.includes('data:image/') || contentHtml.includes('data:video/')) {
-                alert('본문에 직접 포함된 거대한 이미지 데이터가 감지되었습니다. \n\n모든 이미지는 업로드(R2) 과정을 거쳐야 저장 가능합니다. 수동으로 삽입한 이미지를 삭제하고 다시 업로드해 주세요.');
+            // SQLITE_TOOBIG 원천 차단 (Base64 데이터 전수 검사)
+            if (/data:[^;]+;base64,/i.test(contentHtml)) {
+                alert('저장 실패: 본문에 업로드되지 않은 거대 이미지 데이터가 포함되어 있습니다.\n\n이미지를 삭제하고 상단 버튼이나 복사/붙여넣기를 통해 다시 넣어주세요. (자동 업로드됩니다)');
                 return;
             }
-
-            const attachmentsData = attachedFiles && attachedFiles.length > 0 ? JSON.stringify(attachedFiles) : "";
 
             const data = { 
                 title: document.getElementById('title').value || "Untitled", 
@@ -545,25 +415,18 @@
                 prompt: document.getElementById('prompt').value || "", 
                 description: editor.innerText.substring(0, 160).trim() || "", 
                 content: contentHtml, 
-                image: thumbnail || "", 
-                attachments: attachmentsData,
+                image: editor.querySelector('img')?.src || "", 
+                attachments: JSON.stringify(attachedFiles),
                 is_published: document.getElementById('is_published').checked ? 1 : 0, 
                 is_hero: document.getElementById('is_hero').checked ? 1 : 0, 
                 is_recommended: document.getElementById('is_recommended').checked ? 1 : 0 
             };
             
             try {
-                const res = await fetch('/api/portfolio' + (editId ? `?id=${editId}` : ''), { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify(data) 
-                });
+                const res = await fetch('/api/portfolio' + (editId ? `?id=${editId}` : ''), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
                 if (res.ok) window.location.href = 'dashboard.html'; 
-                else {
-                    const err = await res.json();
-                    alert('저장 실패: ' + (err.error || '상태 코드 ' + res.status));
-                }
-            } catch (err) { alert('네트워크 오류: ' + err.message); }
+                else { const err = await res.json(); alert('저장 실패: ' + (err.error || '알 수 없는 오류')); }
+            } catch (err) { alert('네트워크 오류'); }
         });
 
         document.addEventListener('DOMContentLoaded', loadCategories);
