@@ -464,33 +464,79 @@
             closeModal('template-modal'); updateSEO();
         };
 
+        // --- Automatic Linkification & Paste Handling ---
+        editor.addEventListener('paste', async (e) => {
+            const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+            let imageFound = false;
+
+            for (const item of items) {
+                if (item.type.indexOf('image') !== -1) {
+                    imageFound = true;
+                    e.preventDefault(); 
+                    const file = item.getAsFile();
+                    const url = await uploadFile(file);
+                    if (url) insertMedia('image', url);
+                }
+            }
+
+            if (!imageFound) {
+                setTimeout(checkSmartMedia, 10);
+            }
+        });
+
+        editor.addEventListener('keyup', (e) => {
+            if (e.key === ' ' || e.key === 'Enter') checkSmartMedia();
+        });
+
+        function checkSmartMedia() {
+            const selection = window.getSelection();
+            if (!selection.rangeCount) return;
+            const range = selection.getRangeAt(0);
+            const container = range.startContainer;
+            if (container.nodeType === 3) {
+                const text = container.textContent.substring(0, range.startOffset);
+                const words = text.split(/\s+/);
+                const url = (words[words.length - 1] || words[words.length - 2] || "").replace(/[.,;!]+$/, '');
+                if (url.startsWith('http') && tryTransformMedia(url)) {
+                    const startPos = container.textContent.lastIndexOf(url);
+                    range.setStart(container, startPos);
+                    range.setEnd(container, startPos + url.length);
+                    range.deleteContents();
+                    return;
+                }
+            }
+            const links = editor.querySelectorAll('a');
+            links.forEach(link => {
+                const url = link.href || link.innerText;
+                if (tryTransformMedia(url)) link.remove();
+            });
+        }
+
+        function tryTransformMedia(url) {
+            const isImage = url.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|svg)(?:\?.*)?$/);
+            const isVideo = url.toLowerCase().match(/\.(mp4|webm|ogg)(?:\?.*)?$/);
+            if (isImage) { insertMedia('image', url); return true; }
+            if (isVideo) { insertMedia('video', url); return true; }
+            return false;
+        }
+
         // --- 5. 저장 제출 ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
-            // --- Smart Thumbnail Extraction ---
             let thumbnail = "";
             const firstImg = editor.querySelector('img');
             if (firstImg) thumbnail = firstImg.src;
             
             const contentHtml = editor.innerHTML || "";
             
-            // --- SQLITE_TOOBIG 방지: base64 이미지 포함 여부 체크 ---
+            // SQLITE_TOOBIG 방지: 붙여넣기된 base64 데이터가 여전히 본문에 남아있는지 체크
             if (contentHtml.includes('data:image/') || contentHtml.includes('data:video/')) {
-                alert('본문에 직접 붙여넣은 거대한 이미지/영상 데이터가 포함되어 있습니다. \n\n이 방식은 저장 용량을 초과하므로, 상단 [Storage] 또는 [Image/Video] 버튼을 통해 파일을 업로드해 주세요.');
+                alert('본문에 직접 포함된 거대한 이미지 데이터가 감지되었습니다. \n\n모든 이미지는 업로드(R2) 과정을 거쳐야 저장 가능합니다. 수동으로 삽입한 이미지를 삭제하고 다시 업로드해 주세요.');
                 return;
             }
 
-            // 전체 본문 용량 체크 (1MB 제한 고려)
-            if (new Blob([contentHtml]).size > 900000) {
-                alert('본문 내용이 너무 방대합니다(약 1MB 제한). 이미지 개수를 줄이거나 텍스트를 최적화해 주세요.');
-                return;
-            }
-
-            // 데이터 무결성 보장: attachments 필드가 누락되지 않도록 명시적 처리
-            const attachmentsData = attachedFiles && attachedFiles.length > 0 
-                ? JSON.stringify(attachedFiles) 
-                : "";
+            const attachmentsData = attachedFiles && attachedFiles.length > 0 ? JSON.stringify(attachedFiles) : "";
 
             const data = { 
                 title: document.getElementById('title').value || "Untitled", 
@@ -515,7 +561,7 @@
                 if (res.ok) window.location.href = 'dashboard.html'; 
                 else {
                     const err = await res.json();
-                    alert('저장 실패: ' + (err.error || '알 수 없는 오류'));
+                    alert('저장 실패: ' + (err.error || '상태 코드 ' + res.status));
                 }
             } catch (err) { alert('네트워크 오류: ' + err.message); }
         });
