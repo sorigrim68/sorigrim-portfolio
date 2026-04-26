@@ -48,7 +48,6 @@
         .asset-card img, .asset-card video { width: 100%; aspect-ratio: 1; object-fit: cover; margin-bottom: 0.8rem; border-radius: 4px; }
         .asset-card p { font-size: 0.6rem; color: var(--text-muted); word-break: break-all; margin-bottom: 0.8rem; }
 
-        /* 모달 공통 스타일 */
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 10000; }
         .modal-content { background: white; padding: 3rem; border-radius: 12px; width: 90%; max-width: 800px; max-height: 80vh; overflow-y: auto; }
         .upload-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); display: none; align-items: center; justify-content: center; z-index: 10000; flex-direction: column; gap: 2rem; }
@@ -59,7 +58,6 @@
 <body class="bg-surface">
     <div id="upload-overlay" class="upload-overlay"><div class="spinner"></div><div id="upload-msg" style="font-weight:700; color:var(--primary);">처리 중...</div></div>
 
-    <!-- 서버 자산 선택 모달 -->
     <div id="asset-modal" class="modal">
         <div class="modal-content">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
@@ -115,7 +113,7 @@
             </div>
         </div>
 
-        <!-- 03. 프로필 관리 (고도화) -->
+        <!-- 03. 프로필 관리 -->
         <div class="admin-section" id="sec-profile">
             <header class="section-header" onclick="toggleSection('sec-profile')">
                 <h2>03. 프로필(About) 관리</h2>
@@ -225,8 +223,8 @@
                 </div>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 2.5rem;">
                     <div class="glass-box"><label style="display:block; margin-bottom:1.5rem;">🖥 OS 및 브라우저 분포</label><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; height: 180px;"><canvas id="osChart"></canvas><canvas id="browserChart"></canvas></div></div>
-                    <div class="glass-box"><label>🔥 인기 콘텐츠 Top 10</label><table style="width: 100%; font-size: 0.8rem; margin-top: 1rem; border-collapse: collapse;"><tbody id="top-posts-list"></tbody></table></div>
-                    <div class="glass-box"><label>🔗 유입 경로 Top 10</label><table style="width: 100%; font-size: 0.8rem; margin-top: 1rem; border-collapse: collapse;"><tbody id="top-referrers-list"></tbody></table></div>
+                    <div class="glass-box"><label>🔥 인기 콘텐츠 Top 10</label><table style="width: 100%; font-size: 0.8rem; margin-top: 1rem; border-collapse: collapse;"> <tbody id="top-posts-list"></tbody> </table></div>
+                    <div class="glass-box"><label>🔗 유입 경로 Top 10</label><table style="width: 100%; font-size: 0.8rem; margin-top: 1rem; border-collapse: collapse;"> <tbody id="top-referrers-list"></tbody> </table></div>
                 </div>
                 <div class="glass-box" style="padding: 0; overflow: hidden;"><label style="display:block; padding: 1.5rem 2rem 0; font-weight:900;">📡 실시간 방문 피드 (Live Feed)</label><table class="admin-table" style="margin-top: 1rem;"><thead><tr><th>시간</th><th>접속 경로</th><th>유입처</th><th>식별값</th></tr></thead><tbody id="live-feed-list"></tbody></table></div>
             </div>
@@ -267,38 +265,31 @@
         }
         window.deleteItem = async (id) => { if(confirm('삭제?')) { await fetch(`/api/portfolio?id=${id}`, { method: 'DELETE' }); if(currentBoard) loadAdminList(currentBoard); loadStats(); } };
 
-        // --- Profile Image Functions ---
+        // --- Profile Functions ---
         window.triggerProfileUpload = () => document.getElementById('profile-file-input').click();
         document.getElementById('profile-file-input').onchange = async (e) => {
             const file = e.target.files[0];
             if (file) {
                 const url = await uploadFile(file);
-                if (url) document.getElementById('profile-img-url').value = url;
+                if (url) {
+                    document.getElementById('profile-img-url').value = url;
+                    // 저장 로직 트리거는 submit 버튼으로
+                }
             }
         };
-
-        window.openProfileAssetPicker = () => {
-            document.getElementById('asset-modal').style.display = 'flex';
-            loadAssetsForPicker();
-        };
-
+        window.openProfileAssetPicker = () => { document.getElementById('asset-modal').style.display = 'flex'; loadAssetsForPicker(); };
         async function loadAssetsForPicker() {
             const listEl = document.getElementById('asset-picker-list');
             listEl.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding:3rem; color:#888;">로딩 중...</p>';
             try {
                 const res = await fetch('/api/assets'); const assets = await res.json();
                 listEl.innerHTML = assets.map(a => {
-                    const isImg = a.name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i);
-                    if (!isImg) return '';
+                    if (!a.name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) return '';
                     return `<div class="asset-card" onclick="selectProfileAsset('${a.name}')"><img src="/api/assets?name=${a.name}" class="asset-thumb"><div class="asset-info">${a.name.split('-').slice(1).join('-')}</div></div>`;
                 }).join('');
             } catch (err) { listEl.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding:3rem; color:#d9534f;">실패</p>'; }
         }
-
-        window.selectProfileAsset = (name) => {
-            document.getElementById('profile-img-url').value = `/api/assets?name=${name}`;
-            closeModal('asset-modal');
-        };
+        window.selectProfileAsset = (name) => { document.getElementById('profile-img-url').value = `/api/assets?name=${name}`; closeModal('asset-modal'); };
 
         async function uploadFile(f) {
             return new Promise((resolve, reject) => {
@@ -345,17 +336,12 @@
                 });
             };
             chartConfig('dailyChart', 'line', a.dailyUnique.map(d=>d.date.slice(5)), a.dailyUnique.map(d=>d.count), '#0055FF');
-            const hours = Array.from({length: 24}, (_, i) => i);
-            const hourData = hours.map(h => a.hourlyToday.find(at => at.hour === h)?.count || 0);
-            chartConfig('hourlyChart', 'bar', hours.map(h=>h+'시'), hourData, '#28a745');
+            const hourData = Array.from({length: 24}, (_, i) => a.hourlyToday.find(at => at.hour === i)?.count || 0);
+            chartConfig('hourlyChart', 'bar', Array.from({length: 24}, (_, i) => i+'시'), hourData, '#28a745');
             const donut = (id, obj, colors) => {
                 const ctx = document.getElementById(id).getContext('2d');
                 if (charts[id]) charts[id].destroy();
-                charts[id] = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: { labels: Object.keys(obj), datasets: [{ data: Object.values(obj), backgroundColor: colors }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } }
-                });
+                charts[id] = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(obj), datasets: [{ data: Object.values(obj), backgroundColor: colors }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } } });
             };
             donut('osChart', a.os, ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']);
             donut('browserChart', a.browsers, ['#4BC0C0', '#FF9F40', '#FF6384', '#36A2EB', '#9966FF']);
@@ -379,11 +365,16 @@
         };
 
         const saveHandler = async (form, type) => {
+            // 모든 [data-key] 요소를 찾아 서버에 순차적으로 저장
             const elements = Array.from(form.querySelectorAll('[data-key]'));
             for (const el of elements) {
-                await fetch('/api/settings', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ key: el.dataset.key, value: el.value, type }) });
+                await fetch('/api/settings', { 
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ key: el.getAttribute('data-key'), value: el.value, type }) 
+                });
             }
-            alert('저장 완료');
+            alert('설정이 성공적으로 저장되었습니다.');
         };
 
         document.getElementById('profile-form').onsubmit = (e) => { e.preventDefault(); saveHandler(e.target, 'profile'); };
