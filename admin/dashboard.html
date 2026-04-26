@@ -271,10 +271,7 @@
             const file = e.target.files[0];
             if (file) {
                 const url = await uploadFile(file);
-                if (url) {
-                    document.getElementById('profile-img-url').value = url;
-                    // 저장 로직 트리거는 submit 버튼으로
-                }
+                if (url) document.getElementById('profile-img-url').value = url;
             }
         };
         window.openProfileAssetPicker = () => { document.getElementById('asset-modal').style.display = 'flex'; loadAssetsForPicker(); };
@@ -365,16 +362,18 @@
         };
 
         const saveHandler = async (form, type) => {
-            // 모든 [data-key] 요소를 찾아 서버에 순차적으로 저장
             const elements = Array.from(form.querySelectorAll('[data-key]'));
-            for (const el of elements) {
-                await fetch('/api/settings', { 
+            const dataToSave = elements.map(el => ({ key: el.getAttribute('data-key'), value: el.value, type }));
+            
+            try {
+                const res = await fetch('/api/settings', { 
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify({ key: el.getAttribute('data-key'), value: el.value, type }) 
+                    body: JSON.stringify(dataToSave) 
                 });
-            }
-            alert('설정이 성공적으로 저장되었습니다.');
+                if (res.ok) alert('설정이 성공적으로 저장되었습니다.');
+                else throw new Error('저장 실패');
+            } catch (e) { alert('오류가 발생했습니다: ' + e.message); }
         };
 
         document.getElementById('profile-form').onsubmit = (e) => { e.preventDefault(); saveHandler(e.target, 'profile'); };
