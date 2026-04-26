@@ -126,45 +126,43 @@ export async function onRequest(context) {
 
       if (id) {
         // UPDATE: 11 SET fields + 1 WHERE id = 12 params
-        if (id) {
-          // UPDATE
-          await env.DB.prepare(
-            "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ?, is_hero = ?, is_published = ?, prompt = ?, tags = ?, attachments = ? WHERE id = ?"
-          ).bind(
-            data.title || "Untitled", 
-            data.category || "General", 
-            data.image || "", 
-            data.description || "", 
-            data.content || "", 
-            isRec, 
-            isHero, 
-            isPub, 
-            data.prompt || "", 
-            data.tags || "", 
-            data.attachments || "",
-            id
-          ).run();
-          return Response.json({ success: true, action: "update" });
-        } else {
-          // INSERT
-          await env.DB.prepare(
-            "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, is_hero, is_published, prompt, tags, attachments, createdAt, views, likes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)"
-          ).bind(
-            data.title || "Untitled", 
-            data.category || "General", 
-            data.image || "", 
-            data.description || "", 
-            data.content || "", 
-            isRec, 
-            isHero, 
-            isPub, 
-            data.prompt || "", 
-            data.tags || "", 
-            data.attachments || "",
-            new Date().toISOString()
-          ).run();
-          return Response.json({ success: true, action: "insert" });
-        }
+        await env.DB.prepare(
+          "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ?, is_hero = ?, is_published = ?, prompt = ?, tags = ?, attachments = ? WHERE id = ?"
+        ).bind(
+          data.title || "Untitled", 
+          data.category || "General", 
+          data.image || "", 
+          data.description || "", 
+          data.content || "", 
+          isRec, 
+          isHero, 
+          isPub, 
+          data.prompt || "", 
+          data.tags || "", 
+          data.attachments || "",
+          id
+        ).run();
+        return Response.json({ success: true, action: "update" });
+      } else {
+        // INSERT: 12 placeholders for ? + 2 constants = 14 columns
+        await env.DB.prepare(
+          "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, is_hero, is_published, prompt, tags, attachments, createdAt, views, likes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)"
+        ).bind(
+          data.title || "Untitled", 
+          data.category || "General", 
+          data.image || "", 
+          data.description || "", 
+          data.content || "", 
+          isRec, 
+          isHero, 
+          isPub, 
+          data.prompt || "", 
+          data.tags || "", 
+          data.attachments || "",
+          new Date().toISOString()
+        ).run();
+        return Response.json({ success: true, action: "insert" });
+      }
     }
 
     if (request.method === "DELETE") {
