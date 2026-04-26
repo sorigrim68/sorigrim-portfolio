@@ -473,6 +473,20 @@
             const firstImg = editor.querySelector('img');
             if (firstImg) thumbnail = firstImg.src;
             
+            const contentHtml = editor.innerHTML || "";
+            
+            // --- SQLITE_TOOBIG 방지: base64 이미지 포함 여부 체크 ---
+            if (contentHtml.includes('data:image/') || contentHtml.includes('data:video/')) {
+                alert('본문에 직접 붙여넣은 거대한 이미지/영상 데이터가 포함되어 있습니다. \n\n이 방식은 저장 용량을 초과하므로, 상단 [Storage] 또는 [Image/Video] 버튼을 통해 파일을 업로드해 주세요.');
+                return;
+            }
+
+            // 전체 본문 용량 체크 (1MB 제한 고려)
+            if (new Blob([contentHtml]).size > 900000) {
+                alert('본문 내용이 너무 방대합니다(약 1MB 제한). 이미지 개수를 줄이거나 텍스트를 최적화해 주세요.');
+                return;
+            }
+
             // 데이터 무결성 보장: attachments 필드가 누락되지 않도록 명시적 처리
             const attachmentsData = attachedFiles && attachedFiles.length > 0 
                 ? JSON.stringify(attachedFiles) 
@@ -484,7 +498,7 @@
                 tags: document.getElementById('tags').value || "", 
                 prompt: document.getElementById('prompt').value || "", 
                 description: editor.innerText.substring(0, 160).trim() || "", 
-                content: editor.innerHTML || "", 
+                content: contentHtml, 
                 image: thumbnail || "", 
                 attachments: attachmentsData,
                 is_published: document.getElementById('is_published').checked ? 1 : 0, 
