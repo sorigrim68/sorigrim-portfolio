@@ -112,19 +112,26 @@
                         <div class="editor-wrapper">
                             <div class="editor-toolbar">
                                 <div class="toolbar-group">
-                                    <select onchange="execCmd('fontName', this.value)" style="width:120px;">
-                                        <option value="Pretendard Variable">Pretendard</option>
+                                    <select onchange="execCmd('fontName', this.value)" style="width:130px;" title="폰트 선택">
+                                        <option value="Pretendard Variable">Pretendard (기본)</option>
+                                        <option value="'Nanum Myeongjo', serif">나눔명조</option>
+                                        <option value="'Nanum Gothic', sans-serif">나눔고딕</option>
+                                        <option value="Noto Sans KR, sans-serif">Noto Sans KR</option>
                                         <option value="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">System Sans</option>
                                         <option value="'Times New Roman', Times, serif">System Serif</option>
                                         <option value="'Courier New', Courier, monospace">Monospace</option>
                                         <option value='Georgia, serif'>Georgia</option>
                                         <option value='Verdana, sans-serif'>Verdana</option>
+                                        <option value='Impact, Charcoal, sans-serif'>Impact</option>
                                     </select>
-                                    <select onchange="execCmd('fontSize', this.value)">
-                                        <option value="3">Normal</option>
-                                        <option value="1">Small</option>
-                                        <option value="5">Large</option>
-                                        <option value="7">Huge</option>
+                                    <select onchange="execCmd('fontSize', this.value)" title="글자 크기">
+                                        <option value="3">기본 크기</option>
+                                        <option value="1">매우 작게 (10pt)</option>
+                                        <option value="2">작게 (13pt)</option>
+                                        <option value="4">보통 (16pt)</option>
+                                        <option value="5">크게 (18pt)</option>
+                                        <option value="6">매우 크게 (24pt)</option>
+                                        <option value="7">최대 (32pt)</option>
                                     </select>
                                 </div>
                                 <div class="toolbar-group">
