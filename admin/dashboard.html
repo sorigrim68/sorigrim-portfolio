@@ -175,54 +175,71 @@
             </div>
         </div>
 
-        <!-- 08. 방문 통계 분석 (고도화됨) -->
+        <!-- 08. 방문 통계 분석 (Hyper-Advanced Analytics) -->
         <div class="admin-section active" id="sec-stats">
             <header class="section-header" onclick="toggleSection('sec-stats')">
-                <h2>08. 방문 통계 분석 (Advanced Analytics)</h2>
+                <h2>08. 방문 통계 분석 (Hyper-Advanced Analytics)</h2>
                 <span class="toggle-icon">▼</span>
             </header>
             <div class="section-content">
-                <!-- 요약 카드 4개 배치 -->
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem; margin-bottom: 3rem;">
-                    <div class="glass-box" style="padding: 1.5rem; text-align: center;">
-                        <label>오늘의 방문자</label>
-                        <div id="today-unique" style="font-size: 2.2rem; font-weight: 900; color: #28a745; margin-top:0.5rem;">0</div>
+                <!-- 요약 카드 -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.2rem; margin-bottom: 2.5rem;">
+                    <div class="glass-box" style="text-align: center; border-left: 4px solid #28a745;">
+                        <label>오늘 방문자</label><div id="today-unique" style="font-size: 1.8rem; font-weight: 900; color: #28a745; margin-top:0.5rem;">0</div>
                     </div>
-                    <div class="glass-box" style="padding: 1.5rem; text-align: center;">
-                        <label>어제의 방문자</label>
-                        <div id="yesterday-unique" style="font-size: 2.2rem; font-weight: 900; color: #666; margin-top:0.5rem;">0</div>
+                    <div class="glass-box" style="text-align: center; border-left: 4px solid #6c757d;">
+                        <label>어제 방문자</label><div id="yesterday-unique" style="font-size: 1.8rem; font-weight: 900; color: #6c757d; margin-top:0.5rem;">0</div>
                     </div>
-                    <div class="glass-box" style="padding: 1.5rem; text-align: center;">
-                        <label>누적 페이지 뷰</label>
-                        <div id="total-views" style="font-size: 2.2rem; font-weight: 900; color: var(--primary); margin-top:0.5rem;">0</div>
+                    <div class="glass-box" style="text-align: center; border-left: 4px solid var(--primary);">
+                        <label>누적 페이지뷰</label><div id="total-views" style="font-size: 1.8rem; font-weight: 900; color: var(--primary); margin-top:0.5rem;">0</div>
                     </div>
-                    <div class="glass-box" style="padding: 1.5rem; text-align: center;">
-                        <label>DB 기록 로그</label>
-                        <div id="db-stats-rows" style="font-size: 2.2rem; font-weight: 900; color: #f39c12; margin-top:0.5rem;">0</div>
+                    <div class="glass-box" style="text-align: center; border-left: 4px solid #f39c12;">
+                        <label>실시간 로그</label><div id="db-stats-rows" style="font-size: 1.8rem; font-weight: 900; color: #f39c12; margin-top:0.5rem;">0</div>
                     </div>
                 </div>
 
-                <!-- 방문 추이 차트 -->
-                <div class="glass-box" style="margin-bottom: 3rem; padding: 2.5rem;">
-                    <label style="display:block; margin-bottom:2rem; font-weight:900;">📈 최근 14일 방문자 추이 (Unique Visitors)</label>
-                    <div style="width: 100%; height: 350px;">
-                        <canvas id="visitorChart"></canvas>
+                <!-- 메인 차트 영역 -->
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 2.5rem;">
+                    <div class="glass-box" style="padding: 2rem;">
+                        <label style="display:block; margin-bottom:1.5rem; font-weight:900;">📈 방문자 추이 (최근 14일)</label>
+                        <div style="height: 300px;"><canvas id="dailyChart"></canvas></div>
+                    </div>
+                    <div class="glass-box" style="padding: 2rem;">
+                        <label style="display:block; margin-bottom:1.5rem; font-weight:900;">🕒 오늘 시간대별 트래픽</label>
+                        <div style="height: 300px;"><canvas id="hourlyChart"></canvas></div>
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem;">
+                <!-- 환경 분석 및 순위 -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 2.5rem;">
+                    <div class="glass-box">
+                        <label style="display:block; margin-bottom:1.5rem;">🖥 OS 및 브라우저 분포</label>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; height: 180px;">
+                            <canvas id="osChart"></canvas>
+                            <canvas id="browserChart"></canvas>
+                        </div>
+                    </div>
                     <div class="glass-box">
                         <label>🔥 인기 콘텐츠 Top 10</label>
-                        <table style="width: 100%; font-size: 0.85rem; margin-top: 1.5rem; border-collapse: collapse;">
+                        <table style="width: 100%; font-size: 0.8rem; margin-top: 1rem; border-collapse: collapse;">
                             <tbody id="top-posts-list"></tbody>
                         </table>
                     </div>
                     <div class="glass-box">
-                        <label>🔗 주요 유입 경로 (Top Referral)</label>
-                        <table style="width: 100%; font-size: 0.85rem; margin-top: 1.5rem; border-collapse: collapse;">
+                        <label>🔗 유입 경로 Top 10</label>
+                        <table style="width: 100%; font-size: 0.8rem; margin-top: 1rem; border-collapse: collapse;">
                             <tbody id="top-referrers-list"></tbody>
                         </table>
                     </div>
+                </div>
+
+                <!-- 라이브 방문 로그 -->
+                <div class="glass-box" style="padding: 0; overflow: hidden;">
+                    <label style="display:block; padding: 1.5rem 2rem 0; font-weight:900;">📡 실시간 방문 피드 (Live Feed)</label>
+                    <table class="admin-table" style="margin-top: 1rem;">
+                        <thead><tr><th>시간</th><th>접속 경로</th><th>유입처</th><th>식별값</th></tr></thead>
+                        <tbody id="live-feed-list"></tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -231,7 +248,7 @@
     <script type="module">
         let currentBoard = null;
         let categoriesData = [];
-        let vChart = null;
+        let charts = {};
 
         window.logout = () => { document.cookie = "sg_auth_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;"; window.location.href = "/login.html"; };
         window.toggleSection = (id) => { document.getElementById(id).classList.toggle('active'); if(id === 'sec-explorer') loadAssets(); };
@@ -271,60 +288,50 @@
                 document.getElementById('yesterday-unique').innerText = a.yesterdayUnique.toLocaleString();
                 document.getElementById('db-stats-rows').innerText = d.storage.d1.statsRows.toLocaleString();
                 
-                // 인기글 필터링
-                const postOnly = a.topPages.filter(p => p.page.startsWith('[작품]')).slice(0, 10);
-                document.getElementById('top-posts-list').innerHTML = postOnly.length ? postOnly.map(p => `<tr><td style="padding:0.8rem 0; border-bottom:1px solid #EEE; font-weight:700;">${p.page.replace('[작품] ', '')}</td><td style="text-align:right; font-weight:800; color:var(--primary);">${p.count.toLocaleString()}</td></tr>`).join('') : '<tr><td style="color:#999; text-align:center; padding:2rem;">데이터 없음</td></tr>';
+                document.getElementById('top-posts-list').innerHTML = a.topPages.map(p => `<tr><td style="padding:0.6rem 0; border-bottom:1px solid #EEE;">${p.label}</td><td style="text-align:right; font-weight:800; color:var(--primary);">${p.count.toLocaleString()}</td></tr>`).join('');
+                document.getElementById('top-referrers-list').innerHTML = a.topReferrers.length ? a.topReferrers.map(r => `<tr><td style="padding:0.6rem 0; border-bottom:1px solid #EEE; word-break:break-all;">${r.referrer}</td><td style="text-align:right; font-weight:800; color:#28a745;">${r.count.toLocaleString()}</td></tr>`).join('') : '<tr><td style="color:#999; text-align:center; padding:1rem;">직접 유입</td></tr>';
                 
-                document.getElementById('top-referrers-list').innerHTML = a.topReferrers.length ? a.topReferrers.map(r => `<tr><td style="padding:0.8rem 0; border-bottom:1px solid #EEE; font-weight:700; word-break:break-all;">${r.referrer}</td><td style="text-align:right; font-weight:800; color:#28a745;">${r.count.toLocaleString()}</td></tr>`).join('') : '<tr><td style="color:#999; text-align:center; padding:2rem;">직접 유입</td></tr>';
-                
-                // 차트 업데이트
-                updateVisitorChart(a.dailyUnique);
+                document.getElementById('live-feed-list').innerHTML = a.recentLogs.map(l => `<tr><td style="font-size:0.75rem; color:#888;">${new Date(l.createdAt).toLocaleTimeString()}</td><td style="font-weight:700;">${l.page}</td><td style="font-size:0.75rem; color:#666;">${l.referrer || '-'}</td><td style="font-family:monospace; font-size:0.7rem; color:#AAA;">${l.ip_hash}</td></tr>`).join('');
+
+                updateCharts(a);
 
                 const usedMB = (d.storage.r2.used / (1024*1024)).toFixed(2);
                 document.getElementById('r2-usage-text').innerText = `${usedMB} MB / 10 GB`;
                 document.getElementById('r2-usage-fill').style.width = `${Math.min(100, (d.storage.r2.used/d.storage.r2.limit)*100)}%`;
                 document.getElementById('r2-count').innerText = `${d.storage.r2.count} files stored`;
-                document.getElementById('d1-counts').innerText = `게시글 ${d.storage.d1.posts}개 | 카테고리 ${d.storage.d1.categories}`;
-                document.getElementById('d1-usage-fill').style.width = `${Math.min(100, (d.storage.d1.posts*10))}%`;
+                document.getElementById('d1-counts').innerText = `게시글 ${d.storage.d1.posts}개 | 로그 ${d.storage.d1.statsRows}개`;
+                document.getElementById('d1-usage-fill').style.width = `${Math.min(100, (d.storage.d1.statsRows/10000)*100)}%`;
             } catch(e) { console.error("Stats Error:", e); }
         }
 
-        function updateVisitorChart(data) {
-            const canvas = document.getElementById('visitorChart');
-            if (!canvas) return;
-            const ctx = canvas.getContext('2d');
-            const labels = data.map(item => item.date.split('-').slice(1).join('/'));
-            const counts = data.map(item => item.count);
+        function updateCharts(a) {
+            const chartConfig = (id, type, labels, data, color) => {
+                const ctx = document.getElementById(id).getContext('2d');
+                if (charts[id]) charts[id].destroy();
+                charts[id] = new Chart(ctx, {
+                    type,
+                    data: { labels, datasets: [{ data, borderColor: color, backgroundColor: color + '22', borderWidth: 2, fill: true, tension: 0.4 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: id.includes('Chart') ? { y: { beginAtZero: true } } : {} }
+                });
+            };
 
-            if (vChart) vChart.destroy();
-            vChart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Unique Visitors',
-                        data: counts,
-                        borderColor: '#0055FF',
-                        backgroundColor: 'rgba(0, 85, 255, 0.05)',
-                        borderWidth: 3,
-                        pointRadius: 4,
-                        pointBackgroundColor: '#FFF',
-                        pointBorderColor: '#0055FF',
-                        pointBorderWidth: 2,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true, grid: { color: '#F0F0F0' }, ticks: { font: { weight: 'bold' } } },
-                        x: { grid: { display: false }, ticks: { font: { weight: 'bold' } } }
-                    }
-                }
-            });
+            chartConfig('dailyChart', 'line', a.dailyUnique.map(d=>d.date.slice(5)), a.dailyUnique.map(d=>d.count), '#0055FF');
+            
+            const hours = Array.from({length: 24}, (_, i) => i);
+            const hourData = hours.map(h => a.hourlyToday.find(at => at.hour === h)?.count || 0);
+            chartConfig('hourlyChart', 'bar', hours.map(h=>h+'시'), hourData, '#28a745');
+
+            const donut = (id, obj, colors) => {
+                const ctx = document.getElementById(id).getContext('2d');
+                if (charts[id]) charts[id].destroy();
+                charts[id] = new Chart(ctx, {
+                    type: 'doughnut',
+                    data: { labels: Object.keys(obj), datasets: [{ data: Object.values(obj), backgroundColor: colors }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } }
+                });
+            };
+            donut('osChart', a.os, ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']);
+            donut('browserChart', a.browsers, ['#4BC0C0', '#FF9F40', '#FF6384', '#36A2EB', '#9966FF']);
         }
 
         async function loadAssets() {
