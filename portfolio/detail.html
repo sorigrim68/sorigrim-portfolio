@@ -28,6 +28,14 @@
         .rich-text img, .rich-text video { max-width: 100%; height: auto; margin: 2.5rem 0; border-radius: 8px; }
         .rich-text a { color: var(--primary); text-decoration: underline; }
 
+        /* 첨부파일 섹션 스타일 */
+        .attachments-section { margin: 4rem 0; padding: 2.5rem; background: var(--bg-light); border: 1px solid var(--border); border-radius: 12px; }
+        .attachments-section h4 { font-size: 0.85rem; font-weight: 850; color: var(--text-muted); margin-bottom: 1.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .attachment-links { display: flex; flex-direction: column; gap: 1rem; }
+        .download-item { display: flex; align-items: center; gap: 1rem; padding: 1.2rem 1.8rem; background: white; border: 1px solid var(--border); border-radius: 8px; text-decoration: none; color: var(--text-main); font-weight: 700; font-size: 0.95rem; transition: 0.3s; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .download-item:hover { border-color: var(--primary); color: var(--primary); transform: translateX(8px); box-shadow: 0 5px 15px rgba(0,85,255,0.1); }
+        .download-item .icon { font-size: 1.2rem; }
+
         .prompt-section { margin: 6rem 0; background: #111; border-radius: 12px; padding: 3rem; color: #EEE; }
         .prompt-box { font-family: monospace; font-size: 1rem; color: #BBB; white-space: pre-wrap; word-break: break-all; }
         .btn-copy-prompt { margin-top: 2rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #FFF; padding: 0.8rem 1.5rem; font-size: 0.8rem; font-weight: 700; cursor: pointer; border-radius: 4px; }
@@ -66,6 +74,29 @@
             const currentUrl = encodeURIComponent(window.location.href);
             const shareText = encodeURIComponent(`SORIGRIM | ${d.title}`);
 
+            // 첨부파일 HTML 생성 로직 추가
+            let attachmentsHtml = '';
+            if (d.attachments) {
+                try {
+                    const files = JSON.parse(d.attachments);
+                    if (files && files.length > 0) {
+                        attachmentsHtml = `
+                            <div class="attachments-section reveal">
+                                <h4>Download Attachments</h4>
+                                <div class="attachment-links">
+                                    ${files.map(f => `
+                                        <a href="${f.url}" class="download-item" download="${f.name}" target="_blank">
+                                            <span class="icon">📎</span>
+                                            <span class="name">${f.name}</span>
+                                        </a>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    }
+                } catch(e) { console.error("Attachment parse error", e); }
+            }
+
             document.getElementById('detail-target').innerHTML = `
                 <div class="detail-hero reveal">${d.image && d.image.toLowerCase().match(/\.(mp4|webm|ogg)$/) ? `<video src="${d.image}" muted loop autoplay playsinline></video>` : `<img src="${d.image || ''}" alt="${d.title}">`}</div>
                 <div class="container">
@@ -78,6 +109,7 @@
                     </header>
                     <div class="detail-body reveal">
                         <div class="rich-text">${d.content || ''}</div>
+                        ${attachmentsHtml}
                         <div class="engagement-bar">
                             <button id="like-btn" class="like-btn" onclick="handleLike()">❤️ <span id="like-count">${d.likes || 0}</span> LIKES</button>
                         </div>
