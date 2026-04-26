@@ -207,11 +207,12 @@
                         <div id="check-media" class="seo-check"><div class="status"></div> 미디어 포함</div>
                         <div id="check-length" class="seo-check"><div class="status"></div> 글자 수</div>
                         <div id="check-prompt" class="seo-check"><div class="status"></div> 프롬프트 작성</div>
+                        <div id="check-size" class="seo-check"><div class="status"></div> 저장 용량: <b id="current-size">0 KB</b></div>
                     </div>
                 </div>
                 <div class="sidebar-card">
                     <h4>편집 도움말</h4>
-                    <p style="font-size:0.75rem; color:#666; line-height:1.6;">- 이미지를 넣으면 하단에 캡션란이 생깁니다.<br>- 2단 레이아웃으로 잡지 같은 구성을 해보세요.<br>- 본문에 주소만 적어도 자동 링크가 됩니다.</p>
+                    <p style="font-size:0.75rem; color:#666; line-height:1.6;">- 이미지를 넣으면 자동으로 서버(R2)에 업로드됩니다.<br>- 1MB를 넘는 거대한 텍스트나 인라인 데이터는 저장이 실패할 수 있습니다.<br>- 사이드바의 <b>저장 용량</b>을 수시로 확인하세요.</p>
                 </div>
             </div>
         </div>
@@ -287,6 +288,7 @@
             if (attachedFiles.length === 0) { previewEl.style.display = 'none'; return; }
             previewEl.style.display = 'flex';
             previewEl.innerHTML = '<span style="font-size:0.7rem; font-weight:800; color:#888;">첨부됨:</span>' + attachedFiles.map((f, i) => `<div class="attachment-tag">📎 ${f.name} <span class="remove" onclick="removeAttachment(${i})">×</span></div>`).join('');
+            updateSEO();
         }
 
         window.removeAttachment = (i) => { attachedFiles.splice(i, 1); renderAttachments(); };
@@ -326,25 +328,19 @@
             const selection = window.getSelection();
             let range = selection.rangeCount > 0 ? selection.getRangeAt(0) : document.createRange();
             if (!editor.contains(range.commonAncestorContainer)) { range.selectNodeContents(editor); range.collapse(false); }
-
             const wrapper = document.createElement('div'); 
             wrapper.className = 'sg-image-wrapper'; wrapper.style.cssText = "width:100%; margin:2.5rem auto; transition:width 0.4s ease; position:relative;";
             wrapper.contentEditable = "false";
-            
             const media = document.createElement(t === 'image' ? 'img' : 'video');
             media.src = url; media.style.cssText = "width:100%; display:block; cursor:pointer; border-radius:8px;";
             if (t === 'video') media.controls = true;
-
             media.onclick = (e) => { e.stopPropagation(); if (lastSelectedMedia) lastSelectedMedia.style.outline = "none"; lastSelectedMedia = wrapper; wrapper.style.outline = "3px solid var(--primary)"; wrapper.style.outlineOffset = "5px"; };
-
             const delBtn = document.createElement('button');
             delBtn.innerText = "×"; delBtn.style.cssText = "position:absolute; top:-15px; right:-15px; width:30px; height:30px; background:#d9534f; color:white; border:none; border-radius:50%; cursor:pointer; font-size:20px; font-weight:bold; display:none; z-index:100;";
-            delBtn.onclick = (e) => { e.stopPropagation(); wrapper.remove(); };
-
+            delBtn.onclick = (e) => { e.stopPropagation(); wrapper.remove(); updateSEO(); };
             wrapper.appendChild(media); wrapper.appendChild(delBtn);
             wrapper.onmouseenter = () => delBtn.style.display = "block";
             wrapper.onmouseleave = () => { if(lastSelectedMedia !== wrapper) delBtn.style.display = "none"; };
-
             range.deleteContents(); range.insertNode(wrapper);
             const p = document.createElement('p'); p.innerHTML = '<br>'; wrapper.after(p);
             const newRange = document.createRange(); newRange.setStartAfter(p); newRange.collapse(true);
@@ -352,15 +348,23 @@
             updateSEO();
         }
 
-        window.resizeSelectedMedia = (width) => { if (lastSelectedMedia) lastSelectedMedia.style.width = width; else alert("이미지를 먼저 클릭해 주세요."); };
+        window.resizeSelectedMedia = (width) => { if (lastSelectedMedia) lastSelectedMedia.style.width = width; else alert("이미지를 먼저 클릭해 주세요."); updateSEO(); };
         window.closeModal = (id) => document.getElementById(id).style.display = 'none';
         window.openTemplates = () => document.getElementById('template-modal').style.display = 'flex';
 
         function updateSEO() {
             const html = editor.innerHTML;
+            const text = editor.innerText.trim();
+            const totalSize = new Blob([html, JSON.stringify(attachedFiles)]).size;
+            const sizeKB = (totalSize / 1024).toFixed(1);
+            
+            const sizeEl = document.getElementById('current-size');
+            sizeEl.innerText = sizeKB + ' KB';
+            
             toggleCheck('check-media', html.includes('<img') || html.includes('<video') ? 'pass' : 'fail');
-            toggleCheck('check-length', editor.innerText.trim().length > 50 ? 'pass' : 'warn');
+            toggleCheck('check-length', text.length > 50 ? 'pass' : 'warn');
             toggleCheck('check-prompt', document.getElementById('prompt').value.trim().length > 0 ? 'pass' : 'fail');
+            toggleCheck('check-size', totalSize < 900000 ? 'pass' : (totalSize < 1000000 ? 'warn' : 'fail'));
         }
 
         function toggleCheck(id, s) { const el = document.getElementById(id); if (el) { el.classList.remove('pass', 'warn', 'fail'); el.classList.add(s); } }
@@ -374,7 +378,6 @@
             closeModal('template-modal'); updateSEO();
         };
 
-        // --- Automatic Media Handling (Paste & Drop) ---
         async function handleFileInput(files) {
             for (const f of Array.from(files)) {
                 if (f.type.startsWith('image/')) { const url = await uploadFile(f); if (url) insertMedia('image', url); }
@@ -395,19 +398,20 @@
         function checkSmartMedia() {
             const links = editor.querySelectorAll('a');
             links.forEach(link => { const url = link.href || link.innerText; if (url.toLowerCase().match(/\.(jpg|jpeg|png|gif|webp|svg|mp4|webm|ogg)$/)) link.remove(); });
+            updateSEO();
         }
 
-        // --- Final Save Logic ---
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             const contentHtml = editor.innerHTML || "";
-            
-            // SQLITE_TOOBIG 원천 차단 (Base64 데이터 전수 검사)
-            if (/data:[^;]+;base64,/i.test(contentHtml)) {
-                alert('저장 실패: 본문에 업로드되지 않은 거대 이미지 데이터가 포함되어 있습니다.\n\n이미지를 삭제하고 상단 버튼이나 복사/붙여넣기를 통해 다시 넣어주세요. (자동 업로드됩니다)');
+            if (/data:[^;]+;base64,/i.test(contentHtml) || /<svg[^>]*>([\s\S]*?)<\/svg>/i.test(contentHtml)) {
+                alert('저장 실패: 본문에 업로드되지 않은 거대 데이터(Base64 또는 SVG)가 감지되었습니다.\n\n해당 요소를 삭제하고 다시 넣어주세요.');
                 return;
             }
-
+            if (new Blob([contentHtml]).size > 1000000) {
+                alert('저장 실패: 본문 텍스트 용량이 1MB를 초과했습니다. 내용을 줄이거나 이미지를 최적화해 주세요.');
+                return;
+            }
             const data = { 
                 title: document.getElementById('title').value || "Untitled", 
                 category: document.getElementById('category').value || "General", 
@@ -421,14 +425,12 @@
                 is_hero: document.getElementById('is_hero').checked ? 1 : 0, 
                 is_recommended: document.getElementById('is_recommended').checked ? 1 : 0 
             };
-            
             try {
                 const res = await fetch('/api/portfolio' + (editId ? `?id=${editId}` : ''), { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
                 if (res.ok) window.location.href = 'dashboard.html'; 
                 else { const err = await res.json(); alert('저장 실패: ' + (err.error || '알 수 없는 오류')); }
             } catch (err) { alert('네트워크 오류'); }
         });
-
         document.addEventListener('DOMContentLoaded', loadCategories);
     </script>
 </body>
