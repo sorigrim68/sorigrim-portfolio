@@ -170,6 +170,7 @@
                                     <button type="button" title="Bullet List" onclick="execCmd('insertUnorderedList')">• List</button>
                                     <button type="button" title="Numbered List" onclick="execCmd('insertOrderedList')">1. List</button>
                                     <button type="button" title="Horizontal Rule" onclick="execCmd('insertHorizontalRule')">— HR</button>
+                                    <button type="button" title="Link" onclick="promptLink()">🔗 Link</button>
                                 </div>
                                 <div class="toolbar-group">
                                     <button type="button" onclick="insertColumns()" style="color:var(--primary); font-weight:800;">2-Columns</button>
@@ -352,6 +353,19 @@
         window.closeModal = (id) => document.getElementById(id).style.display = 'none';
         window.openTemplates = () => document.getElementById('template-modal').style.display = 'flex';
 
+        // --- 링크 도구 ---
+        window.promptLink = () => {
+            const url = prompt("URL:", "https://");
+            if (url && url !== "https://") {
+                document.execCommand("createLink", false, url);
+                const selection = window.getSelection();
+                if (selection.rangeCount > 0) {
+                    const el = selection.getRangeAt(0).commonAncestorContainer.parentElement;
+                    if (el.tagName === 'A') { el.target = "_blank"; el.rel = "noopener noreferrer"; }
+                }
+            }
+        };
+
         function updateSEO() {
             const html = editor.innerHTML;
             const text = editor.innerText.trim();
@@ -401,24 +415,57 @@
             updateSEO();
         }
 
+        // --- 저장 시 자동 링크 변환 (Auto-Linkify) ---
+        function finalLinkify(html) {
+            const div = document.createElement('div');
+            div.innerHTML = html;
+            const walk = (node) => {
+                if (node.nodeType === 3) {
+                    const parent = node.parentNode;
+                    if (parent && (parent.tagName === 'A' || parent.tagName === 'IMG' || parent.tagName === 'VIDEO')) return;
+                    const urlRegex = /(https?:\/\/[^\s<"']+)/g;
+                    if (urlRegex.test(node.textContent)) {
+                        const newHtml = node.textContent.replace(urlRegex, (url) => {
+                            const cleanUrl = url.replace(/[.,;!]+$/, '');
+                            const trailing = url.substring(cleanUrl.length);
+                            return `<a href="${cleanUrl}" target="_blank" rel="noopener noreferrer">${cleanUrl}</a>${trailing}`;
+                        });
+                        const temp = document.createElement('div'); temp.innerHTML = newHtml;
+                        const frag = document.createDocumentFragment();
+                        while (temp.firstChild) frag.appendChild(temp.firstChild);
+                        node.parentNode.replaceChild(frag, node);
+                    }
+                } else if (node.nodeType === 1 && node.tagName !== 'A') {
+                    for (let i = node.childNodes.length - 1; i >= 0; i--) walk(node.childNodes[i]);
+                }
+            };
+            walk(div);
+            return div.innerHTML;
+        }
+
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const contentHtml = editor.innerHTML || "";
-            if (/data:[^;]+;base64,/i.test(contentHtml) || /<svg[^>]*>([\s\S]*?)<\/svg>/i.test(contentHtml)) {
+            
+            // 1. 자동 링크 처리
+            const processedContent = finalLinkify(editor.innerHTML || "");
+            
+            // 2. 용량 및 무결성 체크
+            if (/data:[^;]+;base64,/i.test(processedContent) || /<svg[^>]*>([\s\S]*?)<\/svg>/i.test(processedContent)) {
                 alert('저장 실패: 본문에 업로드되지 않은 거대 데이터(Base64 또는 SVG)가 감지되었습니다.\n\n해당 요소를 삭제하고 다시 넣어주세요.');
                 return;
             }
-            if (new Blob([contentHtml]).size > 1000000) {
+            if (new Blob([processedContent]).size > 1000000) {
                 alert('저장 실패: 본문 텍스트 용량이 1MB를 초과했습니다. 내용을 줄이거나 이미지를 최적화해 주세요.');
                 return;
             }
+
             const data = { 
                 title: document.getElementById('title').value || "Untitled", 
                 category: document.getElementById('category').value || "General", 
                 tags: document.getElementById('tags').value || "", 
                 prompt: document.getElementById('prompt').value || "", 
                 description: editor.innerText.substring(0, 160).trim() || "", 
-                content: contentHtml, 
+                content: processedContent, 
                 image: editor.querySelector('img')?.src || "", 
                 attachments: JSON.stringify(attachedFiles),
                 is_published: document.getElementById('is_published').checked ? 1 : 0, 
