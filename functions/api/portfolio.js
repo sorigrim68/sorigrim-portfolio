@@ -125,7 +125,7 @@ export async function onRequest(context) {
       }
 
       if (id) {
-        // UPDATE
+        // UPDATE: 11 SET fields + 1 WHERE id = 12 params
         await env.DB.prepare(
           "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ?, is_hero = ?, is_published = ?, prompt = ?, tags = ?, attachments = ? WHERE id = ?"
         ).bind(
@@ -144,7 +144,7 @@ export async function onRequest(context) {
         ).run();
         return Response.json({ success: true, action: "update" });
       } else {
-        // INSERT
+        // INSERT: 12 placeholders for ? + 2 constants = 14 columns
         await env.DB.prepare(
           "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, is_hero, is_published, prompt, tags, attachments, createdAt, views, likes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)"
         ).bind(
