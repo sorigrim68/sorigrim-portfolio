@@ -37,12 +37,12 @@ export async function onRequest(context) {
     `).run();
 
     // Ensure all columns exist
-    const columns = ['is_hero', 'is_published', 'views', 'prompt', 'likes', 'tags'];
+    const columns = ['is_hero', 'is_published', 'views', 'prompt', 'likes', 'tags', 'attachments'];
     for (const col of columns) {
       try { 
         if (col === 'views' || col === 'likes') {
           await env.DB.prepare(`ALTER TABLE sg_posts ADD COLUMN ${col} INTEGER DEFAULT 0`).run();
-        } else if (col === 'prompt' || col === 'tags') {
+        } else if (col === 'prompt' || col === 'tags' || col === 'attachments') {
           await env.DB.prepare(`ALTER TABLE sg_posts ADD COLUMN ${col} TEXT`).run();
         } else {
           await env.DB.prepare(`ALTER TABLE sg_posts ADD COLUMN ${col} INTEGER DEFAULT 1`).run(); 
@@ -127,7 +127,7 @@ export async function onRequest(context) {
       if (id) {
         // UPDATE
         await env.DB.prepare(
-          "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ?, is_hero = ?, is_published = ?, prompt = ?, tags = ? WHERE id = ?"
+          "UPDATE sg_posts SET title = ?, category = ?, image = ?, description = ?, content = ?, is_recommended = ?, is_hero = ?, is_published = ?, prompt = ?, tags = ?, attachments = ? WHERE id = ?"
         ).bind(
           data.title || "Untitled", 
           data.category || "General", 
@@ -139,13 +139,14 @@ export async function onRequest(context) {
           isPub, 
           data.prompt || "", 
           data.tags || "", 
+          data.attachments || "",
           id
         ).run();
         return Response.json({ success: true, action: "update" });
       } else {
         // INSERT
         await env.DB.prepare(
-          "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, is_hero, is_published, prompt, tags, createdAt, views, likes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)"
+          "INSERT INTO sg_posts (title, category, image, description, content, is_recommended, is_hero, is_published, prompt, tags, attachments, createdAt, views, likes) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0)"
         ).bind(
           data.title || "Untitled", 
           data.category || "General", 
@@ -157,6 +158,7 @@ export async function onRequest(context) {
           isPub, 
           data.prompt || "", 
           data.tags || "", 
+          data.attachments || "",
           new Date().toISOString()
         ).run();
         return Response.json({ success: true, action: "insert" });
