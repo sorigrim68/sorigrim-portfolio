@@ -7,6 +7,8 @@
 
 단, 공개 배포에서 링크가 있는 사용자만 사용하게 하려면 `VITE_REQUIRE_SHARE_KEY=true`로 빌드합니다. 이 경우 `?key=`가 없는 주소는 업무 보드 대신 접근 안내 화면만 표시합니다.
 
+고정 PIN 보호까지 사용하려면 `VITE_REQUIRE_PIN=true`와 `VITE_BOARD_PIN`을 함께 지정합니다. 현재 배포 기본 PIN은 `2580`입니다.
+
 ## 1. D1 스키마 적용
 
 Cloudflare D1 데이터베이스가 이미 있다면 아래 SQL을 적용합니다.
@@ -36,6 +38,8 @@ Cloudflare Dashboard에서:
 ```bash
 $env:VITE_BASE_PATH='/xconda-board/'
 $env:VITE_REQUIRE_SHARE_KEY='true'
+$env:VITE_REQUIRE_PIN='true'
+$env:VITE_BOARD_PIN='2580'
 npm run build
 ```
 
@@ -56,6 +60,8 @@ https://sorigrim.com/xconda-board/?key=xconda-team-2026-random-long-key
 `key`가 같은 팀원은 같은 D1 보드 데이터를 공유합니다.
 
 키는 12~128자의 영문, 숫자, `_`, `-`만 사용할 수 있습니다.
+
+Cloudflare Pages 환경변수 `BOARD_PIN`을 설정하면 API에서도 같은 PIN을 기준으로 공유 보드 데이터를 보호합니다. 환경변수를 설정하지 않으면 기본값 `2580`을 사용합니다.
 
 ## 주의
 

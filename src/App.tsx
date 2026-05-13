@@ -88,22 +88,31 @@ const dateFilterOptions: Array<{ value: DateFilter; label: string }> = [
   { value: 'overdue', label: '지연' },
 ]
 
+const projectPresets = [
+  '일반 업무',
+  '개발',
+  '영상제작',
+  '디자인',
+  '마케팅',
+  '운영',
+]
+
 const seedMembers = ['민지', '준호', '서연', '태오', '하린']
 
 const seedTasks: Task[] = [
   {
     attachments: [
-      { id: 'task-1-link-1', label: '캠페인 일정 초안', url: 'https://example.com/campaign-plan' },
+      { id: 'task-1-link-1', label: '주간 운영 일정표', url: 'https://example.com/weekly-ops' },
     ],
     checklist: [
-      { id: 'task-1-check-1', text: '캠페인 채널별 소재 목록 정리', done: true },
-      { id: 'task-1-check-2', text: '최종 일정 공유', done: false },
+      { id: 'task-1-check-1', text: '이번 주 우선순위 업무 정리', done: true },
+      { id: 'task-1-check-2', text: '담당자별 마감 일정 공유', done: false },
     ],
-    goal: '캠페인 시작 전 모든 팀이 같은 일정표를 기준으로 움직이게 한다.',
+    goal: '일반 운영 업무와 제작 업무가 같은 일정표 안에서 움직이게 한다.',
     id: 'task-1',
-    logs: [{ id: 'task-1-log-1', text: '광고팀 일정 초안 확인', timestamp: '2026-05-13' }],
-    title: '신규 캠페인 일정표 확정',
-    project: '마케팅',
+    logs: [{ id: 'task-1-log-1', text: '주간 업무 초안 작성', timestamp: '2026-05-13' }],
+    title: '주간 업무 일정 확정',
+    project: '일반 업무',
     owner: '민지',
     startDate: '2026-05-13',
     dueDate: '2026-05-15',
@@ -113,17 +122,17 @@ const seedTasks: Task[] = [
   },
   {
     attachments: [
-      { id: 'task-2-link-1', label: '문의 유형 정리 문서', url: 'https://example.com/support-template' },
+      { id: 'task-2-link-1', label: 'GitHub 이슈 목록', url: 'https://example.com/dev-issues' },
     ],
     checklist: [
-      { id: 'task-2-check-1', text: '상위 문의 유형 분류', done: true },
-      { id: 'task-2-check-2', text: '검토자 피드백 반영', done: false },
+      { id: 'task-2-check-1', text: '재현 조건 정리', done: true },
+      { id: 'task-2-check-2', text: '수정 후 빌드 확인', done: false },
     ],
-    goal: '운영 응답 속도와 답변 품질을 균일하게 만든다.',
+    goal: '웹앱에서 발견된 문제를 재현 가능한 단위로 고치고 배포한다.',
     id: 'task-2',
-    logs: [{ id: 'task-2-log-1', text: '반복 문의 12개 초안 작성', timestamp: '2026-05-13' }],
-    title: '고객 문의 답변 템플릿 정리',
-    project: '운영',
+    logs: [{ id: 'task-2-log-1', text: '오류 재현 조건 확인', timestamp: '2026-05-13' }],
+    title: '업무 보드 저장 오류 점검',
+    project: '개발',
     owner: '준호',
     startDate: '2026-05-13',
     dueDate: '2026-05-18',
@@ -134,14 +143,14 @@ const seedTasks: Task[] = [
   {
     attachments: [],
     checklist: [
-      { id: 'task-3-check-1', text: '팀별 회고 입력 요청', done: false },
-      { id: 'task-3-check-2', text: '병목 항목 요약', done: false },
+      { id: 'task-3-check-1', text: '촬영본 폴더 정리', done: false },
+      { id: 'task-3-check-2', text: '1차 편집본 출력', done: false },
     ],
-    goal: '월간 회의에서 바로 논의 가능한 회고 자료를 준비한다.',
+    goal: '영상 제작물이 검토 가능한 1차 편집본까지 진행되게 한다.',
     id: 'task-3',
     logs: [],
-    title: '월간 회고 자료 취합',
-    project: '팀 관리',
+    title: '뮤직비디오 1차 편집',
+    project: '영상제작',
     owner: '서연',
     startDate: '2026-05-16',
     dueDate: '2026-05-20',
@@ -151,17 +160,17 @@ const seedTasks: Task[] = [
   },
   {
     attachments: [
-      { id: 'task-4-link-1', label: '재현 환경 기록', url: 'https://example.com/payment-case' },
+      { id: 'task-4-link-1', label: '디자인 참고 자료', url: 'https://example.com/storyboard' },
     ],
     checklist: [
-      { id: 'task-4-check-1', text: '모바일 결제 경로 확인', done: true },
-      { id: 'task-4-check-2', text: '재현 영상 첨부', done: false },
+      { id: 'task-4-check-1', text: '장면별 컷 구성 확인', done: true },
+      { id: 'task-4-check-2', text: '자막/가사 타이밍 검토', done: false },
     ],
-    goal: '결제 실패 원인을 재현 가능한 케이스로 좁힌다.',
+    goal: '편집자가 바로 작업할 수 있는 장면 흐름과 타이밍을 확정한다.',
     id: 'task-4',
-    logs: [{ id: 'task-4-log-1', text: 'iOS 환경에서 1회 재현', timestamp: '2026-05-13' }],
-    title: '결제 오류 재현 케이스 확인',
-    project: '제품',
+    logs: [{ id: 'task-4-log-1', text: '스토리보드 초안 확인', timestamp: '2026-05-13' }],
+    title: '영상 스토리보드 검토',
+    project: '영상제작',
     owner: '태오',
     startDate: '2026-05-13',
     dueDate: '2026-05-14',
@@ -171,17 +180,17 @@ const seedTasks: Task[] = [
   },
   {
     attachments: [
-      { id: 'task-5-link-1', label: '온보딩 문서', url: 'https://example.com/onboarding' },
+      { id: 'task-5-link-1', label: '배포 체크리스트', url: 'https://example.com/release-checklist' },
     ],
     checklist: [
-      { id: 'task-5-check-1', text: '신규 입사자 피드백 반영', done: true },
-      { id: 'task-5-check-2', text: '최종 링크 공유', done: true },
+      { id: 'task-5-check-1', text: 'Cloudflare 배포 확인', done: true },
+      { id: 'task-5-check-2', text: '공유 링크 전달', done: true },
     ],
-    goal: '신규 입사자가 첫 주에 필요한 정보를 빠짐없이 확인하게 한다.',
+    goal: '웹에서 팀원들이 같은 업무 보드를 안정적으로 사용하게 한다.',
     id: 'task-5',
-    logs: [{ id: 'task-5-log-1', text: '온보딩 문서 업데이트 완료', timestamp: '2026-05-13' }],
-    title: '온보딩 체크리스트 업데이트',
-    project: '인사',
+    logs: [{ id: 'task-5-log-1', text: '배포 확인 완료', timestamp: '2026-05-13' }],
+    title: '업무 보드 웹 배포 확인',
+    project: '개발',
     owner: '하린',
     startDate: '2026-05-13',
     dueDate: '2026-05-22',
@@ -193,7 +202,10 @@ const seedTasks: Task[] = [
 
 const tasksStorageKey = 'team-task-manager.tasks'
 const membersStorageKey = 'team-task-manager.members'
+const pinSessionKey = 'team-task-manager.pin-ok'
 const requireShareKey = import.meta.env.VITE_REQUIRE_SHARE_KEY === 'true'
+const requirePin = import.meta.env.VITE_REQUIRE_PIN === 'true'
+const boardPin = import.meta.env.VITE_BOARD_PIN ?? '2580'
 
 type BoardPayload = {
   members: string[]
@@ -239,7 +251,7 @@ function createEmptyTask(defaultOwner = ''): Omit<Task, 'id'> {
     checklist: [],
     goal: '',
     title: '',
-    project: '운영',
+    project: '일반 업무',
     owner: defaultOwner,
     startDate: toDateInputValue(start),
     dueDate: toDateInputValue(due),
@@ -303,14 +315,22 @@ function getShareKey() {
   return new URLSearchParams(window.location.search).get('key')?.trim() ?? ''
 }
 
+function getPinSessionKey(shareKey: string) {
+  return `${pinSessionKey}:${shareKey}`
+}
+
 function isBoardPayload(value: unknown): value is BoardPayload {
   if (!value || typeof value !== 'object') return false
   const candidate = value as Partial<BoardPayload>
   return Array.isArray(candidate.tasks) && Array.isArray(candidate.members)
 }
 
-async function fetchSharedBoard(key: string) {
-  const response = await fetch(`/api/board?key=${encodeURIComponent(key)}`)
+async function fetchSharedBoard(key: string, pin: string) {
+  const response = await fetch(`/api/board?key=${encodeURIComponent(key)}`, {
+    headers: {
+      'x-board-pin': pin,
+    },
+  })
   if (!response.ok) throw new Error('공유 보드를 불러오지 못했습니다')
 
   const payload = (await response.json()) as unknown
@@ -322,11 +342,12 @@ async function fetchSharedBoard(key: string) {
   }
 }
 
-async function saveSharedBoard(key: string, payload: BoardPayload) {
+async function saveSharedBoard(key: string, payload: BoardPayload, pin: string) {
   const response = await fetch(`/api/board?key=${encodeURIComponent(key)}`, {
     body: JSON.stringify(payload),
     headers: {
       'content-type': 'application/json',
+      'x-board-pin': pin,
     },
     method: 'PUT',
   })
@@ -336,6 +357,15 @@ async function saveSharedBoard(key: string, payload: BoardPayload) {
 
 function App() {
   const shareKey = useMemo(() => getShareKey(), [])
+  const [pinAccepted, setPinAccepted] = useState(() => {
+    if (!shareKey || !requirePin) return true
+
+    try {
+      return sessionStorage.getItem(getPinSessionKey(shareKey)) === 'true'
+    } catch {
+      return false
+    }
+  })
   const remoteLoadedRef = useRef(!shareKey)
   const [tasks, setTasks] = useState<Task[]>(() =>
     normalizeTasks(readStorage(tasksStorageKey, seedTasks)),
@@ -385,10 +415,10 @@ function App() {
   }, [members, shareKey])
 
   useEffect(() => {
-    if (!shareKey) return
+    if (!shareKey || !pinAccepted) return
 
     let active = true
-    fetchSharedBoard(shareKey)
+    fetchSharedBoard(shareKey, boardPin)
       .then((payload) => {
         if (!active) return
         setTasks(payload.tasks)
@@ -405,20 +435,20 @@ function App() {
     return () => {
       active = false
     }
-  }, [shareKey])
+  }, [pinAccepted, shareKey])
 
   useEffect(() => {
-    if (!shareKey || !remoteLoadedRef.current) return
+    if (!shareKey || !pinAccepted || !remoteLoadedRef.current) return
 
     setSyncState('saving')
     const timeoutId = window.setTimeout(() => {
-      saveSharedBoard(shareKey, { members, tasks })
+      saveSharedBoard(shareKey, { members, tasks }, boardPin)
         .then(() => setSyncState('synced'))
         .catch(() => setSyncState('error'))
     }, 650)
 
     return () => window.clearTimeout(timeoutId)
-  }, [members, shareKey, tasks])
+  }, [members, pinAccepted, shareKey, tasks])
 
   const projects = useMemo(
     () =>
@@ -823,6 +853,21 @@ function App() {
     return <AccessRequired />
   }
 
+  if (shareKey && requirePin && !pinAccepted) {
+    return (
+      <PinGate
+        onUnlock={() => {
+          try {
+            sessionStorage.setItem(getPinSessionKey(shareKey), 'true')
+          } catch {
+            // Session storage can be unavailable in some private browsing modes.
+          }
+          setPinAccepted(true)
+        }}
+      />
+    )
+  }
+
   return (
     <main className="app-shell">
       <aside className="sidebar">
@@ -1069,6 +1114,54 @@ function AccessRequired() {
           받은 주소 전체를 다시 확인해 주세요.
         </p>
       </section>
+    </main>
+  )
+}
+
+function PinGate({ onUnlock }: { onUnlock: () => void }) {
+  const [pin, setPin] = useState('')
+  const [error, setError] = useState('')
+
+  function submitPin(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (pin.trim() !== boardPin) {
+      setError('PIN 번호가 맞지 않습니다')
+      setPin('')
+      return
+    }
+
+    onUnlock()
+  }
+
+  return (
+    <main className="pin-gate">
+      <form onSubmit={submitPin}>
+        <div className="brand-mark">
+          <ListChecks size={24} aria-hidden="true" />
+        </div>
+        <p className="eyebrow">Private Board</p>
+        <h1>xconda 업무 보드</h1>
+        <p>공유 링크와 PIN을 가진 팀원만 보드를 열 수 있습니다.</p>
+        <label>
+          PIN 번호
+          <input
+            autoFocus
+            inputMode="numeric"
+            onChange={(event) => {
+              setPin(event.target.value)
+              setError('')
+            }}
+            placeholder="PIN 입력"
+            type="password"
+            value={pin}
+          />
+        </label>
+        {error && <strong className="pin-error">{error}</strong>}
+        <button className="primary-action" type="submit">
+          보드 열기
+        </button>
+      </form>
     </main>
   )
 }
@@ -1506,11 +1599,18 @@ function TaskComposer({
           <label>
             프로젝트
             <input
+              list="project-presets"
               onChange={(event) =>
                 onChange({ ...formTask, project: event.target.value })
               }
+              placeholder="일반 업무, 개발, 영상제작"
               value={formTask.project}
             />
+            <datalist id="project-presets">
+              {projectPresets.map((project) => (
+                <option key={project} value={project} />
+              ))}
+            </datalist>
           </label>
           <label>
             시작일

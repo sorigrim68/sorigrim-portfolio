@@ -23,6 +23,7 @@
 - Cloudflare Pages Function + D1 기반 공유 보드 모드
 - `?key=` 비밀 링크 기반 팀 공유
 - 배포 빌드에서 `?key=` 없는 접속 차단 옵션
+- 고정 PIN 입력 후 보드 진입
 - 개인별 열린 작업, 마감 임박, 완료율 확인
 - 담당자별 작업을 날짜 축에 배치하는 선형 그래프 달력
 - 마감일 기준 카드형 달력 타임라인
@@ -55,7 +56,10 @@ Cloudflare Pages와 D1로 팀 공유 모드를 배포하려면 [CLOUDFLARE_DEPLO
 ```bash
 $env:VITE_BASE_PATH='/xconda-board/'
 $env:VITE_REQUIRE_SHARE_KEY='true'
+$env:VITE_REQUIRE_PIN='true'
+$env:VITE_BOARD_PIN='2580'
 npm run build
 ```
 
 공유 링크는 `https://sorigrim.com/xconda-board/?key=팀전용긴키` 형식입니다.
+현재 기본 PIN은 `2580`입니다.

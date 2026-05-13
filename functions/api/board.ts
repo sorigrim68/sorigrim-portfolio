@@ -1,4 +1,5 @@
 type Env = {
+  BOARD_PIN?: string
   DB: D1Database
 }
 
@@ -29,11 +30,20 @@ function isValidKey(key: string) {
   return /^[a-zA-Z0-9_-]{12,128}$/.test(key)
 }
 
+function isValidPin(request: Request, env: Env) {
+  const expectedPin = env.BOARD_PIN ?? '2580'
+  return request.headers.get('x-board-pin') === expectedPin
+}
+
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const key = getKey(request)
 
   if (!isValidKey(key)) {
     return jsonResponse({ error: 'invalid_key' }, { status: 400 })
+  }
+
+  if (!isValidPin(request, env)) {
+    return jsonResponse({ error: 'pin_required' }, { status: 401 })
   }
 
   const row = await env.DB.prepare(
@@ -63,6 +73,10 @@ export const onRequestPut: PagesFunction<Env> = async ({ env, request }) => {
 
   if (!isValidKey(key)) {
     return jsonResponse({ error: 'invalid_key' }, { status: 400 })
+  }
+
+  if (!isValidPin(request, env)) {
+    return jsonResponse({ error: 'pin_required' }, { status: 401 })
   }
 
   const data = await request.json()
