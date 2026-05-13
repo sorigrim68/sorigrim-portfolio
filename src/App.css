@@ -1016,15 +1016,20 @@ select:focus {
   width: 100%;
 }
 
-.detail-panel {
+.detail-overlay {
   position: fixed;
-  top: 0;
-  right: 0;
+  inset: 0;
   z-index: 20;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(15, 23, 42, 0.36);
+}
+
+.detail-panel {
   display: grid;
   align-content: start;
   gap: 16px;
-  width: min(440px, 100vw);
+  width: min(460px, calc(100vw - 48px));
   height: 100vh;
   overflow-y: auto;
   border-left: 1px solid #dbe1ec;
@@ -1043,14 +1048,42 @@ select:focus {
 }
 
 .detail-header {
+  position: sticky;
+  top: -24px;
+  z-index: 1;
   justify-content: space-between;
   gap: 16px;
+  border-bottom: 1px solid #eef2f7;
+  background: #ffffff;
+  padding: 0 0 14px;
 }
 
 .detail-header h3 {
   color: #152033;
   font-size: 22px;
   line-height: 1.25;
+}
+
+.detail-close {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 36px;
+  flex: 0 0 auto;
+  border: 1px solid #dbe1ec;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #40516a;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 850;
+  padding: 0 10px;
+}
+
+.detail-close:hover {
+  border-color: #e08a77;
+  color: #b13f2d;
 }
 
 .detail-summary {
@@ -1677,6 +1710,16 @@ select:focus {
 
   .detail-grid {
     grid-template-columns: 1fr;
+  }
+
+  .detail-overlay {
+    align-items: stretch;
+    background: rgba(15, 23, 42, 0.42);
+    padding-left: 18px;
+  }
+
+  .detail-panel {
+    width: min(520px, 100%);
   }
 
   .schedule-range {

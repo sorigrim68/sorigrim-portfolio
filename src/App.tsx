@@ -1880,6 +1880,15 @@ function TaskDetailPanel({
     ? Math.round((completedChecklist / task.checklist.length) * 100)
     : 0
 
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') onClose()
+    }
+
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [onClose])
+
   function addChecklistItem(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const text = newChecklistItem.trim()
@@ -1974,7 +1983,18 @@ function TaskDetailPanel({
   }
 
   return (
-    <aside className="detail-panel" aria-label="작업 상세">
+    <div
+      className="detail-overlay"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose()
+      }}
+      role="presentation"
+    >
+      <aside
+        aria-label="작업 상세"
+        className="detail-panel"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
       <div className="detail-header">
         <div>
           <p className="eyebrow">Task Detail</p>
@@ -1982,12 +2002,13 @@ function TaskDetailPanel({
         </div>
         <button
           aria-label="상세 패널 닫기"
-          className="icon-button"
+          className="detail-close"
           onClick={onClose}
           title="닫기"
           type="button"
         >
           <X size={18} aria-hidden="true" />
+          닫기
         </button>
       </div>
 
@@ -2200,7 +2221,8 @@ function TaskDetailPanel({
           {task.logs.length === 0 && <p className="empty-log">기록 없음</p>}
         </div>
       </section>
-    </aside>
+      </aside>
+    </div>
   )
 }
 
