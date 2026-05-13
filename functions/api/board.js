@@ -21,6 +21,11 @@ function isValidKey(key) {
   return /^[a-zA-Z0-9_-]{12,128}$/.test(key);
 }
 
+function isValidPin(request, env) {
+  const expectedPin = env.BOARD_PIN ?? '2580';
+  return request.headers.get('x-board-pin') === expectedPin;
+}
+
 async function ensureBoardTable(env) {
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS boards (
@@ -41,6 +46,10 @@ export async function onRequest(context) {
 
   if (!isValidKey(key)) {
     return jsonResponse({ error: 'invalid_key' }, { status: 400 });
+  }
+
+  if (!isValidPin(request, env)) {
+    return jsonResponse({ error: 'pin_required' }, { status: 401 });
   }
 
   try {
