@@ -5,6 +5,8 @@
 - `?key=`가 없는 경우: 브라우저 로컬 저장소 사용
 - `?key=긴공유키`가 있는 경우: Cloudflare Pages Function과 D1에 공유 저장
 
+단, 공개 배포에서 링크가 있는 사용자만 사용하게 하려면 `VITE_REQUIRE_SHARE_KEY=true`로 빌드합니다. 이 경우 `?key=`가 없는 주소는 업무 보드 대신 접근 안내 화면만 표시합니다.
+
 ## 1. D1 스키마 적용
 
 Cloudflare D1 데이터베이스가 이미 있다면 아래 SQL을 적용합니다.
@@ -33,6 +35,7 @@ Cloudflare Dashboard에서:
 
 ```bash
 $env:VITE_BASE_PATH='/xconda-board/'
+$env:VITE_REQUIRE_SHARE_KEY='true'
 npm run build
 ```
 
@@ -51,6 +54,8 @@ https://sorigrim.com/xconda-board/?key=xconda-team-2026-random-long-key
 ```
 
 `key`가 같은 팀원은 같은 D1 보드 데이터를 공유합니다.
+
+키는 12~128자의 영문, 숫자, `_`, `-`만 사용할 수 있습니다.
 
 ## 주의
 

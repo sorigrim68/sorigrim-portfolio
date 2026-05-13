@@ -193,6 +193,7 @@ const seedTasks: Task[] = [
 
 const tasksStorageKey = 'team-task-manager.tasks'
 const membersStorageKey = 'team-task-manager.members'
+const requireShareKey = import.meta.env.VITE_REQUIRE_SHARE_KEY === 'true'
 
 type BoardPayload = {
   members: string[]
@@ -818,6 +819,10 @@ function App() {
     URL.revokeObjectURL(url)
   }
 
+  if (requireShareKey && !shareKey) {
+    return <AccessRequired />
+  }
+
   return (
     <main className="app-shell">
       <aside className="sidebar">
@@ -1046,6 +1051,24 @@ function App() {
           teamMembers={teamMembers}
         />
       )}
+    </main>
+  )
+}
+
+function AccessRequired() {
+  return (
+    <main className="access-required">
+      <section>
+        <div className="brand-mark">
+          <ListChecks size={24} aria-hidden="true" />
+        </div>
+        <p className="eyebrow">Private Board</p>
+        <h1>공유 링크가 필요합니다</h1>
+        <p>
+          이 업무 보드는 초대 링크에 포함된 보드 키가 있어야 열립니다.
+          받은 주소 전체를 다시 확인해 주세요.
+        </p>
+      </section>
     </main>
   )
 }
