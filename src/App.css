@@ -512,6 +512,10 @@ p {
   border-left: 4px solid #4c84a3;
 }
 
+.bottleneck-card.paused {
+  border-left: 4px solid #8a6fd1;
+}
+
 .bottleneck-card.muted {
   border-left: 4px solid #94a3b8;
 }
@@ -778,6 +782,39 @@ p {
   grid-column: 1 / -1;
 }
 
+.multi-owner-field {
+  grid-column: span 2;
+}
+
+.owner-checks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 38px;
+  border: 1px solid #d5dce8;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 6px;
+}
+
+.owner-checks label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+  border-radius: 999px;
+  background: #f3f6fa;
+  color: #40516a;
+  font-size: 12px;
+  font-weight: 850;
+  padding: 0 9px 0 6px;
+}
+
+.owner-checks input {
+  width: 14px;
+  min-height: auto;
+}
+
 input,
 select {
   min-height: 38px;
@@ -817,7 +854,7 @@ select:focus {
 
 .board {
   display: grid;
-  grid-template-columns: repeat(4, minmax(220px, 1fr));
+  grid-template-columns: repeat(5, minmax(200px, 1fr));
   gap: 14px;
   align-items: start;
 }

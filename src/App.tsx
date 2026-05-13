@@ -29,7 +29,7 @@ import {
 } from 'lucide-react'
 import './App.css'
 
-type Status = 'todo' | 'doing' | 'review' | 'done'
+type Status = 'todo' | 'doing' | 'paused' | 'review' | 'done'
 type Priority = 'high' | 'medium' | 'low'
 type View = 'dashboard' | 'tasks' | 'calendar' | 'people'
 type DateFilter = 'all' | 'today' | 'week' | 'overdue'
@@ -60,6 +60,7 @@ type Task = {
   title: string
   project: string
   owner: string
+  owners?: string[]
   startDate: string
   dueDate: string
   status: Status
@@ -71,6 +72,7 @@ type Task = {
 const statusOptions: Array<{ value: Status; label: string }> = [
   { value: 'todo', label: '할 일' },
   { value: 'doing', label: '진행 중' },
+  { value: 'paused', label: '중단' },
   { value: 'review', label: '검토' },
   { value: 'done', label: '완료' },
 ]
@@ -224,6 +226,16 @@ function readStorage<T>(key: string, fallback: T) {
   }
 }
 
+function getTaskOwners(task: Pick<Task, 'owner' | 'owners'>) {
+  const ownerList = Array.isArray(task.owners) ? task.owners : []
+  return Array.from(new Set([...ownerList, task.owner].filter(Boolean)))
+}
+
+function getTaskOwnerLabel(task: Pick<Task, 'owner' | 'owners'>) {
+  const owners = getTaskOwners(task)
+  return owners.length ? owners.join(', ') : '미배정'
+}
+
 function normalizeTasks(tasks: Task[]) {
   return tasks.map((task) => ({
     ...task,
@@ -231,6 +243,8 @@ function normalizeTasks(tasks: Task[]) {
     checklist: Array.isArray(task.checklist) ? task.checklist : [],
     goal: task.goal ?? '',
     logs: Array.isArray(task.logs) ? task.logs : [],
+    owner: task.owner ?? task.owners?.[0] ?? '미배정',
+    owners: getTaskOwners(task),
     startDate: task.startDate ?? task.dueDate,
   }))
 }
@@ -254,6 +268,7 @@ function createEmptyTask(defaultOwner = ''): Omit<Task, 'id'> {
     title: '',
     project: '일반 업무',
     owner: defaultOwner,
+    owners: defaultOwner ? [defaultOwner] : [],
     startDate: toDateInputValue(start),
     dueDate: toDateInputValue(due),
     status: 'todo',
@@ -399,7 +414,7 @@ function App() {
   )
 
   const teamMembers = useMemo(() => {
-    const taskOwners = tasks.map((task) => task.owner).filter(Boolean)
+    const taskOwners = tasks.flatMap((task) => getTaskOwners(task))
     return Array.from(new Set([...members, ...taskOwners])).sort((a, b) =>
       a.localeCompare(b, 'ko'),
     )
@@ -471,7 +486,7 @@ function App() {
         [
           task.title,
           task.project,
-          task.owner,
+          getTaskOwnerLabel(task),
           task.notes,
           task.goal,
           task.checklist.map((item) => item.text).join(' '),
@@ -482,7 +497,8 @@ function App() {
           .includes(normalizedQuery)
       const matchesStatus =
         statusFilter === 'all' || task.status === statusFilter
-      const matchesOwner = ownerFilter === 'all' || task.owner === ownerFilter
+      const matchesOwner =
+        ownerFilter === 'all' || getTaskOwners(task).includes(ownerFilter)
       const matchesProject =
         projectFilter === 'all' || task.project === projectFilter
       const matchesPriority =
@@ -544,14 +560,15 @@ function App() {
     const urgentHigh = activeTasks.filter(
       (task) => task.priority === 'high' && getDaysLeft(task.dueDate) <= 2,
     )
-    const unassigned = tasks.filter((task) => task.owner === '미배정')
+    const paused = activeTasks.filter((task) => task.status === 'paused')
+    const unassigned = tasks.filter((task) => getTaskOwners(task).includes('미배정'))
     const noProgress = activeTasks.filter(
       (task) =>
         task.checklist.length > 0 &&
         task.checklist.every((item) => !item.done) &&
         getDaysLeft(task.dueDate) <= 7,
     )
-    const focusTasks = [...overdue, ...urgentHigh, ...review, ...noProgress]
+    const focusTasks = [...overdue, ...urgentHigh, ...paused, ...review, ...noProgress]
       .filter(
         (task, index, allTasks) =>
           allTasks.findIndex((candidate) => candidate.id === task.id) === index,
@@ -562,11 +579,11 @@ function App() {
       })
       .slice(0, 6)
 
-    return { focusTasks, noProgress, overdue, review, urgentHigh, unassigned }
+    return { focusTasks, noProgress, overdue, paused, review, urgentHigh, unassigned }
   }, [tasks])
 
   const personalStats = teamMembers.map((member) => {
-    const memberTasks = tasks.filter((task) => task.owner === member)
+    const memberTasks = tasks.filter((task) => getTaskOwners(task).includes(member))
     const completed = memberTasks.filter((task) => task.status === 'done')
     const urgent = memberTasks.filter(
       (task) => task.status !== 'done' && getDaysLeft(task.dueDate) <= 2,
@@ -608,7 +625,7 @@ function App() {
   })
 
   const workloadStats = teamMembers.map((member) => {
-    const memberTasks = tasks.filter((task) => task.owner === member)
+    const memberTasks = tasks.filter((task) => getTaskOwners(task).includes(member))
     const open = memberTasks.filter((task) => task.status !== 'done')
     const high = open.filter((task) => task.priority === 'high')
     const dueSoon = open.filter((task) => {
@@ -632,7 +649,7 @@ function App() {
         .flatMap((task) =>
           task.logs.map((log) => ({
             ...log,
-            owner: task.owner,
+            owner: getTaskOwnerLabel(task),
             taskId: task.id,
             taskTitle: task.title,
           })),
@@ -703,7 +720,8 @@ function App() {
   function addTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (!formTask.title.trim() || !formTask.owner.trim()) return
+    const selectedOwners = getTaskOwners(formTask)
+    if (!formTask.title.trim() || selectedOwners.length === 0) return
 
     setTasks((currentTasks) => [
       {
@@ -724,7 +742,8 @@ function App() {
           },
         ],
         title: formTask.title.trim(),
-        owner: formTask.owner.trim(),
+        owner: selectedOwners[0],
+        owners: selectedOwners,
         startDate:
           formTask.startDate <= formTask.dueDate
             ? formTask.startDate
@@ -733,7 +752,7 @@ function App() {
       },
       ...currentTasks,
     ])
-    setFormTask(createEmptyTask(formTask.owner))
+    setFormTask(createEmptyTask(selectedOwners[0]))
     setActiveView('tasks')
   }
 
@@ -756,7 +775,17 @@ function App() {
     )
     setTasks((currentTasks) =>
       currentTasks.map((task) =>
-        task.owner === member ? { ...task, owner: '미배정' } : task,
+        getTaskOwners(task).includes(member)
+          ? {
+              ...task,
+              owner: task.owner === member ? '미배정' : task.owner,
+              owners: getTaskOwners(task)
+                .filter((owner) => owner !== member)
+                .concat(
+                  getTaskOwners(task).length === 1 ? ['미배정'] : [],
+                ),
+            }
+          : task,
       ),
     )
     if (ownerFilter === member) setOwnerFilter('all')
@@ -826,7 +855,7 @@ function App() {
       return [
         task.title,
         task.project,
-        task.owner,
+        getTaskOwnerLabel(task),
         statusOptions.find((status) => status.value === task.status)?.label ??
           task.status,
         priorityOptions.find((priority) => priority.value === task.priority)
@@ -1316,6 +1345,7 @@ function BottleneckPanel({
     focusTasks: Task[]
     noProgress: Task[]
     overdue: Task[]
+    paused: Task[]
     review: Task[]
     urgentHigh: Task[]
     unassigned: Task[]
@@ -1340,6 +1370,12 @@ function BottleneckPanel({
       count: bottlenecks.review.length,
       label: '검토 대기',
       note: '검토 상태 작업',
+    },
+    {
+      accent: 'paused',
+      count: bottlenecks.paused.length,
+      label: '중단',
+      note: '긴급 업무로 멈춘 작업',
     },
     {
       accent: 'muted',
@@ -1545,7 +1581,7 @@ function FocusList({
             </span>
             <strong>{task.title}</strong>
             <small>
-              {task.owner} · {task.project} · {formatDue(task.dueDate)}
+              {getTaskOwnerLabel(task)} · {task.project} · {formatDue(task.dueDate)}
             </small>
           </button>
         ))}
@@ -1583,22 +1619,31 @@ function TaskComposer({
               value={formTask.title}
             />
           </label>
-          <label>
+          <label className="multi-owner-field">
             담당자
-            <select
-              onChange={(event) =>
-                onChange({ ...formTask, owner: event.target.value })
-              }
-              required
-              value={formTask.owner}
-            >
-              <option value="">선택</option>
+            <div className="owner-checks">
               {teamMembers.map((member) => (
-                <option key={member} value={member}>
+                <label key={member}>
+                  <input
+                    checked={getTaskOwners(formTask).includes(member)}
+                    onChange={(event) => {
+                      const currentOwners = getTaskOwners(formTask)
+                      const nextOwners = event.target.checked
+                        ? [...currentOwners, member]
+                        : currentOwners.filter((owner) => owner !== member)
+
+                      onChange({
+                        ...formTask,
+                        owner: nextOwners[0] ?? '',
+                        owners: nextOwners,
+                      })
+                    }}
+                    type="checkbox"
+                  />
                   {member}
-                </option>
+                </label>
               ))}
-            </select>
+            </div>
           </label>
           <label>
             프로젝트
@@ -1777,7 +1822,7 @@ function TaskCard({
       <p>{task.notes || '메모 없음'}</p>
       <div className="task-meta">
         <span>{task.project}</span>
-        <span>{task.owner}</span>
+        <span>{getTaskOwnerLabel(task)}</span>
       </div>
       <div className="task-progress">
         <span>{checklistLabel}</span>
@@ -2014,7 +2059,7 @@ function TaskDetailPanel({
       </div>
 
       <div className="detail-summary">
-        <span>{task.owner}</span>
+        <span>{getTaskOwnerLabel(task)}</span>
         <span>{task.project}</span>
         <span>{checklistProgress}% 진행</span>
       </div>
@@ -2029,20 +2074,30 @@ function TaskDetailPanel({
             value={task.title}
           />
         </label>
-        <label>
+        <label className="multi-owner-field">
           담당자
-          <select
-            onChange={(event) =>
-              onUpdateTask(task.id, { owner: event.target.value })
-            }
-            value={task.owner}
-          >
+          <div className="owner-checks">
             {teamMembers.map((member) => (
-              <option key={member} value={member}>
+              <label key={member}>
+                <input
+                  checked={getTaskOwners(task).includes(member)}
+                  onChange={(event) => {
+                    const currentOwners = getTaskOwners(task)
+                    const nextOwners = event.target.checked
+                      ? [...currentOwners, member]
+                      : currentOwners.filter((owner) => owner !== member)
+
+                    onUpdateTask(task.id, {
+                      owner: nextOwners[0] ?? '미배정',
+                      owners: nextOwners.length ? nextOwners : ['미배정'],
+                    })
+                  }}
+                  type="checkbox"
+                />
                 {member}
-              </option>
+              </label>
             ))}
-          </select>
+          </div>
         </label>
         <label>
           프로젝트
@@ -2278,7 +2333,7 @@ function Timeline({
                   <div className={`timeline-task ${task.priority}`} key={task.id}>
                     <span>{task.title}</span>
                     <small>
-                      {task.owner} ·{' '}
+                      {getTaskOwnerLabel(task)} ·{' '}
                       {
                         statusOptions.find(
                           (status) => status.value === task.status,
@@ -2343,7 +2398,9 @@ function LinearScheduleGraph({
           ))}
 
           {visibleMembers.map((member) => {
-            const memberTasks = tasks.filter((task) => task.owner === member)
+            const memberTasks = tasks.filter((task) =>
+              getTaskOwners(task).includes(member),
+            )
 
             return (
               <div className="schedule-row" key={member}>
@@ -2383,7 +2440,7 @@ function LinearScheduleGraph({
                           gridColumn: `${barStartOffset + 1} / ${clampedDueOffset + 2}`,
                           marginTop: `${rowOffset * 30}px`,
                         }}
-                        title={`${task.title} · ${task.owner} · ${task.dueDate}`}
+                        title={`${task.title} · ${getTaskOwnerLabel(task)} · ${task.dueDate}`}
                       >
                         <strong>{task.title}</strong>
                         <span>{formatDue(task.dueDate)}</span>
