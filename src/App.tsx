@@ -90,6 +90,7 @@ const dateFilterOptions: Array<{ value: DateFilter; label: string }> = [
 
 const projectPresets = [
   '일반 업무',
+  '계약/영업',
   '개발',
   '영상제작',
   '디자인',
@@ -455,9 +456,9 @@ function App() {
 
   const projects = useMemo(
     () =>
-      Array.from(new Set(tasks.map((task) => task.project).filter(Boolean))).sort(
-        (a, b) => a.localeCompare(b, 'ko'),
-      ),
+      Array.from(
+        new Set([...projectPresets, ...tasks.map((task) => task.project).filter(Boolean)]),
+      ).sort((a, b) => a.localeCompare(b, 'ko')),
     [tasks],
   )
 
@@ -1601,19 +1602,19 @@ function TaskComposer({
           </label>
           <label>
             프로젝트
-            <input
-              list="project-presets"
+            <select
               onChange={(event) =>
                 onChange({ ...formTask, project: event.target.value })
               }
-              placeholder="일반 업무, 개발, 영상제작"
+              required
               value={formTask.project}
-            />
-            <datalist id="project-presets">
+            >
               {projectPresets.map((project) => (
-                <option key={project} value={project} />
+                <option key={project} value={project}>
+                  {project}
+                </option>
               ))}
-            </datalist>
+            </select>
           </label>
           <label>
             시작일
@@ -2039,6 +2040,24 @@ function TaskDetailPanel({
             {teamMembers.map((member) => (
               <option key={member} value={member}>
                 {member}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label>
+          프로젝트
+          <select
+            onChange={(event) =>
+              onUpdateTask(task.id, { project: event.target.value })
+            }
+            value={task.project}
+          >
+            {!projectPresets.includes(task.project) && (
+              <option value={task.project}>{task.project}</option>
+            )}
+            {projectPresets.map((project) => (
+              <option key={project} value={project}>
+                {project}
               </option>
             ))}
           </select>
