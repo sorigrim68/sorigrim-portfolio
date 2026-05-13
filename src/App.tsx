@@ -421,8 +421,11 @@ function App() {
     fetchSharedBoard(shareKey, boardPin)
       .then((payload) => {
         if (!active) return
-        setTasks(payload.tasks)
-        setMembers(payload.members)
+        const isEmptySharedBoard =
+          payload.tasks.length === 0 && payload.members.length === 0
+
+        setTasks(isEmptySharedBoard ? seedTasks : payload.tasks)
+        setMembers(isEmptySharedBoard ? seedMembers : payload.members)
         remoteLoadedRef.current = true
         setSyncState('synced')
       })
