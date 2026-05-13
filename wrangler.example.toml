@@ -1,0 +1,8 @@
+name = "xconda-board"
+compatibility_date = "2026-05-13"
+pages_build_output_dir = "dist"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "YOUR_D1_DATABASE_NAME"
+database_id = "YOUR_D1_DATABASE_ID"
