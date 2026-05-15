@@ -758,15 +758,18 @@ p {
 
 .task-composer form {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
   gap: 14px;
   align-items: end;
 }
 
 .form-grid {
   display: grid;
-  grid-template-columns: 1.35fr 0.75fr 0.75fr 0.75fr 0.75fr 0.6fr;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
   gap: 10px;
+}
+
+.form-grid > label:first-child {
+  grid-column: span 2;
 }
 
 .form-grid label,
@@ -836,6 +839,7 @@ select:focus {
 .primary-action {
   gap: 8px;
   height: 42px;
+  justify-self: end;
   justify-content: center;
   border: 0;
   border-radius: 8px;
@@ -854,7 +858,7 @@ select:focus {
 
 .board {
   display: grid;
-  grid-template-columns: repeat(5, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
   gap: 14px;
   align-items: start;
 }
@@ -863,6 +867,27 @@ select:focus {
   display: grid;
   gap: 12px;
   min-width: 0;
+  --column-accent: #64748b;
+}
+
+.column.todo {
+  --column-accent: #4f7cff;
+}
+
+.column.doing {
+  --column-accent: #0f9f8f;
+}
+
+.column.paused {
+  --column-accent: #8a6fd1;
+}
+
+.column.review {
+  --column-accent: #d98b17;
+}
+
+.column.done {
+  --column-accent: #25945f;
 }
 
 .column-header {
@@ -870,11 +895,11 @@ select:focus {
   align-items: center;
   justify-content: space-between;
   min-height: 38px;
-  border-bottom: 2px solid #dbe1ec;
+  border-bottom: 3px solid var(--column-accent);
 }
 
 .column-header h3 {
-  color: #2d3a4d;
+  color: var(--column-accent);
   font-size: 15px;
 }
 
@@ -884,8 +909,8 @@ select:focus {
   height: 28px;
   place-items: center;
   border-radius: 8px;
-  background: #e8edf5;
-  color: #40516a;
+  background: color-mix(in srgb, var(--column-accent) 14%, #ffffff);
+  color: var(--column-accent);
   font-size: 13px;
   font-weight: 850;
 }
@@ -897,17 +922,62 @@ select:focus {
 
 .task-card {
   display: grid;
+  position: relative;
   gap: 12px;
-  border: 1px solid #dbe1ec;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--task-accent, #266b8d) 28%, #dbe1ec);
   border-radius: 8px;
-  background: #ffffff;
+  background:
+    linear-gradient(90deg, var(--task-accent, #266b8d) 0 7px, transparent 7px),
+    linear-gradient(135deg, color-mix(in srgb, var(--task-accent, #266b8d) 10%, #ffffff) 0%, #ffffff 54%);
   padding: 14px;
-  box-shadow: 0 12px 24px rgba(30, 41, 59, 0.06);
+  box-shadow: 0 12px 24px color-mix(in srgb, var(--task-accent, #266b8d) 12%, transparent);
+  --task-accent: #266b8d;
+  --task-soft: #eef4f8;
+}
+
+.task-card.status-todo {
+  --task-accent: #4f7cff;
+  --task-soft: #edf3ff;
+}
+
+.task-card.status-doing {
+  --task-accent: #0f9f8f;
+  --task-soft: #e7f7f5;
+}
+
+.task-card.status-paused {
+  --task-accent: #8a6fd1;
+  --task-soft: #f1edff;
+}
+
+.task-card.status-review {
+  --task-accent: #d98b17;
+  --task-soft: #fff3dc;
+}
+
+.task-card.status-done {
+  --task-accent: #25945f;
+  --task-soft: #e9f7ef;
+}
+
+.task-card.priority-high {
+  border-color: color-mix(in srgb, #d94d2e 48%, var(--task-accent));
+}
+
+.task-card.is-urgent {
+  box-shadow: 0 16px 32px rgba(217, 77, 46, 0.18);
+}
+
+.task-card.is-overdue {
+  background:
+    linear-gradient(90deg, #d94d2e 0 7px, transparent 7px),
+    linear-gradient(135deg, #fff0ea 0%, #ffffff 56%);
 }
 
 .task-card.selected {
-  border-color: #266b8d;
-  box-shadow: 0 14px 28px rgba(38, 107, 141, 0.14);
+  border-color: var(--task-accent);
+  box-shadow: 0 16px 34px color-mix(in srgb, var(--task-accent) 24%, transparent);
 }
 
 .task-card-top,
@@ -915,6 +985,47 @@ select:focus {
 .due {
   justify-content: space-between;
   gap: 8px;
+}
+
+.task-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-width: 0;
+}
+
+.status-badge {
+  border-radius: 999px;
+  background: var(--task-soft, #eef4f8);
+  color: var(--task-accent, #266b8d);
+  font-size: 12px;
+  font-weight: 900;
+  padding: 4px 9px;
+}
+
+.status-badge.todo {
+  --task-accent: #4f7cff;
+  --task-soft: #edf3ff;
+}
+
+.status-badge.doing {
+  --task-accent: #0f9f8f;
+  --task-soft: #e7f7f5;
+}
+
+.status-badge.paused {
+  --task-accent: #8a6fd1;
+  --task-soft: #f1edff;
+}
+
+.status-badge.review {
+  --task-accent: #d98b17;
+  --task-soft: #fff3dc;
+}
+
+.status-badge.done {
+  --task-accent: #25945f;
+  --task-soft: #e9f7ef;
 }
 
 .priority {
@@ -976,10 +1087,31 @@ select:focus {
   text-align: left;
 }
 
-.task-open svg {
+.task-open > span:first-child {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+
+.task-open small {
+  color: #526173;
+  font-size: 12px;
+  font-weight: 760;
+  line-height: 1.45;
+}
+
+.edit-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   flex: 0 0 auto;
-  color: #64748b;
-  margin-top: 2px;
+  border-radius: 999px;
+  background: var(--task-soft);
+  color: var(--task-accent);
+  font-size: 12px;
+  font-weight: 900;
+  margin-top: -2px;
+  padding: 5px 8px;
 }
 
 .task-card p {
@@ -996,6 +1128,13 @@ select:focus {
   font-weight: 800;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.task-meta .project-chip {
+  border-radius: 999px;
+  background: var(--task-soft);
+  color: var(--task-accent);
+  padding: 4px 8px;
 }
 
 .task-progress {
@@ -1020,7 +1159,7 @@ select:focus {
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: #266b8d;
+  background: var(--task-accent, #266b8d);
 }
 
 .due {
@@ -1066,13 +1205,40 @@ select:focus {
   display: grid;
   align-content: start;
   gap: 16px;
-  width: min(460px, calc(100vw - 48px));
+  width: min(760px, calc(100vw - 48px));
   height: 100vh;
   overflow-y: auto;
-  border-left: 1px solid #dbe1ec;
+  border-left: 6px solid var(--task-accent, #266b8d);
   background: #ffffff;
   box-shadow: -18px 0 36px rgba(30, 41, 59, 0.14);
   padding: 24px;
+  --task-accent: #266b8d;
+  --task-soft: #eef4f8;
+}
+
+.detail-panel.status-todo {
+  --task-accent: #4f7cff;
+  --task-soft: #edf3ff;
+}
+
+.detail-panel.status-doing {
+  --task-accent: #0f9f8f;
+  --task-soft: #e7f7f5;
+}
+
+.detail-panel.status-paused {
+  --task-accent: #8a6fd1;
+  --task-soft: #f1edff;
+}
+
+.detail-panel.status-review {
+  --task-accent: #d98b17;
+  --task-soft: #fff3dc;
+}
+
+.detail-panel.status-done {
+  --task-accent: #25945f;
+  --task-soft: #e9f7ef;
 }
 
 .detail-header,
@@ -1123,6 +1289,15 @@ select:focus {
   color: #b13f2d;
 }
 
+.detail-hero {
+  display: grid;
+  gap: 10px;
+  border: 1px solid color-mix(in srgb, var(--task-accent) 24%, #dbe1ec);
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--task-soft) 0%, #ffffff 72%);
+  padding: 14px;
+}
+
 .detail-summary {
   flex-wrap: wrap;
   gap: 8px;
@@ -1130,17 +1305,65 @@ select:focus {
 
 .detail-summary span {
   border-radius: 999px;
-  background: #eef4f8;
+  background: #ffffff;
   color: #31566c;
   font-size: 12px;
   font-weight: 850;
   padding: 6px 10px;
 }
 
+.detail-summary .status-badge,
+.detail-summary .priority {
+  background: var(--task-soft);
+  color: var(--task-accent);
+}
+
+.detail-due {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: #40516a;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.detail-due strong {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--task-accent);
+  font-size: 18px;
+}
+
+.detail-due.urgent strong {
+  color: #b13f2d;
+}
+
+.detail-progress {
+  height: 9px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e5eaf2;
+}
+
+.detail-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--task-accent);
+}
+
 .detail-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.detail-title-field,
+.detail-grid .multi-owner-field {
+  grid-column: 1 / -1;
 }
 
 .detail-grid label,
@@ -1208,8 +1431,11 @@ select:focus {
   padding: 8px;
 }
 
-.checklist-item span {
+.checklist-text-input {
   flex: 1;
+  min-width: 0;
+  border-color: transparent;
+  background: #f8fafc;
 }
 
 .checklist-item input {
@@ -1255,7 +1481,8 @@ select:focus {
 }
 
 .attachment-item {
-  display: flex;
+  display: grid;
+  grid-template-columns: 34px minmax(120px, 0.75fr) minmax(160px, 1.25fr) 34px;
   align-items: center;
   gap: 8px;
   border-radius: 8px;
@@ -1265,10 +1492,13 @@ select:focus {
 
 .attachment-item a {
   display: inline-flex;
+  justify-content: center;
   align-items: center;
   gap: 7px;
-  min-width: 0;
-  flex: 1;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #f1f5f9;
   overflow: hidden;
   color: #143d59;
   font-size: 13px;
@@ -1276,6 +1506,10 @@ select:focus {
   text-decoration: none;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.attachment-item input {
+  min-width: 0;
 }
 
 .attachment-item button,
@@ -1697,8 +1931,8 @@ select:focus {
     min-width: 0;
   }
 
-  .board {
-    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  .form-grid {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
   }
 }
 
@@ -1708,8 +1942,7 @@ select:focus {
   }
 
   .topbar,
-  .team-manager,
-  .task-composer form {
+  .team-manager {
     grid-template-columns: 1fr;
   }
 
@@ -1766,5 +1999,9 @@ select:focus {
 
   .export-button {
     width: 100%;
+  }
+
+  .primary-action {
+    justify-self: stretch;
   }
 }

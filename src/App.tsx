@@ -83,6 +83,20 @@ const priorityOptions: Array<{ value: Priority; label: string }> = [
   { value: 'low', label: '낮음' },
 ]
 
+function getStatusLabel(statusValue: Status) {
+  return (
+    statusOptions.find((status) => status.value === statusValue)?.label ??
+    statusValue
+  )
+}
+
+function getPriorityLabel(priorityValue: Priority) {
+  return (
+    priorityOptions.find((priority) => priority.value === priorityValue)
+      ?.label ?? priorityValue
+  )
+}
+
 const dateFilterOptions: Array<{ value: DateFilter; label: string }> = [
   { value: 'all', label: '전체 기간' },
   { value: 'today', label: '오늘 마감' },
@@ -1745,7 +1759,7 @@ function Board({
   return (
     <section className="board" aria-label="상태별 작업 보드">
       {tasksByStatus.map((column) => (
-        <article className="column" key={column.value}>
+        <article className={`column ${column.value}`} key={column.value}>
           <div className="column-header">
             <h3>{column.label}</h3>
             <span>{column.tasks.length}</span>
@@ -1787,20 +1801,33 @@ function TaskCard({
   task: Task
 }) {
   const isUrgent = task.status !== 'done' && getDaysLeft(task.dueDate) <= 2
+  const isOverdue = task.status !== 'done' && getDaysLeft(task.dueDate) < 0
   const completedChecklist = task.checklist.filter((item) => item.done).length
   const checklistLabel = task.checklist.length
     ? `${completedChecklist}/${task.checklist.length} 완료`
     : '체크리스트 없음'
+  const cardClassName = [
+    'task-card',
+    `status-${task.status}`,
+    `priority-${task.priority}`,
+    selected ? 'selected' : '',
+    isUrgent ? 'is-urgent' : '',
+    isOverdue ? 'is-overdue' : '',
+  ]
+    .filter(Boolean)
+    .join(' ')
 
   return (
-    <article className={selected ? 'task-card selected' : 'task-card'}>
+    <article className={cardClassName}>
       <div className="task-card-top">
-        <span className={`priority ${task.priority}`}>
-          {
-            priorityOptions.find((priority) => priority.value === task.priority)
-              ?.label
-          }
-        </span>
+        <div className="task-badges">
+          <span className={`status-badge ${task.status}`}>
+            {getStatusLabel(task.status)}
+          </span>
+          <span className={`priority ${task.priority}`}>
+            {getPriorityLabel(task.priority)}
+          </span>
+        </div>
         <button
           aria-label={`${task.title} 삭제`}
           className="icon-button"
@@ -1816,12 +1843,18 @@ function TaskCard({
         onClick={() => onSelectTask(task.id)}
         type="button"
       >
-        <h4>{task.title}</h4>
-        <SquarePen size={16} aria-hidden="true" />
+        <span>
+          <h4>{task.title}</h4>
+          {task.goal && <small>{task.goal}</small>}
+        </span>
+        <span className="edit-cue">
+          <SquarePen size={15} aria-hidden="true" />
+          수정
+        </span>
       </button>
       <p>{task.notes || '메모 없음'}</p>
       <div className="task-meta">
-        <span>{task.project}</span>
+        <span className="project-chip">{task.project}</span>
         <span>{getTaskOwnerLabel(task)}</span>
       </div>
       <div className="task-progress">
@@ -1925,6 +1958,8 @@ function TaskDetailPanel({
   const checklistProgress = task.checklist.length
     ? Math.round((completedChecklist / task.checklist.length) * 100)
     : 0
+  const daysLeft = getDaysLeft(task.dueDate)
+  const isUrgent = task.status !== 'done' && daysLeft <= 2
 
   useEffect(() => {
     function closeOnEscape(event: KeyboardEvent) {
@@ -1960,6 +1995,14 @@ function TaskDetailPanel({
   function deleteChecklistItem(itemId: string) {
     onUpdateTask(task.id, {
       checklist: task.checklist.filter((item) => item.id !== itemId),
+    })
+  }
+
+  function updateChecklistItemText(itemId: string, text: string) {
+    onUpdateTask(task.id, {
+      checklist: task.checklist.map((item) =>
+        item.id === itemId ? { ...item, text } : item,
+      ),
     })
   }
 
@@ -2028,6 +2071,19 @@ function TaskDetailPanel({
     })
   }
 
+  function updateAttachment(
+    attachmentId: string,
+    updates: Partial<Pick<Attachment, 'label' | 'url'>>,
+  ) {
+    onUpdateTask(task.id, {
+      attachments: task.attachments.map((attachment) =>
+        attachment.id === attachmentId
+          ? { ...attachment, ...updates }
+          : attachment,
+      ),
+    })
+  }
+
   return (
     <div
       className="detail-overlay"
@@ -2038,7 +2094,7 @@ function TaskDetailPanel({
     >
       <aside
         aria-label="작업 상세"
-        className="detail-panel"
+        className={`detail-panel status-${task.status} priority-${task.priority}`}
         onMouseDown={(event) => event.stopPropagation()}
       >
       <div className="detail-header">
@@ -2058,14 +2114,31 @@ function TaskDetailPanel({
         </button>
       </div>
 
-      <div className="detail-summary">
-        <span>{getTaskOwnerLabel(task)}</span>
-        <span>{task.project}</span>
-        <span>{checklistProgress}% 진행</span>
+      <div className="detail-hero">
+        <div className="detail-summary">
+          <span className={`status-badge ${task.status}`}>
+            {getStatusLabel(task.status)}
+          </span>
+          <span className={`priority ${task.priority}`}>
+            {getPriorityLabel(task.priority)}
+          </span>
+          <span>{task.project}</span>
+          <span>{getTaskOwnerLabel(task)}</span>
+        </div>
+        <div className={isUrgent ? 'detail-due urgent' : 'detail-due'}>
+          {isUrgent && <AlertTriangle size={16} aria-hidden="true" />}
+          <strong>{formatDue(task.dueDate)}</strong>
+          <span>
+            {task.startDate} - {task.dueDate}
+          </span>
+        </div>
+        <div className="detail-progress" aria-label={`진행률 ${checklistProgress}%`}>
+          <span style={{ width: `${checklistProgress}%` }} />
+        </div>
       </div>
 
       <div className="detail-grid">
-        <label>
+        <label className="detail-title-field">
           작업명
           <input
             onChange={(event) =>
@@ -2204,7 +2277,14 @@ function TaskDetailPanel({
                 onChange={() => toggleChecklistItem(item.id)}
                 type="checkbox"
               />
-              <span>{item.text}</span>
+              <input
+                aria-label="체크리스트 내용"
+                className="checklist-text-input"
+                onChange={(event) =>
+                  updateChecklistItemText(item.id, event.target.value)
+                }
+                value={item.text}
+              />
               <button
                 aria-label={`${item.text} 삭제`}
                 onClick={() => deleteChecklistItem(item.id)}
@@ -2235,10 +2315,30 @@ function TaskDetailPanel({
         <div className="attachment-list">
           {task.attachments.map((attachment) => (
             <div className="attachment-item" key={attachment.id}>
-              <a href={attachment.url} rel="noreferrer" target="_blank">
+              <a
+                aria-label={`${attachment.label} 열기`}
+                href={attachment.url}
+                rel="noreferrer"
+                target="_blank"
+                title="링크 열기"
+              >
                 <Link2 size={14} aria-hidden="true" />
-                {attachment.label}
               </a>
+              <input
+                aria-label="첨부 링크 이름"
+                onChange={(event) =>
+                  updateAttachment(attachment.id, { label: event.target.value })
+                }
+                value={attachment.label}
+              />
+              <input
+                aria-label="첨부 링크 주소"
+                onChange={(event) =>
+                  updateAttachment(attachment.id, { url: event.target.value })
+                }
+                type="url"
+                value={attachment.url}
+              />
               <button
                 aria-label={`${attachment.label} 삭제`}
                 onClick={() => deleteAttachment(attachment.id)}
