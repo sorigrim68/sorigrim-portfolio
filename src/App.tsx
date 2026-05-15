@@ -33,6 +33,16 @@ type Status = 'todo' | 'doing' | 'paused' | 'review' | 'done'
 type Priority = 'high' | 'medium' | 'low'
 type View = 'dashboard' | 'tasks' | 'calendar' | 'people'
 type DateFilter = 'all' | 'today' | 'week' | 'overdue'
+type QuickFilter =
+  | 'all'
+  | 'open'
+  | 'dueSoon'
+  | 'overdue'
+  | 'review'
+  | 'paused'
+  | 'unassigned'
+  | 'noProgress'
+type CardDensity = 'compact' | 'detailed'
 
 type ChecklistItem = {
   done: boolean
@@ -336,6 +346,76 @@ function diffDays(from: string, to: string) {
   return Math.round((toDate.getTime() - fromDate.getTime()) / 86400000)
 }
 
+function getTaskRiskRank(task: Task) {
+  const daysLeft = getDaysLeft(task.dueDate)
+  const completedChecklist = task.checklist.filter((item) => item.done).length
+  const noProgress =
+    task.status !== 'done' &&
+    task.checklist.length > 0 &&
+    completedChecklist === 0 &&
+    daysLeft <= 7
+
+  if (task.status !== 'done' && daysLeft < 0) return 0
+  if (task.status === 'paused') return 1
+  if (task.status !== 'done' && task.priority === 'high' && daysLeft <= 2) return 2
+  if (task.status === 'review') return 3
+  if (getTaskOwners(task).includes('미배정')) return 4
+  if (noProgress) return 5
+  if (task.status !== 'done' && daysLeft <= 2) return 6
+  if (task.priority === 'high') return 7
+  if (task.priority === 'medium') return 8
+  return 9
+}
+
+function sortTasksForManagement(tasks: Task[]) {
+  return [...tasks].sort((a, b) => {
+    const riskSort = getTaskRiskRank(a) - getTaskRiskRank(b)
+    if (riskSort) return riskSort
+
+    const dueSort = a.dueDate.localeCompare(b.dueDate)
+    if (dueSort) return dueSort
+
+    const priorityWeight: Record<Priority, number> = { high: 0, medium: 1, low: 2 }
+    return priorityWeight[a.priority] - priorityWeight[b.priority]
+  })
+}
+
+function matchesQuickFilter(task: Task, quickFilter: QuickFilter) {
+  const daysLeft = getDaysLeft(task.dueDate)
+  const completedChecklist = task.checklist.filter((item) => item.done).length
+
+  if (quickFilter === 'all') return true
+  if (quickFilter === 'open') return task.status !== 'done'
+  if (quickFilter === 'dueSoon') {
+    return task.status !== 'done' && daysLeft >= 0 && daysLeft <= 2
+  }
+  if (quickFilter === 'overdue') return task.status !== 'done' && daysLeft < 0
+  if (quickFilter === 'review') return task.status === 'review'
+  if (quickFilter === 'paused') return task.status === 'paused'
+  if (quickFilter === 'unassigned') return getTaskOwners(task).includes('미배정')
+  if (quickFilter === 'noProgress') {
+    return (
+      task.status !== 'done' &&
+      task.checklist.length > 0 &&
+      completedChecklist === 0 &&
+      daysLeft <= 7
+    )
+  }
+
+  return true
+}
+
+const quickFilterLabels: Record<QuickFilter, string> = {
+  all: '전체',
+  dueSoon: '마감 임박',
+  noProgress: '무진행',
+  open: '열린 작업',
+  overdue: '지연',
+  paused: '중단',
+  review: '검토 대기',
+  unassigned: '미배정',
+}
+
 function escapeCsvCell(value: string | number) {
   const text = String(value)
   return `"${text.replaceAll('"', '""')}"`
@@ -409,6 +489,8 @@ function App() {
   const [projectFilter, setProjectFilter] = useState('all')
   const [priorityFilter, setPriorityFilter] = useState<'all' | Priority>('all')
   const [dateFilter, setDateFilter] = useState<DateFilter>('all')
+  const [quickFilter, setQuickFilter] = useState<QuickFilter>('all')
+  const [cardDensity, setCardDensity] = useState<CardDensity>('detailed')
   const [activeView, setActiveView] = useState<View>('dashboard')
   const [newMember, setNewMember] = useState('')
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
@@ -530,7 +612,8 @@ function App() {
         matchesOwner &&
         matchesProject &&
         matchesPriority &&
-        matchesDate
+        matchesDate &&
+        matchesQuickFilter(task, quickFilter)
       )
     })
   }, [
@@ -538,6 +621,7 @@ function App() {
     ownerFilter,
     priorityFilter,
     projectFilter,
+    quickFilter,
     query,
     statusFilter,
     tasks,
@@ -545,7 +629,10 @@ function App() {
 
   const stats = useMemo(() => {
     const openTasks = tasks.filter((task) => task.status !== 'done')
-    const dueSoon = openTasks.filter((task) => getDaysLeft(task.dueDate) <= 2)
+    const dueSoon = openTasks.filter((task) => {
+      const daysLeft = getDaysLeft(task.dueDate)
+      return daysLeft >= 0 && daysLeft <= 2
+    })
     const completed = tasks.filter((task) => task.status === 'done')
     const progress = tasks.length
       ? Math.round((completed.length / tasks.length) * 100)
@@ -561,7 +648,9 @@ function App() {
 
   const tasksByStatus = statusOptions.map((status) => ({
     ...status,
-    tasks: filteredTasks.filter((task) => task.status === status.value),
+    tasks: sortTasksForManagement(
+      filteredTasks.filter((task) => task.status === status.value),
+    ),
   }))
 
   const selectedTask =
@@ -1043,14 +1132,27 @@ function App() {
           priorityFilter={priorityFilter}
           projectFilter={projectFilter}
           projects={projects}
+          quickFilter={quickFilter}
           resultCount={filteredTasks.length}
+          onClearQuickFilter={() => setQuickFilter('all')}
         />
 
         {activeView === 'dashboard' && (
           <>
-            <Metrics stats={stats} />
+            <Metrics
+              activeQuickFilter={quickFilter}
+              onQuickFilterChange={(filter) => {
+                setQuickFilter(filter)
+                setActiveView('tasks')
+              }}
+              stats={stats}
+            />
             <BottleneckPanel
               bottlenecks={bottlenecks}
+              onQuickFilterChange={(filter) => {
+                setQuickFilter(filter)
+                setActiveView('tasks')
+              }}
               onSelectTask={setSelectedTaskId}
             />
             <ProjectOverview projectStats={projectStats} />
@@ -1087,11 +1189,20 @@ function App() {
               onSubmit={addTask}
               teamMembers={teamMembers}
             />
+            <BoardToolbar
+              cardDensity={cardDensity}
+              onCardDensityChange={setCardDensity}
+              quickFilter={quickFilter}
+              resultCount={filteredTasks.length}
+            />
             <Board
+              cardDensity={cardDensity}
               onDeleteTask={deleteTask}
               onSelectTask={setSelectedTaskId}
+              onUpdateTask={updateTask}
               onUpdateStatus={updateTaskStatus}
               selectedTaskId={selectedTaskId}
+              teamMembers={teamMembers}
               tasksByStatus={tasksByStatus}
             />
           </>
@@ -1099,7 +1210,14 @@ function App() {
 
         {activeView === 'calendar' && (
           <>
-            <Metrics stats={stats} />
+            <Metrics
+              activeQuickFilter={quickFilter}
+              onQuickFilterChange={(filter) => {
+                setQuickFilter(filter)
+                setActiveView('tasks')
+              }}
+              stats={stats}
+            />
             <LinearScheduleGraph
               graphDays={graphDays}
               members={visibleGraphMembers}
@@ -1214,32 +1332,60 @@ function PinGate({ onUnlock }: { onUnlock: () => void }) {
 }
 
 function Metrics({
+  activeQuickFilter,
+  onQuickFilterChange,
   stats,
 }: {
+  activeQuickFilter: QuickFilter
+  onQuickFilterChange: (filter: QuickFilter) => void
   stats: { dueSoon: number; open: number; progress: number; total: number }
 }) {
+  const metricCards: Array<{
+    filter: QuickFilter
+    icon: typeof Clock3
+    label: string
+    tone: string
+    value: string | number
+  }> = [
+    { filter: 'open', icon: Clock3, label: '열린 작업', tone: 'blue', value: stats.open },
+    {
+      filter: 'dueSoon',
+      icon: CalendarClock,
+      label: '마감 임박',
+      tone: 'orange',
+      value: stats.dueSoon,
+    },
+    {
+      filter: 'all',
+      icon: CheckCircle2,
+      label: '완료율',
+      tone: 'green',
+      value: `${stats.progress}%`,
+    },
+    { filter: 'all', icon: Users, label: '전체 작업', tone: 'slate', value: stats.total },
+  ]
+
   return (
     <section className="metrics" aria-label="업무 요약">
-      <article>
-        <Clock3 size={20} aria-hidden="true" />
-        <span>열린 작업</span>
-        <strong>{stats.open}</strong>
-      </article>
-      <article>
-        <CalendarClock size={20} aria-hidden="true" />
-        <span>마감 임박</span>
-        <strong>{stats.dueSoon}</strong>
-      </article>
-      <article>
-        <CheckCircle2 size={20} aria-hidden="true" />
-        <span>완료율</span>
-        <strong>{stats.progress}%</strong>
-      </article>
-      <article>
-        <Users size={20} aria-hidden="true" />
-        <span>전체 작업</span>
-        <strong>{stats.total}</strong>
-      </article>
+      {metricCards.map((card) => {
+        const Icon = card.icon
+        const isActive =
+          activeQuickFilter === card.filter ||
+          (card.filter === 'all' && activeQuickFilter === 'all')
+
+        return (
+          <button
+            className={`metric-card ${card.tone} ${isActive ? 'active' : ''}`}
+            key={card.label}
+            onClick={() => onQuickFilterChange(card.filter)}
+            type="button"
+          >
+            <Icon size={20} aria-hidden="true" />
+            <span>{card.label}</span>
+            <strong>{card.value}</strong>
+          </button>
+        )
+      })}
     </section>
   )
 }
@@ -1270,6 +1416,7 @@ function SyncIndicator({
 
 function FilterPanel({
   dateFilter,
+  onClearQuickFilter,
   onDateFilterChange,
   onExport,
   onPriorityFilterChange,
@@ -1277,9 +1424,11 @@ function FilterPanel({
   priorityFilter,
   projectFilter,
   projects,
+  quickFilter,
   resultCount,
 }: {
   dateFilter: DateFilter
+  onClearQuickFilter: () => void
   onDateFilterChange: (filter: DateFilter) => void
   onExport: () => void
   onPriorityFilterChange: (filter: 'all' | Priority) => void
@@ -1287,6 +1436,7 @@ function FilterPanel({
   priorityFilter: 'all' | Priority
   projectFilter: string
   projects: string[]
+  quickFilter: QuickFilter
   resultCount: number
 }) {
   return (
@@ -1295,6 +1445,16 @@ function FilterPanel({
         <SlidersHorizontal size={18} aria-hidden="true" />
         <span>상세 필터</span>
         <strong>{resultCount}개 표시</strong>
+        {quickFilter !== 'all' && (
+          <button
+            className="quick-filter-chip"
+            onClick={onClearQuickFilter}
+            type="button"
+          >
+            {quickFilterLabels[quickFilter]} 해제
+            <X size={13} aria-hidden="true" />
+          </button>
+        )}
       </div>
       <div className="filter-controls">
         <label>
@@ -1353,6 +1513,7 @@ function FilterPanel({
 
 function BottleneckPanel({
   bottlenecks,
+  onQuickFilterChange,
   onSelectTask,
 }: {
   bottlenecks: {
@@ -1364,36 +1525,48 @@ function BottleneckPanel({
     urgentHigh: Task[]
     unassigned: Task[]
   }
+  onQuickFilterChange: (filter: QuickFilter) => void
   onSelectTask: (id: string) => void
 }) {
-  const bottleneckCards = [
+  const bottleneckCards: Array<{
+    accent: string
+    count: number
+    filter: QuickFilter
+    label: string
+    note: string
+  }> = [
     {
       accent: 'danger',
       count: bottlenecks.overdue.length,
+      filter: 'overdue',
       label: '지연',
       note: '마감일이 지난 열린 작업',
     },
     {
       accent: 'warning',
       count: bottlenecks.urgentHigh.length,
+      filter: 'dueSoon',
       label: '긴급',
       note: '2일 이내 고우선순위',
     },
     {
       accent: 'review',
       count: bottlenecks.review.length,
+      filter: 'review',
       label: '검토 대기',
       note: '검토 상태 작업',
     },
     {
       accent: 'paused',
       count: bottlenecks.paused.length,
+      filter: 'paused',
       label: '중단',
       note: '긴급 업무로 멈춘 작업',
     },
     {
       accent: 'muted',
       count: bottlenecks.noProgress.length,
+      filter: 'noProgress',
       label: '무진행',
       note: '체크리스트 미완료',
     },
@@ -1410,17 +1583,25 @@ function BottleneckPanel({
       </div>
       <div className="bottleneck-grid">
         {bottleneckCards.map((card) => (
-          <article className={`bottleneck-card ${card.accent}`} key={card.label}>
+          <button
+            className={`bottleneck-card ${card.accent}`}
+            key={card.label}
+            onClick={() => onQuickFilterChange(card.filter)}
+            type="button"
+          >
             <span>{card.label}</span>
             <strong>{card.count}</strong>
             <p>{card.note}</p>
-          </article>
+          </button>
         ))}
       </div>
       {bottlenecks.unassigned.length > 0 && (
         <button
           className="unassigned-alert"
-          onClick={() => onSelectTask(bottlenecks.unassigned[0].id)}
+          onClick={() => {
+            onQuickFilterChange('unassigned')
+            onSelectTask(bottlenecks.unassigned[0].id)
+          }}
           type="button"
         >
           미배정 작업 {bottlenecks.unassigned.length}개가 있습니다
@@ -1743,17 +1924,63 @@ function TaskComposer({
   )
 }
 
+function BoardToolbar({
+  cardDensity,
+  onCardDensityChange,
+  quickFilter,
+  resultCount,
+}: {
+  cardDensity: CardDensity
+  onCardDensityChange: (density: CardDensity) => void
+  quickFilter: QuickFilter
+  resultCount: number
+}) {
+  return (
+    <section className="board-toolbar" aria-label="보드 보기 설정">
+      <div>
+        <p className="eyebrow">Board Control</p>
+        <h3>
+          {quickFilter === 'all' ? '전체 작업' : quickFilterLabels[quickFilter]}{' '}
+          {resultCount}개
+        </h3>
+      </div>
+      <div className="segmented-control" aria-label="카드 표시 방식">
+        <button
+          className={cardDensity === 'compact' ? 'active' : ''}
+          onClick={() => onCardDensityChange('compact')}
+          type="button"
+        >
+          간단
+        </button>
+        <button
+          className={cardDensity === 'detailed' ? 'active' : ''}
+          onClick={() => onCardDensityChange('detailed')}
+          type="button"
+        >
+          상세
+        </button>
+      </div>
+    </section>
+  )
+}
+
 function Board({
+  cardDensity,
   onDeleteTask,
   onSelectTask,
+  onUpdateTask,
   onUpdateStatus,
   selectedTaskId,
+  teamMembers,
   tasksByStatus,
 }: {
+  cardDensity: CardDensity
   onDeleteTask: (id: string) => void
   onSelectTask: (id: string) => void
+  onUpdateTask: (id: string, updates: Partial<Task>) => void
   onUpdateStatus: (id: string, status: Status) => void
   selectedTaskId: string | null
+  teamMembers: string[]
   tasksByStatus: Array<{ label: string; tasks: Task[]; value: Status }>
 }) {
   return (
@@ -1768,11 +1995,14 @@ function Board({
           <div className="task-list">
             {column.tasks.map((task) => (
               <TaskCard
+                density={cardDensity}
                 key={task.id}
                 onDeleteTask={onDeleteTask}
                 onSelectTask={onSelectTask}
+                onUpdateTask={onUpdateTask}
                 onUpdateStatus={onUpdateStatus}
                 selected={selectedTaskId === task.id}
+                teamMembers={teamMembers}
                 task={task}
               />
             ))}
@@ -1788,16 +2018,22 @@ function Board({
 }
 
 function TaskCard({
+  density,
   onDeleteTask,
   onSelectTask,
+  onUpdateTask,
   onUpdateStatus,
   selected,
+  teamMembers,
   task,
 }: {
+  density: CardDensity
   onDeleteTask: (id: string) => void
   onSelectTask: (id: string) => void
+  onUpdateTask: (id: string, updates: Partial<Task>) => void
   onUpdateStatus: (id: string, status: Status) => void
   selected: boolean
+  teamMembers: string[]
   task: Task
 }) {
   const isUrgent = task.status !== 'done' && getDaysLeft(task.dueDate) <= 2
@@ -1810,6 +2046,7 @@ function TaskCard({
     'task-card',
     `status-${task.status}`,
     `priority-${task.priority}`,
+    `density-${density}`,
     selected ? 'selected' : '',
     isUrgent ? 'is-urgent' : '',
     isOverdue ? 'is-overdue' : '',
@@ -1852,44 +2089,87 @@ function TaskCard({
           수정
         </span>
       </button>
-      <p>{task.notes || '메모 없음'}</p>
+      {density === 'detailed' && <p>{task.notes || '메모 없음'}</p>}
       <div className="task-meta">
         <span className="project-chip">{task.project}</span>
         <span>{getTaskOwnerLabel(task)}</span>
       </div>
-      <div className="task-progress">
-        <span>{checklistLabel}</span>
-        <div aria-hidden="true">
-          <i
-            style={{
-              width: task.checklist.length
-                ? `${(completedChecklist / task.checklist.length) * 100}%`
-                : '0%',
-            }}
-          />
+      {density === 'detailed' && (
+        <div className="task-progress">
+          <span>{checklistLabel}</span>
+          <div aria-hidden="true">
+            <i
+              style={{
+                width: task.checklist.length
+                  ? `${(completedChecklist / task.checklist.length) * 100}%`
+                  : '0%',
+              }}
+            />
+          </div>
         </div>
-      </div>
+      )}
       <div className={isUrgent ? 'due urgent' : 'due'}>
         {isUrgent && <AlertTriangle size={15} />}
         <span>{task.startDate} 시작</span>
         <span>{formatDue(task.dueDate)}</span>
         <time dateTime={task.dueDate}>{task.dueDate}</time>
       </div>
-      <label className="status-control">
-        상태
-        <select
-          onChange={(event) =>
-            onUpdateStatus(task.id, event.target.value as Status)
-          }
-          value={task.status}
-        >
-          {statusOptions.map((status) => (
-            <option key={status.value} value={status.value}>
-              {status.label}
-            </option>
-          ))}
-        </select>
-      </label>
+      <div className="quick-edit-row">
+        <label className="status-control">
+          상태
+          <select
+            onChange={(event) =>
+              onUpdateStatus(task.id, event.target.value as Status)
+            }
+            value={task.status}
+          >
+            {statusOptions.map((status) => (
+              <option key={status.value} value={status.value}>
+                {status.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="status-control">
+          우선
+          <select
+            onChange={(event) =>
+              onUpdateTask(task.id, { priority: event.target.value as Priority })
+            }
+            value={task.priority}
+          >
+            {priorityOptions.map((priority) => (
+              <option key={priority.value} value={priority.value}>
+                {priority.label}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="status-control">
+          담당
+          <select
+            onChange={(event) => {
+              const owner = event.target.value
+              onUpdateTask(task.id, { owner, owners: [owner] })
+            }}
+            value={getTaskOwners(task)[0] ?? '미배정'}
+          >
+            {Array.from(new Set(['미배정', ...teamMembers])).map((member) => (
+              <option key={member} value={member}>
+                {member}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="status-control due-control">
+          마감
+          <input
+            onChange={(event) => onUpdateTask(task.id, { dueDate: event.target.value })}
+            type="date"
+            value={task.dueDate}
+          />
+        </label>
+      </div>
     </article>
   )
 }
