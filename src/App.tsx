@@ -237,6 +237,7 @@ const boardPin = import.meta.env.VITE_BOARD_PIN ?? '2580'
 type BoardPayload = {
   members: string[]
   tasks: Task[]
+  updatedAt?: string
 }
 
 type SyncState = 'local' | 'loading' | 'synced' | 'saving' | 'error'
@@ -449,20 +450,30 @@ async function fetchSharedBoard(key: string, pin: string) {
   return {
     members: payload.members,
     tasks: normalizeTasks(payload.tasks),
+    updatedAt: payload.updatedAt ?? '',
   }
 }
 
-async function saveSharedBoard(key: string, payload: BoardPayload, pin: string) {
+async function saveSharedBoard(
+  key: string,
+  payload: BoardPayload,
+  pin: string,
+  revision: string,
+) {
   const response = await fetch(`/api/board?key=${encodeURIComponent(key)}`, {
     body: JSON.stringify(payload),
     headers: {
       'content-type': 'application/json',
+      'x-board-revision': revision,
       'x-board-pin': pin,
     },
     method: 'PUT',
   })
 
   if (!response.ok) throw new Error('공유 보드를 저장하지 못했습니다')
+
+  const data = (await response.json()) as { updatedAt?: string }
+  return data.updatedAt ?? ''
 }
 
 function App() {
@@ -477,6 +488,7 @@ function App() {
     }
   })
   const pendingSharedSaveRef = useRef(false)
+  const sharedRevisionRef = useRef('')
   const [remoteLoaded, setRemoteLoaded] = useState(!shareKey)
   const [tasks, setTasks] = useState<Task[]>(() =>
     shareKey ? [] : normalizeTasks(readStorage(tasksStorageKey, seedTasks)),
@@ -536,6 +548,7 @@ function App() {
         if (!active) return
         setTasks(payload.tasks)
         setMembers(payload.members)
+        sharedRevisionRef.current = payload.updatedAt ?? ''
         pendingSharedSaveRef.current = false
         setRemoteLoaded(true)
         setSyncState('synced')
@@ -557,8 +570,9 @@ function App() {
 
     setSyncState('saving')
     const timeoutId = window.setTimeout(() => {
-      saveSharedBoard(shareKey, { members, tasks }, boardPin)
-        .then(() => {
+      saveSharedBoard(shareKey, { members, tasks }, boardPin, sharedRevisionRef.current)
+        .then((updatedAt) => {
+          sharedRevisionRef.current = updatedAt
           pendingSharedSaveRef.current = false
           setSyncState('synced')
         })
@@ -656,6 +670,11 @@ function App() {
     ),
   }))
 
+  const dashboardStatusSummary = statusOptions.map((status) => ({
+    ...status,
+    count: tasks.filter((task) => task.status === status.value).length,
+  }))
+
   const selectedTask =
     tasks.find((task) => task.id === selectedTaskId) ?? null
 
@@ -687,6 +706,12 @@ function App() {
 
     return { focusTasks, noProgress, overdue, paused, review, urgentHigh, unassigned }
   }, [tasks])
+
+  const dashboardPriorityTasks = useMemo(
+    () =>
+      sortTasksForManagement(tasks.filter((task) => task.status !== 'done')).slice(0, 5),
+    [tasks],
+  )
 
   const personalStats = teamMembers.map((member) => {
     const memberTasks = tasks.filter((task) => getTaskOwners(task).includes(member))
@@ -1029,6 +1054,7 @@ function App() {
           <div className="panel-heading">
             <Users size={18} aria-hidden="true" />
             <h2>팀원</h2>
+            <strong>{teamMembers.length}명</strong>
           </div>
           <form className="member-form" onSubmit={addMember}>
             <input
@@ -1128,6 +1154,22 @@ function App() {
 
         {activeView === 'dashboard' && (
           <>
+            <DashboardSnapshot
+              bottlenecks={bottlenecks}
+              onQuickFilterChange={(filter) => {
+                setQuickFilter(filter)
+                setActiveView('tasks')
+              }}
+              onSelectTask={setSelectedTaskId}
+              onStatusFilterChange={(status) => {
+                setStatusFilter(status)
+                setQuickFilter('all')
+                setActiveView('tasks')
+              }}
+              priorityTasks={dashboardPriorityTasks}
+              statusSummary={dashboardStatusSummary}
+              stats={stats}
+            />
             <Metrics
               activeQuickFilter={quickFilter}
               onQuickFilterChange={(filter) => {
@@ -1344,6 +1386,139 @@ function SharedBoardPending({ syncState }: { syncState: SyncState }) {
         )}
       </section>
     </main>
+  )
+}
+
+function DashboardSnapshot({
+  bottlenecks,
+  onQuickFilterChange,
+  onSelectTask,
+  onStatusFilterChange,
+  priorityTasks,
+  statusSummary,
+  stats,
+}: {
+  bottlenecks: {
+    noProgress: Task[]
+    overdue: Task[]
+    paused: Task[]
+    review: Task[]
+    urgentHigh: Task[]
+    unassigned: Task[]
+  }
+  onQuickFilterChange: (filter: QuickFilter) => void
+  onSelectTask: (id: string) => void
+  onStatusFilterChange: (status: Status) => void
+  priorityTasks: Task[]
+  statusSummary: Array<{ count: number; label: string; value: Status }>
+  stats: { dueSoon: number; open: number; progress: number; total: number }
+}) {
+  const riskItems: Array<{
+    count: number
+    filter: QuickFilter
+    label: string
+    tone: string
+  }> = [
+    {
+      count: bottlenecks.overdue.length,
+      filter: 'overdue',
+      label: '지연',
+      tone: 'danger',
+    },
+    {
+      count: bottlenecks.urgentHigh.length,
+      filter: 'dueSoon',
+      label: '긴급',
+      tone: 'warning',
+    },
+    {
+      count: bottlenecks.review.length,
+      filter: 'review',
+      label: '검토',
+      tone: 'review',
+    },
+    {
+      count: bottlenecks.unassigned.length,
+      filter: 'unassigned',
+      label: '미배정',
+      tone: 'muted',
+    },
+  ]
+
+  return (
+    <section className="dashboard-snapshot" aria-label="전체 업무 대시보드">
+      <div className="snapshot-main">
+        <div className="snapshot-head">
+          <div>
+            <p className="eyebrow">Overview</p>
+            <h3>전체 작업 한눈에 보기</h3>
+          </div>
+          <strong>{stats.progress}% 완료</strong>
+        </div>
+        <div className="snapshot-status">
+          {statusSummary.map((status) => {
+            const percent = stats.total
+              ? Math.round((status.count / stats.total) * 100)
+              : 0
+            return (
+              <button
+                className={`snapshot-status-item ${status.value}`}
+                key={status.value}
+                onClick={() => onStatusFilterChange(status.value)}
+                type="button"
+              >
+                <span>{status.label}</span>
+                <strong>{status.count}</strong>
+                <div aria-hidden="true">
+                  <i style={{ width: `${percent}%` }} />
+                </div>
+              </button>
+            )
+          })}
+        </div>
+        <div className="snapshot-risks">
+          {riskItems.map((item) => (
+            <button
+              className={`snapshot-risk ${item.tone}`}
+              key={item.label}
+              onClick={() => onQuickFilterChange(item.filter)}
+              type="button"
+            >
+              <span>{item.label}</span>
+              <strong>{item.count}</strong>
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="snapshot-priority">
+        <div className="snapshot-head compact">
+          <div>
+            <p className="eyebrow">Priority</p>
+            <h3>지금 봐야 할 작업</h3>
+          </div>
+          <AlertTriangle size={20} aria-hidden="true" />
+        </div>
+        <div className="priority-list">
+          {priorityTasks.map((task) => (
+            <button
+              className={`priority-row ${task.priority} status-${task.status}`}
+              key={task.id}
+              onClick={() => onSelectTask(task.id)}
+              type="button"
+            >
+              <span>{formatDue(task.dueDate)}</span>
+              <strong>{task.title}</strong>
+              <small>
+                {getTaskOwnerLabel(task)} · {task.project}
+              </small>
+            </button>
+          ))}
+          {priorityTasks.length === 0 && (
+            <div className="empty-focus">열린 작업이 없습니다</div>
+          )}
+        </div>
+      </div>
+    </section>
   )
 }
 

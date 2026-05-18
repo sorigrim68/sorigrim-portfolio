@@ -68,6 +68,7 @@
   gap: 28px;
   border-right: 1px solid #dbe1ec;
   background: #ffffff;
+  overflow: hidden;
   padding: 28px 22px;
 }
 
@@ -155,8 +156,10 @@ p {
 
 .team-panel {
   display: grid;
+  flex: 1;
   gap: 14px;
-  margin-top: auto;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  min-height: 0;
 }
 
 .panel-heading {
@@ -168,9 +171,21 @@ p {
   font-size: 15px;
 }
 
+.panel-heading strong {
+  margin-left: auto;
+  border-radius: 999px;
+  background: #eaf2f8;
+  color: #143d59;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
 .member-list {
   display: grid;
   gap: 8px;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 3px;
 }
 
 .member-form {
@@ -475,6 +490,202 @@ p {
   font-size: 13px;
   font-weight: 850;
   padding: 0 12px;
+}
+
+.dashboard-snapshot {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.8fr);
+  gap: 14px;
+}
+
+.snapshot-main,
+.snapshot-priority {
+  display: grid;
+  gap: 14px;
+  border: 1px solid #dbe1ec;
+  border-radius: 8px;
+  background: #ffffff;
+  padding: 18px;
+}
+
+.snapshot-main {
+  background:
+    linear-gradient(135deg, rgba(223, 233, 255, 0.9) 0%, rgba(255, 255, 255, 0) 40%),
+    #ffffff;
+}
+
+.snapshot-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.snapshot-head h3 {
+  color: #152033;
+  font-size: 20px;
+}
+
+.snapshot-head > strong {
+  border-radius: 8px;
+  background: #143d59;
+  color: #ffffff;
+  font-size: 20px;
+  padding: 10px 12px;
+}
+
+.snapshot-head.compact h3 {
+  font-size: 18px;
+}
+
+.snapshot-status {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(110px, 1fr));
+  gap: 10px;
+}
+
+.snapshot-status-item,
+.snapshot-risk,
+.priority-row {
+  border: 1px solid #dbe1ec;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #152033;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+
+.snapshot-status-item {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.snapshot-status-item span,
+.snapshot-risk span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.snapshot-status-item strong,
+.snapshot-risk strong {
+  font-size: 24px;
+  line-height: 1;
+}
+
+.snapshot-status-item div {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #edf2f7;
+}
+
+.snapshot-status-item i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #266b8d;
+}
+
+.snapshot-status-item.todo i {
+  background: #64748b;
+}
+
+.snapshot-status-item.doing i {
+  background: #1e63ff;
+}
+
+.snapshot-status-item.paused i {
+  background: #7b45d8;
+}
+
+.snapshot-status-item.review i {
+  background: #f59e0b;
+}
+
+.snapshot-status-item.done i {
+  background: #16a34a;
+}
+
+.snapshot-risks {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(120px, 1fr));
+  gap: 10px;
+}
+
+.snapshot-risk {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px;
+}
+
+.snapshot-risk.danger {
+  border-color: #e08a77;
+  background: #fff0ec;
+}
+
+.snapshot-risk.warning {
+  border-color: #f0b65f;
+  background: #fff7e6;
+}
+
+.snapshot-risk.review {
+  border-color: #8cadff;
+  background: #eef4ff;
+}
+
+.snapshot-risk.muted {
+  border-color: #a7b3c7;
+  background: #f3f6fa;
+}
+
+.priority-list {
+  display: grid;
+  gap: 8px;
+}
+
+.priority-row {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 4px 10px;
+  align-items: center;
+  border-left: 7px solid #f0b65f;
+  padding: 10px;
+}
+
+.priority-row.high {
+  border-left-color: #d92d20;
+}
+
+.priority-row.low {
+  border-left-color: #266b8d;
+}
+
+.priority-row span {
+  grid-row: span 2;
+  color: #b13f2d;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.priority-row strong {
+  overflow: hidden;
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.priority-row small {
+  overflow: hidden;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .metric-card svg {
@@ -2085,6 +2296,10 @@ select:focus {
     flex-direction: column;
   }
 
+  .dashboard-snapshot {
+    grid-template-columns: 1fr;
+  }
+
   .filter-controls {
     width: 100%;
   }
@@ -2129,6 +2344,8 @@ select:focus {
   .metrics,
   .activity-item,
   .bottleneck-grid,
+  .snapshot-risks,
+  .snapshot-status,
   .filter-controls,
   .form-grid,
   .workload-row,

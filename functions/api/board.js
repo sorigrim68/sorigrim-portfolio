@@ -57,7 +57,7 @@ export async function onRequest(context) {
 
     if (request.method === 'GET') {
       const row = await env.DB.prepare(
-        'SELECT data FROM boards WHERE share_key = ?',
+        'SELECT data, updated_at FROM boards WHERE share_key = ?',
       )
         .bind(key)
         .first();
@@ -70,12 +70,10 @@ export async function onRequest(context) {
           .bind(key, initialData)
           .run();
 
-        return jsonResponse({ members: [], tasks: [] });
+        return jsonResponse({ members: [], tasks: [], updatedAt: '' });
       }
 
-      return new Response(row.data, {
-        headers: jsonHeaders,
-      });
+      return jsonResponse({ ...JSON.parse(row.data), updatedAt: row.updated_at });
     }
 
     if (request.method === 'PUT') {
@@ -90,16 +88,36 @@ export async function onRequest(context) {
         return jsonResponse({ error: 'invalid_payload' }, { status: 400 });
       }
 
+      const currentRow = await env.DB.prepare(
+        'SELECT updated_at FROM boards WHERE share_key = ?',
+      )
+        .bind(key)
+        .first();
+
+      if (currentRow) {
+        const clientRevision = request.headers.get('x-board-revision') ?? '';
+        if (!clientRevision || clientRevision !== currentRow.updated_at) {
+          return jsonResponse({ error: 'stale_board_revision' }, { status: 409 });
+        }
+      }
+
       await env.DB.prepare(
         `INSERT INTO boards (share_key, data, updated_at)
-         VALUES (?, ?, CURRENT_TIMESTAMP)
+         VALUES (?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
          ON CONFLICT(share_key)
-         DO UPDATE SET data = excluded.data, updated_at = CURRENT_TIMESTAMP`,
+         DO UPDATE SET data = excluded.data,
+           updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`,
       )
         .bind(key, JSON.stringify(data))
         .run();
 
-      return jsonResponse({ ok: true });
+      const updatedRow = await env.DB.prepare(
+        'SELECT updated_at FROM boards WHERE share_key = ?',
+      )
+        .bind(key)
+        .first();
+
+      return jsonResponse({ ok: true, updatedAt: updatedRow?.updated_at ?? '' });
     }
   } catch (error) {
     return jsonResponse({ error: error.message }, { status: 500 });
