@@ -1317,27 +1317,6 @@ select:focus {
   width: 100%;
 }
 
-.quick-edit-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.quick-edit-row .status-control {
-  min-width: 0;
-}
-
-.quick-edit-row select,
-.quick-edit-row input {
-  min-height: 34px;
-  padding: 0 8px;
-  font-size: 13px;
-}
-
-.due-control {
-  grid-column: 1 / -1;
-}
-
 .detail-overlay {
   position: fixed;
   inset: 0;
@@ -1702,6 +1681,47 @@ select:focus {
   color: #334155;
   font-size: 13px;
   line-height: 1.45;
+}
+
+.detail-danger-zone {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #f1b7a4;
+  border-radius: 8px;
+  background: #fff1e8;
+  padding: 14px;
+}
+
+.detail-danger-zone h4 {
+  color: #8a2c10;
+  font-size: 15px;
+}
+
+.detail-danger-zone p {
+  color: #9a4a2f;
+  font-size: 12px;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.danger-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 36px;
+  border: 0;
+  border-radius: 8px;
+  background: #b13f2d;
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 900;
+  padding: 0 12px;
+  white-space: nowrap;
 }
 
 .empty-column {

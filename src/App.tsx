@@ -476,12 +476,13 @@ function App() {
       return false
     }
   })
-  const remoteLoadedRef = useRef(!shareKey)
+  const pendingSharedSaveRef = useRef(false)
+  const [remoteLoaded, setRemoteLoaded] = useState(!shareKey)
   const [tasks, setTasks] = useState<Task[]>(() =>
-    normalizeTasks(readStorage(tasksStorageKey, seedTasks)),
+    shareKey ? [] : normalizeTasks(readStorage(tasksStorageKey, seedTasks)),
   )
   const [members, setMembers] = useState<string[]>(() =>
-    readStorage(membersStorageKey, seedMembers),
+    shareKey ? [] : readStorage(membersStorageKey, seedMembers),
   )
   const [query, setQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | Status>('all')
@@ -533,17 +534,15 @@ function App() {
     fetchSharedBoard(shareKey, boardPin)
       .then((payload) => {
         if (!active) return
-        const isEmptySharedBoard =
-          payload.tasks.length === 0 && payload.members.length === 0
-
-        setTasks(isEmptySharedBoard ? seedTasks : payload.tasks)
-        setMembers(isEmptySharedBoard ? seedMembers : payload.members)
-        remoteLoadedRef.current = true
+        setTasks(payload.tasks)
+        setMembers(payload.members)
+        pendingSharedSaveRef.current = false
+        setRemoteLoaded(true)
         setSyncState('synced')
       })
       .catch(() => {
         if (!active) return
-        remoteLoadedRef.current = true
+        setRemoteLoaded(false)
         setSyncState('error')
       })
 
@@ -553,17 +552,21 @@ function App() {
   }, [pinAccepted, shareKey])
 
   useEffect(() => {
-    if (!shareKey || !pinAccepted || !remoteLoadedRef.current) return
+    if (!shareKey || !pinAccepted || !remoteLoaded) return
+    if (!pendingSharedSaveRef.current) return
 
     setSyncState('saving')
     const timeoutId = window.setTimeout(() => {
       saveSharedBoard(shareKey, { members, tasks }, boardPin)
-        .then(() => setSyncState('synced'))
+        .then(() => {
+          pendingSharedSaveRef.current = false
+          setSyncState('synced')
+        })
         .catch(() => setSyncState('error'))
     }, 650)
 
     return () => window.clearTimeout(timeoutId)
-  }, [members, pinAccepted, shareKey, tasks])
+  }, [members, pinAccepted, remoteLoaded, shareKey, tasks])
 
   const projects = useMemo(
     () =>
@@ -820,12 +823,17 @@ function App() {
     { icon: Users, label: '팀 현황', value: 'people' },
   ]
 
+  function markSharedBoardDirty() {
+    if (shareKey) pendingSharedSaveRef.current = true
+  }
+
   function addTask(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     const selectedOwners = getTaskOwners(formTask)
     if (!formTask.title.trim() || selectedOwners.length === 0) return
 
+    markSharedBoardDirty()
     setTasks((currentTasks) => [
       {
         ...formTask,
@@ -865,6 +873,7 @@ function App() {
 
     if (!trimmedMember || teamMembers.includes(trimmedMember)) return
 
+    markSharedBoardDirty()
     setMembers((currentMembers) => [...currentMembers, trimmedMember])
     setFormTask((task) => ({ ...task, owner: trimmedMember }))
     setOwnerFilter(trimmedMember)
@@ -873,6 +882,7 @@ function App() {
   }
 
   function deleteMember(member: string) {
+    markSharedBoardDirty()
     setMembers((currentMembers) =>
       currentMembers.filter((currentMember) => currentMember !== member),
     )
@@ -899,34 +909,8 @@ function App() {
     }
   }
 
-  function updateTaskStatus(id: string, status: Status) {
-    setTasks((currentTasks) =>
-      currentTasks.map((task) => {
-        if (task.id !== id || task.status === status) return task
-
-        const fromLabel =
-          statusOptions.find((option) => option.value === task.status)?.label ??
-          task.status
-        const toLabel =
-          statusOptions.find((option) => option.value === status)?.label ?? status
-
-        return {
-          ...task,
-          logs: [
-            {
-              id: crypto.randomUUID(),
-              text: `상태 변경: ${fromLabel} -> ${toLabel}`,
-              timestamp: toDateInputValue(new Date()),
-            },
-            ...task.logs,
-          ],
-          status,
-        }
-      }),
-    )
-  }
-
   function updateTask(id: string, updates: Partial<Task>) {
+    markSharedBoardDirty()
     setTasks((currentTasks) =>
       currentTasks.map((task) =>
         task.id === id ? { ...task, ...updates } : task,
@@ -935,6 +919,7 @@ function App() {
   }
 
   function deleteTask(id: string) {
+    markSharedBoardDirty()
     setTasks((currentTasks) => currentTasks.filter((task) => task.id !== id))
     if (selectedTaskId === id) setSelectedTaskId(null)
   }
@@ -1002,6 +987,10 @@ function App() {
         }}
       />
     )
+  }
+
+  if (shareKey && pinAccepted && !remoteLoaded) {
+    return <SharedBoardPending syncState={syncState} />
   }
 
   return (
@@ -1197,12 +1186,8 @@ function App() {
             />
             <Board
               cardDensity={cardDensity}
-              onDeleteTask={deleteTask}
               onSelectTask={setSelectedTaskId}
-              onUpdateTask={updateTask}
-              onUpdateStatus={updateTaskStatus}
               selectedTaskId={selectedTaskId}
-              teamMembers={teamMembers}
               tasksByStatus={tasksByStatus}
             />
           </>
@@ -1255,6 +1240,7 @@ function App() {
 
       {selectedTask && (
         <TaskDetailPanel
+          onDeleteTask={deleteTask}
           onClose={() => setSelectedTaskId(null)}
           onUpdateTask={updateTask}
           task={selectedTask}
@@ -1327,6 +1313,36 @@ function PinGate({ onUnlock }: { onUnlock: () => void }) {
           보드 열기
         </button>
       </form>
+    </main>
+  )
+}
+
+function SharedBoardPending({ syncState }: { syncState: SyncState }) {
+  const isError = syncState === 'error'
+
+  return (
+    <main className="access-required">
+      <section>
+        <div className="brand-mark">
+          <ListChecks size={24} aria-hidden="true" />
+        </div>
+        <p className="eyebrow">Shared Board</p>
+        <h1>{isError ? '공유 보드를 불러오지 못했습니다' : '공유 보드를 불러오는 중입니다'}</h1>
+        <p>
+          {isError
+            ? '서버 데이터 확인에 실패해 작업 화면을 잠시 막았습니다. 기존 데이터는 덮어쓰지 않습니다.'
+            : '저장된 팀원과 작업을 확인한 뒤 보드를 엽니다.'}
+        </p>
+        {isError && (
+          <button
+            className="primary-action"
+            onClick={() => window.location.reload()}
+            type="button"
+          >
+            다시 불러오기
+          </button>
+        )}
+      </section>
     </main>
   )
 }
@@ -1966,21 +1982,13 @@ function BoardToolbar({
 
 function Board({
   cardDensity,
-  onDeleteTask,
   onSelectTask,
-  onUpdateTask,
-  onUpdateStatus,
   selectedTaskId,
-  teamMembers,
   tasksByStatus,
 }: {
   cardDensity: CardDensity
-  onDeleteTask: (id: string) => void
   onSelectTask: (id: string) => void
-  onUpdateTask: (id: string, updates: Partial<Task>) => void
-  onUpdateStatus: (id: string, status: Status) => void
   selectedTaskId: string | null
-  teamMembers: string[]
   tasksByStatus: Array<{ label: string; tasks: Task[]; value: Status }>
 }) {
   return (
@@ -1997,12 +2005,8 @@ function Board({
               <TaskCard
                 density={cardDensity}
                 key={task.id}
-                onDeleteTask={onDeleteTask}
                 onSelectTask={onSelectTask}
-                onUpdateTask={onUpdateTask}
-                onUpdateStatus={onUpdateStatus}
                 selected={selectedTaskId === task.id}
-                teamMembers={teamMembers}
                 task={task}
               />
             ))}
@@ -2019,21 +2023,13 @@ function Board({
 
 function TaskCard({
   density,
-  onDeleteTask,
   onSelectTask,
-  onUpdateTask,
-  onUpdateStatus,
   selected,
-  teamMembers,
   task,
 }: {
   density: CardDensity
-  onDeleteTask: (id: string) => void
   onSelectTask: (id: string) => void
-  onUpdateTask: (id: string, updates: Partial<Task>) => void
-  onUpdateStatus: (id: string, status: Status) => void
   selected: boolean
-  teamMembers: string[]
   task: Task
 }) {
   const isUrgent = task.status !== 'done' && getDaysLeft(task.dueDate) <= 2
@@ -2065,15 +2061,6 @@ function TaskCard({
             {getPriorityLabel(task.priority)}
           </span>
         </div>
-        <button
-          aria-label={`${task.title} 삭제`}
-          className="icon-button"
-          onClick={() => onDeleteTask(task.id)}
-          title="삭제"
-          type="button"
-        >
-          <Trash2 size={16} aria-hidden="true" />
-        </button>
       </div>
       <button
         className="task-open"
@@ -2113,62 +2100,6 @@ function TaskCard({
         <span>{task.startDate} 시작</span>
         <span>{formatDue(task.dueDate)}</span>
         <time dateTime={task.dueDate}>{task.dueDate}</time>
-      </div>
-      <div className="quick-edit-row">
-        <label className="status-control">
-          상태
-          <select
-            onChange={(event) =>
-              onUpdateStatus(task.id, event.target.value as Status)
-            }
-            value={task.status}
-          >
-            {statusOptions.map((status) => (
-              <option key={status.value} value={status.value}>
-                {status.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="status-control">
-          우선
-          <select
-            onChange={(event) =>
-              onUpdateTask(task.id, { priority: event.target.value as Priority })
-            }
-            value={task.priority}
-          >
-            {priorityOptions.map((priority) => (
-              <option key={priority.value} value={priority.value}>
-                {priority.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="status-control">
-          담당
-          <select
-            onChange={(event) => {
-              const owner = event.target.value
-              onUpdateTask(task.id, { owner, owners: [owner] })
-            }}
-            value={getTaskOwners(task)[0] ?? '미배정'}
-          >
-            {Array.from(new Set(['미배정', ...teamMembers])).map((member) => (
-              <option key={member} value={member}>
-                {member}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="status-control due-control">
-          마감
-          <input
-            onChange={(event) => onUpdateTask(task.id, { dueDate: event.target.value })}
-            type="date"
-            value={task.dueDate}
-          />
-        </label>
       </div>
     </article>
   )
@@ -2220,11 +2151,13 @@ function PeopleOverview({
 }
 
 function TaskDetailPanel({
+  onDeleteTask,
   onClose,
   onUpdateTask,
   task,
   teamMembers,
 }: {
+  onDeleteTask: (id: string) => void
   onClose: () => void
   onUpdateTask: (id: string, updates: Partial<Task>) => void
   task: Task
@@ -2674,6 +2607,20 @@ function TaskDetailPanel({
           ))}
           {task.logs.length === 0 && <p className="empty-log">기록 없음</p>}
         </div>
+      </section>
+      <section className="detail-danger-zone" aria-label="작업 삭제">
+        <div>
+          <h4>작업 삭제</h4>
+          <p>삭제하면 이 공유 보드에서 해당 작업이 사라집니다.</p>
+        </div>
+        <button
+          className="danger-action"
+          onClick={() => onDeleteTask(task.id)}
+          type="button"
+        >
+          <Trash2 size={15} aria-hidden="true" />
+          작업 삭제
+        </button>
       </section>
       </aside>
     </div>
