@@ -26,6 +26,46 @@ function isValidPin(request, env) {
   return request.headers.get('x-board-pin') === expectedPin;
 }
 
+function toDateInputValue(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function isValidDateInput(value) {
+  if (!value || typeof value !== 'string') return false;
+
+  const date = new Date(`${value}T00:00:00`);
+  return !Number.isNaN(date.getTime());
+}
+
+function normalizeDateInput(value, fallback) {
+  if (isValidDateInput(value)) return value;
+  if (isValidDateInput(fallback)) return fallback;
+  return toDateInputValue(new Date());
+}
+
+function normalizeBoardData(data) {
+  const tasks = data.tasks.map((task) => {
+    if (!task || typeof task !== 'object') return task;
+
+    const startDate = normalizeDateInput(task.startDate, task.dueDate);
+    const dueDate = normalizeDateInput(task.dueDate, startDate);
+
+    return {
+      ...task,
+      dueDate,
+      startDate,
+    };
+  });
+
+  return {
+    ...data,
+    tasks,
+  };
+}
+
 async function ensureBoardTable(env) {
   await env.DB.prepare(`
     CREATE TABLE IF NOT EXISTS boards (
@@ -73,7 +113,10 @@ export async function onRequest(context) {
         return jsonResponse({ members: [], tasks: [], updatedAt: '' });
       }
 
-      return jsonResponse({ ...JSON.parse(row.data), updatedAt: row.updated_at });
+      return jsonResponse({
+        ...normalizeBoardData(JSON.parse(row.data)),
+        updatedAt: row.updated_at,
+      });
     }
 
     if (request.method === 'PUT') {
@@ -101,6 +144,8 @@ export async function onRequest(context) {
         }
       }
 
+      const normalizedData = normalizeBoardData(data);
+
       await env.DB.prepare(
         `INSERT INTO boards (share_key, data, updated_at)
          VALUES (?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
@@ -108,7 +153,7 @@ export async function onRequest(context) {
          DO UPDATE SET data = excluded.data,
            updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`,
       )
-        .bind(key, JSON.stringify(data))
+        .bind(key, JSON.stringify(normalizedData))
         .run();
 
       const updatedRow = await env.DB.prepare(
