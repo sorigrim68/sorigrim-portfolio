@@ -36,6 +36,47 @@ function isValidPin(request: Request, env: Env) {
   return request.headers.get('x-board-pin') === expectedPin
 }
 
+function toDateInputValue(date: Date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function isValidDateInput(value: unknown) {
+  if (!value || typeof value !== 'string') return false
+
+  const date = new Date(`${value}T00:00:00`)
+  return !Number.isNaN(date.getTime())
+}
+
+function normalizeDateInput(value: unknown, fallback: unknown) {
+  if (isValidDateInput(value)) return value as string
+  if (isValidDateInput(fallback)) return fallback as string
+  return toDateInputValue(new Date())
+}
+
+function normalizeBoardData(data: { members: unknown[]; tasks: unknown[] }) {
+  const tasks = data.tasks.map((task) => {
+    if (!task || typeof task !== 'object') return task
+
+    const record = task as Record<string, unknown>
+    const startDate = normalizeDateInput(record.startDate, record.dueDate)
+    const dueDate = normalizeDateInput(record.dueDate, startDate)
+
+    return {
+      ...record,
+      dueDate,
+      startDate,
+    }
+  })
+
+  return {
+    ...data,
+    tasks,
+  }
+}
+
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const key = getKey(request)
 
@@ -64,8 +105,8 @@ export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
     return jsonResponse({ members: [], tasks: [], updatedAt: '' })
   }
 
-  const data = JSON.parse(row.data) as Record<string, unknown>
-  return jsonResponse({ ...data, updatedAt: row.updated_at })
+  const data = JSON.parse(row.data) as { members: unknown[]; tasks: unknown[] }
+  return jsonResponse({ ...normalizeBoardData(data), updatedAt: row.updated_at })
 }
 
 export const onRequestPut: PagesFunction<Env> = async ({ env, request }) => {
@@ -103,6 +144,8 @@ export const onRequestPut: PagesFunction<Env> = async ({ env, request }) => {
     }
   }
 
+  const normalizedData = normalizeBoardData(data as { members: unknown[]; tasks: unknown[] })
+
   await env.DB.prepare(
     `INSERT INTO boards (share_key, data, updated_at)
      VALUES (?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
@@ -110,7 +153,7 @@ export const onRequestPut: PagesFunction<Env> = async ({ env, request }) => {
      DO UPDATE SET data = excluded.data,
        updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`,
   )
-    .bind(key, JSON.stringify(data))
+    .bind(key, JSON.stringify(normalizedData))
     .run()
 
   const updatedRow = await env.DB.prepare(
