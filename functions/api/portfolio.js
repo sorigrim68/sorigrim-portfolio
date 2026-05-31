@@ -110,13 +110,52 @@ export async function onRequest(context) {
     }
 
     if (request.method === "DELETE") {
-      const post = await env.DB.prepare("SELECT content, image FROM sg_posts WHERE id = ?").bind(id).first();
+      const post = await env.DB.prepare("SELECT content, image, attachments FROM sg_posts WHERE id = ?").bind(id).first();
       if (post) {
-        const filesToDelete = new Set();
-        if (post.image && post.image.includes('name=')) filesToDelete.add(post.image.split('name=')[1]);
-        const fileMatches = post.content.matchAll(/name=([^"'\s&>]+)/g);
-        for (const match of fileMatches) { filesToDelete.add(match[1]); }
-        for (const fileName of filesToDelete) { try { await env.BUCKET.delete(decodeURIComponent(fileName)); } catch (e) {} }
+        // 1. 이 글이 참조하는 모든 미디어 파일명 수집 (content + image + attachments)
+        const candidates = new Set();
+        const collect = (str) => {
+          if (!str) return;
+          const re = /name=([^"'\s&>\\]+)/g; let m;
+          while ((m = re.exec(str)) !== null) {
+            candidates.add(m[1]);
+            try { candidates.add(decodeURIComponent(m[1])); } catch (e) {}
+          }
+        };
+        collect(post.image);
+        collect(post.content);
+        if (post.attachments) {
+          collect(post.attachments);
+          try {
+            const arr = JSON.parse(post.attachments);
+            if (Array.isArray(arr)) arr.forEach(a => { if (a && a.serverName) candidates.add(a.serverName); });
+          } catch (e) {}
+        }
+
+        // 2. 다른 글들이 여전히 사용하는 파일은 보존 (공유 이미지 보호)
+        const others = await env.DB.prepare(
+          "SELECT content, image, attachments FROM sg_posts WHERE id != ?"
+        ).bind(id).all();
+        const stillUsed = new Set();
+        const markUsed = (str) => {
+          if (!str) return;
+          const re = /name=([^"'\s&>\\]+)/g; let m;
+          while ((m = re.exec(str)) !== null) {
+            stillUsed.add(m[1]);
+            try { stillUsed.add(decodeURIComponent(m[1])); } catch (e) {}
+          }
+        };
+        for (const o of (others.results || [])) {
+          markUsed(o.image); markUsed(o.content); markUsed(o.attachments);
+          if (o.attachments) { try { const arr = JSON.parse(o.attachments); if (Array.isArray(arr)) arr.forEach(a => { if (a && a.serverName) stillUsed.add(a.serverName); }); } catch (e) {} }
+        }
+
+        // 3. 다른 글이 쓰지 않는 파일만 R2에서 삭제
+        for (const fileName of candidates) {
+          if (stillUsed.has(fileName)) continue;
+          try { await env.BUCKET.delete(decodeURIComponent(fileName)); } catch (e) {}
+          try { await env.BUCKET.delete(fileName); } catch (e) {}
+        }
       }
       await env.DB.prepare("DELETE FROM sg_posts WHERE id = ?").bind(id).run();
       return Response.json({ success: true });

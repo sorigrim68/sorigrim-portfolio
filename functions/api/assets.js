@@ -8,6 +8,53 @@ export async function onRequest(context) {
   const url = new URL(request.url);
   const name = url.searchParams.get('name');
 
+  // 0. POST cleanup: 어떤 게시글/설정도 참조하지 않는 미사용(고아) 파일 정리
+  if (request.method === "POST" && url.searchParams.get('action') === 'cleanup') {
+    try {
+      // (1) 참조 중인 파일명 집합 구성
+      const referenced = new Set();
+      const collect = (str) => {
+        if (!str) return;
+        const re = /name=([^"'\s&>\\]+)/g; let m;
+        while ((m = re.exec(str)) !== null) {
+          referenced.add(m[1]);
+          try { referenced.add(decodeURIComponent(m[1])); } catch (e) {}
+        }
+      };
+
+      // 게시글: content + image + attachments
+      try {
+        const posts = await env.DB.prepare("SELECT content, image, attachments FROM sg_posts").all();
+        for (const p of (posts.results || [])) {
+          collect(p.image); collect(p.content); collect(p.attachments);
+          if (p.attachments) { try { const arr = JSON.parse(p.attachments); if (Array.isArray(arr)) arr.forEach(a => { if (a && a.serverName) referenced.add(a.serverName); }); } catch (e) {} }
+        }
+      } catch (e) {}
+
+      // 설정: 프로필 이미지 등 settings 값 내 참조
+      try {
+        const settings = await env.DB.prepare("SELECT value FROM sg_settings").all();
+        for (const s of (settings.results || [])) collect(s.value);
+      } catch (e) {}
+
+      // (2) R2 전체 목록과 대조하여 미참조 파일 삭제
+      const list = await env.BUCKET.list();
+      const deleted = [];
+      for (const obj of list.objects) {
+        const key = obj.key;
+        let used = referenced.has(key);
+        if (!used) { try { used = referenced.has(encodeURIComponent(key)); } catch (e) {} }
+        if (!used) { try { used = referenced.has(decodeURIComponent(key)); } catch (e) {} }
+        if (!used) {
+          try { await env.BUCKET.delete(key); deleted.push(key); } catch (e) {}
+        }
+      }
+      return Response.json({ success: true, deletedCount: deleted.length, keptCount: list.objects.length - deleted.length, deleted });
+    } catch (e) {
+      return Response.json({ error: e.message }, { status: 500 });
+    }
+  }
+
   // 1. POST: Handle File Uploads (Optimized Stream)
   if (request.method === "POST") {
     try {
