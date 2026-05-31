@@ -518,280 +518,94 @@
 </html>
 
         // ===== 추가: 에디터 미디어 드래그 & 리사이즈 기능 =====
-        // (기존 DOMContentLoaded 이전에 실행)
+
         let selectedElement = null;
         let isDragging = false;
         let isResizing = false;
         let resizeHandle = null;
-        let startX, startY, startWidth, startHeight;
+        let startX = 0, startY = 0, startWidth = 0, startHeight = 0;
+        let mediaStartX = 0, mediaStartY = 0;
+        const editor = document.querySelector('.rich-editor');
 
-        function setupMediaEditing() {
-            const editor = document.querySelector('.rich-editor');
-            if (!editor) return;
+        editor.addEventListener('click', function(e) {
+            if (e.target.tagName !== 'IMG' && e.target.tagName !== 'VIDEO') return;
+            e.preventDefault();
+            e.stopPropagation();
 
-            editor.addEventListener('click', function(e) {
-                if (e.target.tagName === 'IMG' || e.target.tagName === 'VIDEO') {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    
-                    document.querySelectorAll('.media-selected').forEach(el => {
-                        el.classList.remove('media-selected');
-                        document.querySelectorAll('.resize-handle').forEach(h => h.remove());
-                    });
-
-                    e.target.classList.add('media-selected');
-                    e.target.style.cursor = 'move';
-                    addResizeHandles(e.target);
-                    selectedElement = e.target;
-                }
+            document.querySelectorAll('.media-selected').forEach(el => {
+                el.classList.remove('media-selected');
+                document.querySelectorAll('.resize-handle').forEach(h => h.remove());
             });
 
-            editor.addEventListener('mousedown', function(e) {
-                if (selectedElement && e.target === selectedElement) {
-                    isDragging = true;
-                    startX = e.clientX;
-                    startY = e.clientY;
-                    e.preventDefault();
-                }
-            });
-        }
+            selectedElement = e.target;
+            selectedElement.classList.add('media-selected');
+            selectedElement.style.position = 'relative';
 
-        function addResizeHandles(element) {
             const handles = ['nw', 'ne', 'sw', 'se'];
             handles.forEach(handle => {
                 const div = document.createElement('div');
-                div.className = `resize-handle resize-${handle}`;
-                div.dataset.handle = handle;
-                div.addEventListener('mousedown', (e) => startResize(e, handle, element));
-                element.parentNode.appendChild(div);
+                div.className = 'resize-handle resize-' + handle;
+                const pos = {nw: 'top:-8px;left:-8px;', ne: 'top:-8px;right:-8px;', sw: 'bottom:-8px;left:-8px;', se: 'bottom:-8px;right:-8px;'};
+                div.style.cssText = 'position:absolute;width:12px;height:12px;background:#D4AF37;border:2px solid white;border-radius:50%;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,0.3);' + pos[handle];
+                div.addEventListener('mousedown', function(ev) {
+                    isResizing = true;
+                    resizeHandle = handle;
+                    startX = ev.clientX;
+                    startY = ev.clientY;
+                    startWidth = selectedElement.offsetWidth;
+                    startHeight = selectedElement.offsetHeight;
+                    ev.preventDefault();
+                });
+                selectedElement.parentNode.insertBefore(div, selectedElement.nextSibling);
             });
-        }
+        });
 
-        function startResize(e, handle, element) {
-            isResizing = true;
-            resizeHandle = handle;
-            startX = e.clientX;
-            startY = e.clientY;
-            startWidth = element.offsetWidth;
-            startHeight = element.offsetHeight;
+        editor.addEventListener('mousedown', function(e) {
+            if (!selectedElement || e.target !== selectedElement) return;
+            isDragging = true;
+            mediaStartX = e.clientX;
+            mediaStartY = e.clientY;
             e.preventDefault();
-        }
+        });
 
         document.addEventListener('mousemove', function(e) {
             if (isDragging && selectedElement) {
-                const deltaX = e.clientX - window.mediaStartX;
-                const deltaY = e.clientY - window.mediaStartY;
-                window.mediaStartX = e.clientX;
-                window.mediaStartY = e.clientY;
-                
-                let translateX = parseFloat(selectedElement.dataset.translateX || 0);
-                let translateY = parseFloat(selectedElement.dataset.translateY || 0);
-                
-                translateX += deltaX;
-                translateY += deltaY;
-                
-                selectedElement.dataset.translateX = translateX;
-                selectedElement.dataset.translateY = translateY;
-                selectedElement.style.transform = `translate(${translateX}px, ${translateY}px)`;
-                selectedElement.style.position = "relative";
+                const dx = e.clientX - mediaStartX;
+                const dy = e.clientY - mediaStartY;
+                let tx = parseFloat(selectedElement.dataset.tx || 0) + dx;
+                let ty = parseFloat(selectedElement.dataset.ty || 0) + dy;
+                selectedElement.style.transform = 'translate(' + tx + 'px,' + ty + 'px)';
+                selectedElement.dataset.tx = tx;
+                selectedElement.dataset.ty = ty;
+                mediaStartX = e.clientX;
+                mediaStartY = e.clientY;
             }
-            if (isDragging && selectedElement) {
-                const deltaX = e.clientX - window.mediaStartX;
-                const deltaY = e.clientY - window.mediaStartY;
-                window.mediaStartX = e.clientX;
-                window.mediaStartY = e.clientY;
-                
-                let translateX = parseFloat(selectedElement.dataset.translateX || 0);
-                let translateY = parseFloat(selectedElement.dataset.translateY || 0);
-                
-                translateX += deltaX;
-                translateY += deltaY;
-                
-                selectedElement.dataset.translateX = translateX;
-                selectedElement.dataset.translateY = translateY;
-                selectedElement.style.transform = `translate(${translateX}px, ${translateY}px)`;
-                selectedElement.style.position = "relative";
-            }
-            if (isDragging && selectedElement) {
-                const deltaX = e.clientX - window.mediaStartX;
-                const deltaY = e.clientY - window.mediaStartY;
-                window.mediaStartX = e.clientX;
-                window.mediaStartY = e.clientY;
-                
-                let translateX = parseFloat(selectedElement.dataset.translateX || 0);
-                let translateY = parseFloat(selectedElement.dataset.translateY || 0);
-                
-                translateX += deltaX;
-                translateY += deltaY;
-                
-                selectedElement.dataset.translateX = translateX;
-                selectedElement.dataset.translateY = translateY;
-                selectedElement.style.transform = `translate(${translateX}px, ${translateY}px)`;
-                selectedElement.style.position = "relative";
-            }
-            if (isDragging && selectedElement) {
-                const deltaX = e.clientX - window.mediaStartX;
-                const deltaY = e.clientY - window.mediaStartY;
-                window.mediaStartX = e.clientX;
-                window.mediaStartY = e.clientY;
-                
-                let translateX = parseFloat(selectedElement.dataset.translateX || 0);
-                let translateY = parseFloat(selectedElement.dataset.translateY || 0);
-                
-                translateX += deltaX;
-                translateY += deltaY;
-                
-                selectedElement.dataset.translateX = translateX;
-                selectedElement.dataset.translateY = translateY;
-                selectedElement.style.transform = `translate(${translateX}px, ${translateY}px)`;
-                selectedElement.style.position = "relative";
-            }
-            if (isDragging && selectedElement) {
-                const deltaX = e.clientX - window.mediaStartX;
-                const deltaY = e.clientY - window.mediaStartY;
-                window.mediaStartX = e.clientX;
-                window.mediaStartY = e.clientY;
-                
-                let translateX = parseFloat(selectedElement.dataset.translateX || 0);
-                let translateY = parseFloat(selectedElement.dataset.translateY || 0);
-                
-                translateX += deltaX;
-                translateY += deltaY;
-                
-                selectedElement.dataset.translateX = translateX;
-                selectedElement.dataset.translateY = translateY;
-                selectedElement.style.transform = `translate(${translateX}px, ${translateY}px)`;
-                selectedElement.style.position = "relative";
-            }
-            if (isDragging && selectedElement) {
-                const deltaX = e.clientX - window.mediaStartX;
-                const deltaY = e.clientY - window.mediaStartY;
-                window.mediaStartX = e.clientX;
-                window.mediaStartY = e.clientY;
-                
-                let translateX = parseFloat(selectedElement.dataset.translateX || 0);
-                let translateY = parseFloat(selectedElement.dataset.translateY || 0);
-                
-                translateX += deltaX;
-                translateY += deltaY;
-                
-                selectedElement.dataset.translateX = translateX;
-                selectedElement.dataset.translateY = translateY;
-                selectedElement.style.transform = `translate(${translateX}px, ${translateY}px)`;
-                selectedElement.style.position = "relative";
-            }
+
             if (isResizing && resizeHandle && selectedElement) {
-                const deltaX = e.clientX - startX;
-                const deltaY = e.clientY - startY;
-                let newWidth = startWidth;
-                let newHeight = startHeight;
-                
-                if (resizeHandle.includes('e')) newWidth = Math.max(50, startWidth + deltaX);
-                if (resizeHandle.includes('w')) newWidth = Math.max(50, startWidth - deltaX);
-                if (resizeHandle.includes('s')) newHeight = Math.max(50, startHeight + deltaY);
-                if (resizeHandle.includes('n')) newHeight = Math.max(50, startHeight - deltaY);
-                
-                selectedElement.style.width = newWidth + 'px';
-                selectedElement.style.height = newHeight + 'px';
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                let nw = startWidth, nh = startHeight;
+                if (resizeHandle.includes('e')) nw = Math.max(50, startWidth + dx);
+                if (resizeHandle.includes('w')) nw = Math.max(50, startWidth - dx);
+                if (resizeHandle.includes('s')) nh = Math.max(50, startHeight + dy);
+                if (resizeHandle.includes('n')) nh = Math.max(50, startHeight - dy);
+                selectedElement.style.width = nw + 'px';
+                selectedElement.style.height = nh + 'px';
             }
         });
-
-        document.addEventListener('mouseup', function() {
-            isDragging = false;
 
         document.addEventListener('mouseup', function() {
             isDragging = false;
             isResizing = false;
-            resizeHandle = null;
         });
 
         document.addEventListener('click', function(e) {
-            const editor = document.querySelector('.rich-editor');
-            if (editor && !editor.contains(e.target) && selectedElement) {
+            if (!editor.contains(e.target) && selectedElement) {
                 selectedElement.classList.remove('media-selected');
                 document.querySelectorAll('.resize-handle').forEach(h => h.remove());
                 selectedElement = null;
             }
         });
-
-        setupMediaEditing();
-
-        // ===== 추가: 완전히 새로운 미디어 자유 이동 로직 =====
-        (function initMediaDragDrop() {
-            const editor = document.querySelector('.rich-editor');
-            if (!editor) return;
-
-            let activeElement = null;
-            let offsetX = 0;
-            let offsetY = 0;
-
-            // 이미지/영상 클릭 - 선택
-            editor.addEventListener('click', (e) => {
-                if (e.target.tagName !== 'IMG' && e.target.tagName !== 'VIDEO') return;
-
-                // 기존 선택 해제
-                document.querySelectorAll('.media-selected').forEach(el => {
-                    el.classList.remove('media-selected');
-                    el.style.cursor = 'auto';
-                });
-
-                // 새 선택
-                e.target.classList.add('media-selected');
-                e.target.style.position = 'relative';
-                e.target.style.cursor = 'grab';
-                activeElement = e.target;
-
-                // 초기값 설정
-                if (!e.target.dataset.dx) e.target.dataset.dx = '0';
-                if (!e.target.dataset.dy) e.target.dataset.dy = '0';
-
-                e.preventDefault();
-                e.stopPropagation();
-            });
-
-            // 마우스 다운 - 드래그 시작
-            editor.addEventListener('mousedown', (e) => {
-                if (!activeElement || e.target !== activeElement) return;
-                
-                activeElement.style.cursor = 'grabbing';
-                offsetX = e.clientX;
-                offsetY = e.clientY;
-                e.preventDefault();
-            });
-
-            // 마우스 이동 - 드래그 실행
-            document.addEventListener('mousemove', (e) => {
-                if (!activeElement) return;
-
-                if (e.buttons === 1) { // 마우스 왼쪽 버튼 누름
-                    const dx = parseFloat(activeElement.dataset.dx) + (e.clientX - offsetX);
-                    const dy = parseFloat(activeElement.dataset.dy) + (e.clientY - offsetY);
-
-                    activeElement.style.transform = `translate(${dx}px, ${dy}px)`;
-                    activeElement.dataset.dx = dx;
-                    activeElement.dataset.dy = dy;
-
-                    offsetX = e.clientX;
-                    offsetY = e.clientY;
-                }
-            });
-
-            // 마우스 업 - 드래그 종료
-            document.addEventListener('mouseup', () => {
-                if (activeElement) {
-                    activeElement.style.cursor = 'grab';
-                }
-            });
-
-            // 바깥쪽 클릭 - 선택 해제
-            document.addEventListener('click', (e) => {
-                if (!editor.contains(e.target) && activeElement) {
-                    activeElement.classList.remove('media-selected');
-                    activeElement.style.cursor = 'auto';
-                    activeElement = null;
-                }
-            });
-        })();
     </script>
 </body>
 </html>
