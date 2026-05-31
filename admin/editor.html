@@ -74,6 +74,40 @@
         .spinner { width: 40px; height: 40px; border: 3px solid #eee; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
 
+        /* 미디어 리사이징 스타일 */
+        .rich-editor img, .rich-editor video {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .rich-editor img.media-selected, .rich-editor video.media-selected {
+            border: 3px solid #D4AF37;
+            box-shadow: 0 0 0 8px rgba(212, 175, 55, 0.15);
+        }
+
+        .resize-handle {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: #D4AF37;
+            border: 2px solid white;
+            border-radius: 50%;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+
+        .resize-handle:hover {
+            transform: scale(1.3);
+            background: white;
+            border-color: #D4AF37;
+        }
+
+        .resize-nw { top: -8px; left: -8px; cursor: nw-resize; }
+        .resize-ne { top: -8px; right: -8px; cursor: ne-resize; }
+        .resize-sw { bottom: -8px; left: -8px; cursor: sw-resize; }
+        .resize-se { bottom: -8px; right: -8px; cursor: se-resize; }
+
         @media (max-width: 1200px) { .editor-layout { grid-template-columns: 1fr; } .editor-sidebar { position: static; order: 2; } }
     </style>
 </head>
@@ -482,3 +516,103 @@
     </script>
 </body>
 </html>
+
+        // ===== 추가: 에디터 미디어 드래그 & 리사이즈 기능 =====
+        // (기존 DOMContentLoaded 이전에 실행)
+        let selectedElement = null;
+        let isDragging = false;
+        let isResizing = false;
+        let resizeHandle = null;
+        let startX, startY, startWidth, startHeight;
+
+        function setupMediaEditing() {
+            const editor = document.querySelector('.rich-editor');
+            if (!editor) return;
+
+            editor.addEventListener('click', function(e) {
+                if (e.target.tagName === 'IMG' || e.target.tagName === 'VIDEO') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    document.querySelectorAll('.media-selected').forEach(el => {
+                        el.classList.remove('media-selected');
+                        document.querySelectorAll('.resize-handle').forEach(h => h.remove());
+                    });
+
+                    e.target.classList.add('media-selected');
+                    e.target.style.cursor = 'move';
+                    addResizeHandles(e.target);
+                    selectedElement = e.target;
+                }
+            });
+
+            editor.addEventListener('mousedown', function(e) {
+                if (selectedElement && e.target === selectedElement) {
+                    isDragging = true;
+                    startX = e.clientX;
+                    startY = e.clientY;
+                    e.preventDefault();
+                }
+            });
+        }
+
+        function addResizeHandles(element) {
+            const handles = ['nw', 'ne', 'sw', 'se'];
+            handles.forEach(handle => {
+                const div = document.createElement('div');
+                div.className = `resize-handle resize-${handle}`;
+                div.dataset.handle = handle;
+                div.addEventListener('mousedown', (e) => startResize(e, handle, element));
+                element.parentNode.appendChild(div);
+            });
+        }
+
+        function startResize(e, handle, element) {
+            isResizing = true;
+            resizeHandle = handle;
+            startX = e.clientX;
+            startY = e.clientY;
+            startWidth = element.offsetWidth;
+            startHeight = element.offsetHeight;
+            e.preventDefault();
+        }
+
+        document.addEventListener('mousemove', function(e) {
+            if (isDragging && selectedElement) {
+                const deltaY = e.clientY - startY;
+                selectedElement.style.marginTop = (parseFloat(selectedElement.style.marginTop || 0) + (deltaY * 0.1)) + 'px';
+                startY = e.clientY;
+            }
+
+            if (isResizing && resizeHandle && selectedElement) {
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                let newWidth = startWidth;
+                let newHeight = startHeight;
+                
+                if (resizeHandle.includes('e')) newWidth = Math.max(50, startWidth + deltaX);
+                if (resizeHandle.includes('w')) newWidth = Math.max(50, startWidth - deltaX);
+                if (resizeHandle.includes('s')) newHeight = Math.max(50, startHeight + deltaY);
+                if (resizeHandle.includes('n')) newHeight = Math.max(50, startHeight - deltaY);
+                
+                selectedElement.style.width = newWidth + 'px';
+                selectedElement.style.height = newHeight + 'px';
+            }
+        });
+
+        document.addEventListener('mouseup', function() {
+            isDragging = false;
+            isResizing = false;
+            resizeHandle = null;
+        });
+
+        document.addEventListener('click', function(e) {
+            const editor = document.querySelector('.rich-editor');
+            if (editor && !editor.contains(e.target) && selectedElement) {
+                selectedElement.classList.remove('media-selected');
+                document.querySelectorAll('.resize-handle').forEach(h => h.remove());
+                selectedElement = null;
+            }
+        });
+
+        setupMediaEditing();
