@@ -3,291 +3,491 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>✏️ 글쓰기 <title>SORIGRIM 관리 센터 - SORIGRIM | 관리자 센터</title>
+    <title>SORIGRIM | 관리 콘솔</title>
     <link rel="stylesheet" href="/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .admin-main { padding: 8rem 4rem; max-width: 1200px; margin: 0 auto; }
-        .admin-section { margin-bottom: 1.5rem; border: 1px solid var(--border); border-radius: 12px; background: white; overflow: hidden; }
-        .section-header { 
-            background: linear-gradient(135deg, var(--bg-light) 0%, white 100%); 
-            padding: 1.5rem 2rem; background: var(--bg-light); cursor: pointer; 
-            display: flex; justify-content: space-between; align-items: center;
-            transition: 0.3s; border-bottom: 1px solid transparent;
+        /* ===== Admin Console : Dark + Gold ===== */
+        :root {
+            --ad-bg: #0B0B0D;
+            --ad-panel: #141417;
+            --ad-panel-2: #1B1B20;
+            --ad-border: #2A2A31;
+            --ad-text: #ECECEC;
+            --ad-muted: #8A8A93;
+            --ad-gold: #D4AF37;
+            --ad-gold-soft: rgba(212,175,55,0.12);
+            --ad-green: #34D399;
+            --ad-amber: #FBBF24;
+            --ad-red: #F87171;
+            --ad-ease: cubic-bezier(0.19, 1, 0.22, 1);
         }
-        .section-header:hover { background: #F0F2F5; }
-        .section-header h2 { font-size: 1.1rem; font-weight: 800; color: var(--text-main); margin: 0; }
-        .section-header .toggle-icon { font-size: 0.8rem; color: var(--text-muted); transition: 0.3s; }
-        .section-content { padding: 2.5rem; display: none; border-top: 1px solid var(--border); }
-        .admin-section.active .section-header { 
-            background: linear-gradient(135deg, var(--bg-light) 0%, white 100%); border-bottom-color: var(--border); background: white; }
-        .admin-section.active .section-content { display: block; }
-        .admin-section.active .toggle-icon { transform: rotate(180deg); }
+        * { box-sizing: border-box; }
+        body.admin-console {
+            margin: 0; background: var(--ad-bg); color: var(--ad-text);
+            font-family: "Pretendard Variable", -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+        body.admin-console::before { display: none; } /* 그레인 오버레이 제거 */
 
-        .admin-table { width: 100%; border-collapse: collapse; }
-        .admin-table th, .admin-table td { padding: 1.2rem; text-align: left; border-bottom: 1px solid var(--border); }
-        .admin-table th { font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.1em; font-weight: 800; }
-        .admin-table td { font-size: 0.85rem; vertical-align: middle; }
-        .admin-actions { display: flex; gap: 1rem; }
-        .admin-actions a, .admin-actions button { background: none; border: none; color: var(--sori-muted); cursor: pointer; font-weight: 800; font-size: 0.7rem; text-transform: uppercase; }
-        .admin-actions a:hover { color: var(--primary); }
-        .admin-actions .del-btn:hover { color: #ff4d4d; }
+        .console { display: grid; grid-template-columns: 260px 1fr; min-height: 100vh; }
 
-        .glass-box { background: var(--bg-light); padding: 2rem; border: 1px solid var(--border); border-radius: 8px; }
-        input, select, textarea { background: white; border: 1px solid var(--border); color: var(--text-main); padding: 0.8rem; border-radius: 4px; font-family: inherit; width: 100%; margin-top: 0.5rem; font-size: 0.95rem; }
-        label { font-size: 0.75rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
-        
-        .board-selector { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 2rem; }
-        .board-btn { padding: 0.6rem 1.5rem; border: 1px solid var(--border); background: white; font-size: 0.85rem; font-weight: 700; cursor: pointer; border-radius: 30px; transition: 0.3s; }
-        .board-btn.active { background: #D4AF37; color: #000; font-weight: 800; border-color: var(--primary); }
+        /* Sidebar */
+        .ad-side {
+            background: var(--ad-panel); border-right: 1px solid var(--ad-border);
+            display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
+        }
+        .ad-brand { padding: 1.8rem 1.6rem; border-bottom: 1px solid var(--ad-border); }
+        .ad-brand a { font-family: "Cormorant Garamond", serif; font-size: 1.6rem; font-weight: 700; color: var(--ad-gold); text-decoration: none; letter-spacing: 0.06em; }
+        .ad-brand small { display: block; color: var(--ad-muted); font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; margin-top: 0.2rem; }
 
-        .usage-bar { width: 100%; height: 6px; background: #EEE; border-radius: 3px; overflow: hidden; margin: 0.8rem 0; }
-        .usage-fill { height: 100%; background: var(--primary); transition: 0.5s; }
-        .sort-btn { padding: 4px 10px; background: #EEE; border: 1px solid #DDD; cursor: pointer; font-size: 0.7rem; border-radius: 4px; font-weight: 700; }
+        .ad-nav { flex: 1; padding: 1rem 0.8rem; overflow-y: auto; }
+        .ad-nav-item {
+            display: flex; align-items: center; gap: 0.9rem; width: 100%;
+            padding: 0.85rem 1rem; margin-bottom: 0.25rem; border: none; background: none;
+            color: var(--ad-muted); font-size: 0.9rem; font-weight: 700; cursor: pointer;
+            border-radius: 10px; transition: 0.25s var(--ad-ease); text-align: left;
+        }
+        .ad-nav-item .ico { width: 20px; text-align: center; font-size: 1rem; }
+        .ad-nav-item:hover { background: var(--ad-panel-2); color: var(--ad-text); }
+        .ad-nav-item.active { background: var(--ad-gold-soft); color: var(--ad-gold); }
+        .ad-nav-sep { height: 1px; background: var(--ad-border); margin: 0.8rem 1rem; }
 
-        .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; }
-        .asset-card { background: white; border: 1px solid var(--border); padding: 0.8rem; text-align: center; border-radius: 8px; }
-        .asset-card img, .asset-card video { width: 100%; aspect-ratio: 1; object-fit: cover; margin-bottom: 0.8rem; border-radius: 4px; }
-        .asset-card p { font-size: 0.6rem; color: var(--text-muted); word-break: break-all; margin-bottom: 0.8rem; }
+        .ad-side-foot { padding: 1rem 1.2rem; border-top: 1px solid var(--ad-border); display: flex; flex-direction: column; gap: 0.6rem; }
+        .ad-btn-gold { background: var(--ad-gold); color: #000; border: none; padding: 0.8rem; border-radius: 10px; font-weight: 800; cursor: pointer; text-decoration: none; text-align: center; font-size: 0.85rem; transition: 0.25s; }
+        .ad-btn-gold:hover { filter: brightness(1.1); transform: translateY(-2px); }
+        .ad-logout { background: none; border: 1px solid var(--ad-border); color: var(--ad-red); padding: 0.7rem; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.8rem; transition: 0.25s; }
+        .ad-logout:hover { border-color: var(--ad-red); background: rgba(248,113,113,0.08); }
+
+        /* Main */
+        .ad-main { padding: 2.5rem 3rem; max-width: 1400px; }
+        .ad-page { display: none; animation: fadeUp 0.5s var(--ad-ease); }
+        .ad-page.active { display: block; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+        .ad-page-head { margin-bottom: 2rem; }
+        .ad-page-head h1 { font-family: "Cormorant Garamond", serif; font-size: 2.4rem; font-weight: 700; margin: 0 0 0.3rem; }
+        .ad-page-head p { color: var(--ad-muted); margin: 0; font-size: 0.95rem; }
+
+        .ad-card { background: var(--ad-panel); border: 1px solid var(--ad-border); border-radius: 16px; padding: 1.8rem; margin-bottom: 1.5rem; }
+        .ad-card h3 { font-size: 1rem; font-weight: 800; margin: 0 0 1.4rem; display: flex; align-items: center; gap: 0.6rem; }
+
+        /* Stat cards (dashboard home) */
+        .stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.2rem; margin-bottom: 1.5rem; }
+        .stat-card { background: var(--ad-panel); border: 1px solid var(--ad-border); border-radius: 16px; padding: 1.6rem; position: relative; overflow: hidden; }
+        .stat-card .lab { color: var(--ad-muted); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+        .stat-card .val { font-size: 2.2rem; font-weight: 900; margin-top: 0.4rem; }
+        .stat-card .accent { position: absolute; top: 0; left: 0; width: 4px; height: 100%; }
+
+        /* Inputs */
+        .ad-input, .ad-select, .ad-textarea {
+            width: 100%; background: var(--ad-panel-2); border: 1px solid var(--ad-border);
+            color: var(--ad-text); padding: 0.85rem 1rem; border-radius: 10px; font-family: inherit;
+            font-size: 0.9rem; transition: 0.2s;
+        }
+        .ad-input:focus, .ad-select:focus, .ad-textarea:focus { outline: none; border-color: var(--ad-gold); box-shadow: 0 0 0 3px var(--ad-gold-soft); }
+        .ad-label { font-size: 0.72rem; font-weight: 800; color: var(--ad-muted); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 0.5rem; }
+
+        /* Toolbar for posts */
+        .posts-toolbar { display: flex; gap: 0.8rem; flex-wrap: wrap; align-items: center; margin-bottom: 1.5rem; }
+        .posts-toolbar .search { flex: 1; min-width: 220px; position: relative; }
+        .posts-toolbar .search input { padding-left: 2.6rem; }
+        .posts-toolbar .search .mag { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--ad-muted); }
+        .seg { display: flex; background: var(--ad-panel-2); border: 1px solid var(--ad-border); border-radius: 10px; overflow: hidden; }
+        .seg button { background: none; border: none; color: var(--ad-muted); padding: 0.7rem 1.1rem; font-weight: 700; font-size: 0.8rem; cursor: pointer; transition: 0.2s; }
+        .seg button.active { background: var(--ad-gold); color: #000; }
+
+        .chip-row { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+        .chip { padding: 0.5rem 1.1rem; border: 1px solid var(--ad-border); background: var(--ad-panel-2); color: var(--ad-muted); border-radius: 30px; font-size: 0.8rem; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .chip.active { background: var(--ad-gold-soft); border-color: var(--ad-gold); color: var(--ad-gold); }
+
+        /* Table */
+        .ad-table { width: 100%; border-collapse: collapse; }
+        .ad-table th { text-align: left; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ad-muted); font-weight: 800; padding: 0.8rem 1rem; border-bottom: 1px solid var(--ad-border); }
+        .ad-table td { padding: 0.9rem 1rem; border-bottom: 1px solid var(--ad-border); font-size: 0.88rem; vertical-align: middle; }
+        .ad-table tr:hover td { background: var(--ad-panel-2); }
+        .thumb { width: 52px; height: 52px; object-fit: cover; border-radius: 8px; background: var(--ad-panel-2); }
+        .badge { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.25rem 0.7rem; border-radius: 20px; font-size: 0.7rem; font-weight: 800; }
+        .badge.pub { background: rgba(52,211,153,0.15); color: var(--ad-green); }
+        .badge.draft { background: rgba(251,191,36,0.15); color: var(--ad-amber); }
+        .row-act { display: flex; gap: 0.5rem; align-items: center; }
+        .row-act button, .row-act a { background: none; border: 1px solid var(--ad-border); color: var(--ad-muted); border-radius: 8px; padding: 0.4rem 0.8rem; font-size: 0.72rem; font-weight: 700; cursor: pointer; text-decoration: none; transition: 0.2s; }
+        .row-act a.edit:hover { border-color: var(--ad-gold); color: var(--ad-gold); }
+        .row-act button.toggle:hover { border-color: var(--ad-green); color: var(--ad-green); }
+        .row-act button.del:hover { border-color: var(--ad-red); color: var(--ad-red); }
+
+        /* Misc reused */
+        .usage-bar { width: 100%; height: 8px; background: var(--ad-panel-2); border-radius: 4px; overflow: hidden; margin: 0.8rem 0; }
+        .usage-fill { height: 100%; background: var(--ad-gold); transition: 0.6s var(--ad-ease); }
+        .asset-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1rem; }
+        .asset-card { background: var(--ad-panel-2); border: 1px solid var(--ad-border); padding: 0.7rem; text-align: center; border-radius: 12px; transition: 0.2s; }
+        .asset-card:hover { border-color: var(--ad-gold); }
+        .asset-card img, .asset-card video { width: 100%; aspect-ratio: 1; object-fit: cover; margin-bottom: 0.6rem; border-radius: 8px; }
+        .asset-card p { font-size: 0.6rem; color: var(--ad-muted); word-break: break-all; margin-bottom: 0.6rem; }
+        .asset-card .del-btn { background: none; border: 1px solid var(--ad-border); color: var(--ad-red); border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.68rem; font-weight: 700; cursor: pointer; }
+        .cat-row { background: var(--ad-panel-2); border: 1px solid var(--ad-border); padding: 0.8rem 1.3rem; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; }
+        .sort-btn { padding: 5px 11px; background: var(--ad-panel); border: 1px solid var(--ad-border); color: var(--ad-text); cursor: pointer; font-size: 0.7rem; border-radius: 6px; font-weight: 700; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+        .glass-box { background: var(--ad-panel-2); border: 1px solid var(--ad-border); border-radius: 12px; padding: 1.5rem; }
+        .glass-box .lab { color: var(--ad-muted); font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; }
 
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 10000; }
-        .modal-content { background: white; padding: 3rem; border-radius: 12px; width: 90%; max-width: 800px; max-height: 80vh; overflow-y: auto; }
-        .upload-overlay { position: fixed; inset: 0; background: rgba(255,255,255,0.9); display: none; align-items: center; justify-content: center; z-index: 10000; flex-direction: column; gap: 2rem; }
-        .spinner { width: 40px; height: 40px; border: 3px solid #eee; border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
+        .modal-content { background: var(--ad-panel); border: 1px solid var(--ad-border); padding: 2.5rem; border-radius: 16px; width: 90%; max-width: 820px; max-height: 82vh; overflow-y: auto; }
+        .upload-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 10001; flex-direction: column; gap: 1.5rem; }
+        .spinner { width: 44px; height: 44px; border: 3px solid var(--ad-border); border-top-color: var(--ad-gold); border-radius: 50%; animation: spin 1s linear infinite; }
         @keyframes spin { to { transform: rotate(360deg); } }
+        .empty { text-align: center; padding: 4rem; color: var(--ad-muted); }
+
+        /* Mobile */
+        .ad-mobile-top { display: none; }
+        @media (max-width: 900px) {
+            .console { grid-template-columns: 1fr; }
+            .ad-side { position: fixed; left: 0; top: 0; width: 260px; z-index: 200; transform: translateX(-100%); transition: transform 0.3s var(--ad-ease); }
+            .ad-side.open { transform: translateX(0); }
+            .ad-main { padding: 1.5rem; }
+            .ad-mobile-top { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid var(--ad-border); position: sticky; top: 0; background: var(--ad-bg); z-index: 100; }
+            .ad-mobile-top .ham { background: none; border: 1px solid var(--ad-border); color: var(--ad-text); border-radius: 8px; padding: 0.5rem 0.8rem; font-size: 1.1rem; cursor: pointer; }
+            .grid-2 { grid-template-columns: 1fr; }
+            .ad-scrim { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 150; }
+            .ad-scrim.open { display: block; }
+        }
     </style>
 </head>
-<body class="bg-surface">
-    <div id="upload-overlay" class="upload-overlay"><div class="spinner"></div><div id="upload-msg" style="font-weight:700; color:var(--primary);">처리 중...</div></div>
+<body class="admin-console">
+    <div id="upload-overlay" class="upload-overlay"><div class="spinner"></div><div id="upload-msg" style="font-weight:700; color:var(--ad-gold);">처리 중...</div></div>
 
+    <!-- Asset picker modal -->
     <div id="asset-modal" class="modal">
         <div class="modal-content">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2rem;">
-                <h3>서버 미디어 선택</h3>
-                <button onclick="loadAssetsForPicker()" style="font-size:0.75rem; font-weight:800; color:var(--primary); background:none; border:none; cursor:pointer;">♻ 새로고침</button>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem;">
+                <h3 style="margin:0;">서버 미디어 선택</h3>
+                <button onclick="loadAssetsForPicker()" style="font-size:0.75rem; font-weight:800; color:var(--ad-gold); background:none; border:none; cursor:pointer;">♻ 새로고침</button>
             </div>
-            <div id="asset-picker-list" class="asset-grid">
-                <p style="text-align:center; grid-column:1/-1; padding:3rem; color:#888;">데이터를 불러오는 중...</p>
-            </div>
-            <button class="btn-premium" style="width:100%; margin-top:2rem;" onclick="closeModal('asset-modal')">닫기</button>
+            <div id="asset-picker-list" class="asset-grid"><p class="empty">데이터를 불러오는 중...</p></div>
+            <button class="ad-btn-gold" style="width:100%; margin-top:1.5rem;" onclick="closeModal('asset-modal')">닫기</button>
         </div>
     </div>
 
-    <nav id="global-nav" class="scrolled">
-        <a href="/" class="brand">SORIGRIM</a>
-        <div class="nav-links">
-            <a href="javascript:logout();" style="font-size: 0.85rem; color: #ff4d4d; font-weight: 800;">LOGOUT</a>
-            <a href="/admin/dashboard.html">관리 홈</a>
-            <a href="/admin/editor.html" class="btn-premium" style="padding: 0.6rem 1.5rem; font-size: 0.85rem;">새 글 작성</a>
-        </div>
-    </nav>
+    <div class="ad-mobile-top">
+        <button class="ham" onclick="toggleSidebar()">☰</button>
+        <a href="/" style="font-family:'Cormorant Garamond',serif; color:var(--ad-gold); font-size:1.3rem; text-decoration:none; font-weight:700;">SORIGRIM</a>
+        <a href="/admin/editor.html" class="ad-btn-gold" style="padding:0.5rem 1rem; font-size:0.75rem;">+ 새 글</a>
+    </div>
+    <div class="ad-scrim" id="ad-scrim" onclick="toggleSidebar()"></div>
 
-    <main class="admin-main container">
-        <!-- 01. 게시판 관리 -->
-        <div class="admin-section" id="sec-category">
-            <header class="section-header" onclick="toggleSection('sec-category')">
-                <h2>01. 게시판 및 순서 설정</h2>
-                <span class="toggle-icon">▼</span>
-            </header>
-            <div class="section-content">
-                <form id="category-form" style="display: flex; gap: 1rem; margin-bottom: 2rem;">
-                    <input type="text" id="cat-name" placeholder="새 게시판 이름" required>
-                    <button type="submit" class="btn-premium" style="width:auto; padding: 0 2rem;">추가</button>
-                </form>
-                <div id="category-list-ui" style="display: flex; flex-direction: column; gap: 0.8rem;"></div>
+    <div class="console">
+        <!-- Sidebar -->
+        <aside class="ad-side" id="ad-side">
+            <div class="ad-brand">
+                <a href="/">SORIGRIM</a>
+                <small>Admin Console</small>
             </div>
-        </div>
+            <nav class="ad-nav" id="ad-nav">
+                <button class="ad-nav-item active" data-page="home"><span class="ico">▦</span> 대시보드</button>
+                <button class="ad-nav-item" data-page="posts"><span class="ico">✎</span> 게시글 관리</button>
+                <button class="ad-nav-item" data-page="categories"><span class="ico">▤</span> 게시판 설정</button>
+                <button class="ad-nav-item" data-page="media"><span class="ico">▥</span> 미디어 스토리지</button>
+                <div class="ad-nav-sep"></div>
+                <button class="ad-nav-item" data-page="profile"><span class="ico">◉</span> 프로필 관리</button>
+                <button class="ad-nav-item" data-page="texts"><span class="ico">¶</span> 사이트 문구</button>
+                <button class="ad-nav-item" data-page="analytics"><span class="ico">📈</span> 방문 통계</button>
+                <button class="ad-nav-item" data-page="security"><span class="ico">⚷</span> 보안 / SNS</button>
+            </nav>
+            <div class="ad-side-foot">
+                <a href="/admin/editor.html" class="ad-btn-gold">+ 새 글 작성</a>
+                <button class="ad-logout" onclick="logout()">로그아웃</button>
+            </div>
+        </aside>
 
-        <!-- 02. 게시글 관리 -->
-        <div class="admin-section active" id="sec-posts">
-            <header class="section-header" onclick="toggleSection('sec-posts')">
-                <h2>02. 게시글 통합 관리</h2>
-                <span class="toggle-icon">▼</span>
-            </header>
-            <div class="section-content">
-                <div class="board-selector" id="board-selector-ui"></div>
-                <div class="glass-box" style="padding: 0; background: none; border: none;">
-                    <table class="admin-table">
-                        <thead><tr><th>썸네일</th><th>상태</th><th>제목</th><th>관리</th></tr></thead>
-                        <tbody id="admin-list"><tr><td colspan="4" style="text-align:center; padding:4rem; color:#999;">게시판을 선택하세요.</td></tr></tbody>
-                    </table>
+        <!-- Main -->
+        <main class="ad-main">
+            <!-- HOME -->
+            <section class="ad-page active" id="page-home">
+                <div class="ad-page-head"><h1>대시보드</h1><p>사이트 현황을 한눈에 확인하세요.</p></div>
+                <div class="stat-grid">
+                    <div class="stat-card"><div class="accent" style="background:var(--ad-gold);"></div><div class="lab">총 게시글</div><div class="val" id="home-total-posts" style="color:var(--ad-gold);">0</div></div>
+                    <div class="stat-card"><div class="accent" style="background:var(--ad-green);"></div><div class="lab">오늘 방문자</div><div class="val" id="home-today" style="color:var(--ad-green);">0</div></div>
+                    <div class="stat-card"><div class="accent" style="background:#60A5FA;"></div><div class="lab">누적 페이지뷰</div><div class="val" id="home-views" style="color:#60A5FA;">0</div></div>
+                    <div class="stat-card"><div class="accent" style="background:var(--ad-amber);"></div><div class="lab">미디어 파일</div><div class="val" id="home-files" style="color:var(--ad-amber);">0</div></div>
                 </div>
-            </div>
-        </div>
+                <div class="grid-2">
+                    <div class="ad-card">
+                        <h3>📈 방문자 추이 (최근 14일)</h3>
+                        <div style="height:260px;"><canvas id="dailyChart"></canvas></div>
+                    </div>
+                    <div class="ad-card">
+                        <h3>🕒 최근 작성한 글</h3>
+                        <table class="ad-table"><tbody id="home-recent-posts"><tr><td class="empty">불러오는 중...</td></tr></tbody></table>
+                    </div>
+                </div>
+            </section>
 
-        <!-- 03. 프로필 관리 -->
-        <div class="admin-section" id="sec-profile">
-            <header class="section-header" onclick="toggleSection('sec-profile')">
-                <h2>03. 프로필(About) 관리</h2>
-                <span class="toggle-icon">▼</span>
-            </header>
-            <div class="section-content">
-                <form id="profile-form" style="display: flex; flex-direction: column; gap: 1.5rem;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
-                        <div><label>이름/타이틀</label><textarea data-key="profile_name" rows="2"></textarea></div>
-                        <div>
-                            <label>프로필 이미지</label>
-                            <div style="display:flex; gap:0.5rem; margin-top:0.5rem;">
-                                <input type="text" data-key="profile_image" id="profile-img-url" placeholder="이미지 URL" style="margin-top:0;">
-                                <button type="button" onclick="openProfileAssetPicker()" class="btn-premium" style="width:auto; padding:0 1rem; font-size:0.75rem; background:#666; border-color:#666;">Storage</button>
-                                <button type="button" onclick="triggerProfileUpload()" class="btn-premium" style="width:auto; padding:0 1rem; font-size:0.75rem;">Upload</button>
-                            </div>
-                            <input type="file" id="profile-file-input" style="display:none;" accept="image/*">
+            <!-- POSTS -->
+            <section class="ad-page" id="page-posts">
+                <div class="ad-page-head"><h1>게시글 관리</h1><p>모든 게시판의 글을 검색·필터하고 즉시 게시 상태를 전환할 수 있습니다.</p></div>
+                <div class="ad-card">
+                    <div class="posts-toolbar">
+                        <div class="search">
+                            <span class="mag">🔍</span>
+                            <input type="text" id="post-search" class="ad-input" placeholder="제목으로 검색...">
+                        </div>
+                        <div class="seg" id="status-seg">
+                            <button class="active" data-status="all">전체</button>
+                            <button data-status="pub">게시</button>
+                            <button data-status="draft">임시</button>
                         </div>
                     </div>
-                    <div><label>소개 문단 1</label><textarea data-key="profile_bio_1" rows="3"></textarea></div>
-                    <div><label>소개 문단 2</label><textarea data-key="profile_bio_2" rows="3"></textarea></div>
-                    <button type="submit" class="btn-premium" style="width: 150px; padding: 0.8rem;">프로필 저장</button>
-                </form>
-            </div>
-        </div>
+                    <div class="chip-row" id="board-chips"></div>
+                    <table class="ad-table">
+                        <thead><tr><th style="width:70px;">썸네일</th><th style="width:90px;">상태</th><th>제목</th><th style="width:120px;">게시판</th><th style="width:220px;">관리</th></tr></thead>
+                        <tbody id="admin-list"><tr><td colspan="5" class="empty">불러오는 중...</td></tr></tbody>
+                    </table>
+                </div>
+            </section>
 
-        <!-- 04. 사이트 문구 설정 -->
-        <div class="admin-section" id="sec-texts">
-            <header class="section-header" onclick="toggleSection('sec-texts')">
-                <h2>04. 사이트 주요 문구 설정</h2>
-                <span class="toggle-icon">▼</span>
-            </header>
-            <div class="section-content">
-                <form id="site-text-form" style="display: flex; flex-direction: column; gap: 2rem;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                        <div><label>메인 히어로 타이틀</label><textarea data-key="site_hero_title" rows="2"></textarea></div>
-                        <div><label>메인 히어로 서브설명</label><textarea data-key="site_hero_sub" rows="2"></textarea></div>
+            <!-- CATEGORIES -->
+            <section class="ad-page" id="page-categories">
+                <div class="ad-page-head"><h1>게시판 설정</h1><p>게시판을 추가하고 순서를 조정하세요.</p></div>
+                <div class="ad-card">
+                    <h3>▤ 게시판 목록</h3>
+                    <form id="category-form" style="display:flex; gap:0.8rem; margin-bottom:1.5rem;">
+                        <input type="text" id="cat-name" class="ad-input" placeholder="새 게시판 이름" required>
+                        <button type="submit" class="ad-btn-gold" style="white-space:nowrap; padding:0 1.8rem;">추가</button>
+                    </form>
+                    <div id="category-list-ui" style="display:flex; flex-direction:column; gap:0.7rem;"></div>
+                </div>
+            </section>
+
+            <!-- MEDIA -->
+            <section class="ad-page" id="page-media">
+                <div class="ad-page-head"><h1>미디어 스토리지</h1><p>업로드된 이미지·영상을 관리합니다.</p></div>
+                <div class="ad-card">
+                    <div class="grid-2" style="margin-bottom:1.5rem;">
+                        <div class="glass-box"><div class="lab">R2 미디어 스토리지</div><div id="r2-usage-text" style="font-size:1.5rem; font-weight:900; margin:0.5rem 0;">0 MB / 10 GB</div><div class="usage-bar"><div id="r2-usage-fill" class="usage-fill" style="width:0%;"></div></div><p id="r2-count" style="font-size:0.7rem; color:var(--ad-muted);">0 files</p></div>
+                        <div class="glass-box"><div class="lab">D1 데이터베이스</div><div id="d1-usage-text" style="font-size:1.5rem; font-weight:900; margin:0.5rem 0;">정상</div><div class="usage-bar"><div id="d1-usage-fill" class="usage-fill" style="width:1%;"></div></div><p id="d1-counts" style="font-size:0.7rem; color:var(--ad-muted);">Posts: 0 | Logs: 0</p></div>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                        <div><label>추천 섹션 제목</label><input type="text" data-key="site_rec_title"></div>
-                        <div><label>추천 섹션 설명</label><input type="text" data-key="site_rec_desc"></div>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
-                        <div><label>아카이브 페이지 제목</label><input type="text" data-key="site_archive_title"></div>
-                        <div><label>푸터 브랜드 설명</label><textarea data-key="site_footer_desc" rows="2"></textarea></div>
-                    </div>
-                    <button type="submit" class="btn-premium" style="width: 150px; padding: 0.8rem;">문구 설정 저장</button>
-                </form>
-            </div>
-        </div>
-
-        <!-- 05. 스토리지 탐색기 -->
-        <div class="admin-section" id="sec-explorer">
-            <header class="section-header" onclick="toggleSection('sec-explorer')">
-                <h2>05. 업로드 이미지 관리 (스토리지 탐색기)</h2>
-                <span class="toggle-icon">▼</span>
-            </header>
-            <div class="section-content"><div id="asset-list" class="asset-grid"></div></div>
-        </div>
-
-        <!-- 06. 리소스 현황 -->
-        <div class="admin-section" id="sec-storage">
-            <header class="section-header" onclick="toggleSection('sec-storage')">
-                <h2>06. 리소스 사용량 현황</h2>
-                <span class="toggle-icon">▼</span>
-            </header>
-            <div class="section-content">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
-                    <div class="glass-box"><label>R2 Media Storage</label><div id="r2-usage-text" style="font-size: 1.5rem; font-weight: 900; margin: 0.5rem 0;">0 MB / 10 GB</div><div class="usage-bar"><div id="r2-usage-fill" class="usage-fill" style="width: 0%;"></div></div><p id="r2-count" style="font-size: 0.7rem; color:#999;">0 files</p></div>
-                    <div class="glass-box"><label>D1 Database</label><div id="d1-usage-text" style="font-size: 1.5rem; font-weight: 900; margin: 0.5rem 0;">정상</div><div class="usage-bar"><div id="d1-usage-fill" class="usage-fill" style="width: 1%;"></div></div><p id="d1-counts" style="font-size: 0.7rem; color:#999;">Posts: 0 | Categories: 0</p></div>
+                    <div id="asset-list" class="asset-grid"></div>
                 </div>
-            </div>
-        </div>
+            </section>
 
-        <!-- 07. 보안 설정 -->
-        <div class="admin-section" id="sec-security">
-            <header class="section-header" onclick="toggleSection('sec-security')">
-                <h2>07. 보안 및 SNS 관리</h2>
-                <span class="toggle-icon">▼</span>
-            </header>
-            <div class="section-content">
-                <form id="password-form" style="display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 3rem;">
-                    <div style="flex:1;"><label>관리자 비밀번호 변경</label><input type="password" id="new-password"></div>
-                    <button type="submit" class="btn-premium" style="width:auto; padding: 0 2.5rem;">변경</button>
-                </form>
-                <form id="sns-form" style="display: flex; gap: 1rem; align-items: flex-end; margin-bottom: 2rem;"><div style="flex:1;"><input type="text" id="sns-key" placeholder="플랫폼 이름"></div><div style="flex:2;"><input type="url" id="sns-value" placeholder="URL"></div><button type="submit" class="btn-premium" style="width:auto; padding: 0 2rem;">추가</button></form>
-                <table class="admin-table"><thead><tr><th>플랫폼</th><th>URL</th><th>관리</th></tr></thead><tbody id="sns-admin-list"></tbody></table>
-            </div>
-        </div>
+            <!-- PROFILE -->
+            <section class="ad-page" id="page-profile">
+                <div class="ad-page-head"><h1>프로필 관리</h1><p>About 페이지에 표시되는 정보를 편집합니다.</p></div>
+                <div class="ad-card">
+                    <form id="profile-form" style="display:flex; flex-direction:column; gap:1.5rem;">
+                        <div class="grid-2">
+                            <div><label class="ad-label">이름 / 타이틀</label><textarea class="ad-textarea" data-key="profile_name" rows="2"></textarea></div>
+                            <div>
+                                <label class="ad-label">프로필 이미지</label>
+                                <div style="display:flex; gap:0.5rem;">
+                                    <input type="text" class="ad-input" data-key="profile_image" id="profile-img-url" placeholder="이미지 URL">
+                                    <button type="button" onclick="openProfileAssetPicker()" class="sort-btn" style="white-space:nowrap;">Storage</button>
+                                    <button type="button" onclick="triggerProfileUpload()" class="ad-btn-gold" style="white-space:nowrap; padding:0 1rem;">업로드</button>
+                                </div>
+                                <input type="file" id="profile-file-input" style="display:none;" accept="image/*">
+                            </div>
+                        </div>
+                        <div><label class="ad-label">소개 문단 1</label><textarea class="ad-textarea" data-key="profile_bio_1" rows="3"></textarea></div>
+                        <div><label class="ad-label">소개 문단 2</label><textarea class="ad-textarea" data-key="profile_bio_2" rows="3"></textarea></div>
+                        <button type="submit" class="ad-btn-gold" style="width:160px;">프로필 저장</button>
+                    </form>
+                </div>
+            </section>
 
-        <!-- 08. 방문 통계 분석 -->
-        <div class="admin-section active" id="sec-stats">
-            <header class="section-header" onclick="toggleSection('sec-stats')">
-                <h2>08. 방문 통계 분석 (Hyper-Advanced Analytics)</h2>
-                <span class="toggle-icon">▼</span>
-            </header>
-            <div class="section-content">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1.2rem; margin-bottom: 2.5rem;">
-                    <div class="glass-box" style="text-align: center; border-left: 4px solid #28a745;"><label>오늘 방문자</label><div id="today-unique" style="font-size: 1.8rem; font-weight: 900; color: #28a745; margin-top:0.5rem;">0</div></div>
-                    <div class="glass-box" style="text-align: center; border-left: 4px solid #6c757d;"><label>어제 방문자</label><div id="yesterday-unique" style="font-size: 1.8rem; font-weight: 900; color: #6c757d; margin-top:0.5rem;">0</div></div>
-                    <div class="glass-box" style="text-align: center; border-left: 4px solid var(--primary);"><label>누적 페이지뷰</label><div id="total-views" style="font-size: 1.8rem; font-weight: 900; color: var(--primary); margin-top:0.5rem;">0</div></div>
-                    <div class="glass-box" style="text-align: center; border-left: 4px solid #f39c12;"><label>실시간 로그</label><div id="db-stats-rows" style="font-size: 1.8rem; font-weight: 900; color: #f39c12; margin-top:0.5rem;">0</div></div>
+            <!-- TEXTS -->
+            <section class="ad-page" id="page-texts">
+                <div class="ad-page-head"><h1>사이트 문구</h1><p>메인·아카이브·푸터의 주요 문구를 설정합니다.</p></div>
+                <div class="ad-card">
+                    <form id="site-text-form" style="display:flex; flex-direction:column; gap:1.5rem;">
+                        <div class="grid-2">
+                            <div><label class="ad-label">메인 히어로 타이틀</label><textarea class="ad-textarea" data-key="site_hero_title" rows="2"></textarea></div>
+                            <div><label class="ad-label">메인 히어로 서브설명</label><textarea class="ad-textarea" data-key="site_hero_sub" rows="2"></textarea></div>
+                        </div>
+                        <div class="grid-2">
+                            <div><label class="ad-label">추천 섹션 제목</label><input type="text" class="ad-input" data-key="site_rec_title"></div>
+                            <div><label class="ad-label">추천 섹션 설명</label><input type="text" class="ad-input" data-key="site_rec_desc"></div>
+                        </div>
+                        <div class="grid-2">
+                            <div><label class="ad-label">아카이브 페이지 제목</label><input type="text" class="ad-input" data-key="site_archive_title"></div>
+                            <div><label class="ad-label">푸터 브랜드 설명</label><textarea class="ad-textarea" data-key="site_footer_desc" rows="2"></textarea></div>
+                        </div>
+                        <button type="submit" class="ad-btn-gold" style="width:160px;">문구 저장</button>
+                    </form>
                 </div>
-                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 2.5rem;">
-                    <div class="glass-box" style="padding: 2rem;"><label style="display:block; margin-bottom:1.5rem; font-weight:900;">📈 방문자 추이 (최근 14일)</label><div style="height: 300px;"><canvas id="dailyChart"></canvas></div></div>
-                    <div class="glass-box" style="padding: 2rem;"><label style="display:block; margin-bottom:1.5rem; font-weight:900;">🕒 오늘 시간대별 트래픽</label><div style="height: 300px;"><canvas id="hourlyChart"></canvas></div></div>
+            </section>
+
+            <!-- ANALYTICS -->
+            <section class="ad-page" id="page-analytics">
+                <div class="ad-page-head"><h1>방문 통계</h1><p>실시간 트래픽과 방문 분석.</p></div>
+                <div class="stat-grid">
+                    <div class="stat-card"><div class="accent" style="background:var(--ad-green);"></div><div class="lab">오늘 방문자</div><div class="val" id="today-unique" style="color:var(--ad-green);">0</div></div>
+                    <div class="stat-card"><div class="accent" style="background:var(--ad-muted);"></div><div class="lab">어제 방문자</div><div class="val" id="yesterday-unique">0</div></div>
+                    <div class="stat-card"><div class="accent" style="background:var(--ad-gold);"></div><div class="lab">누적 페이지뷰</div><div class="val" id="total-views" style="color:var(--ad-gold);">0</div></div>
+                    <div class="stat-card"><div class="accent" style="background:var(--ad-amber);"></div><div class="lab">실시간 로그</div><div class="val" id="db-stats-rows" style="color:var(--ad-amber);">0</div></div>
                 </div>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-bottom: 2.5rem;">
-                    <div class="glass-box"><label style="display:block; margin-bottom:1.5rem;">🖥 OS 및 브라우저 분포</label><div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; height: 180px;"><canvas id="osChart"></canvas><canvas id="browserChart"></canvas></div></div>
-                    <div class="glass-box"><label>🔥 인기 콘텐츠 Top 10</label><table style="width: 100%; font-size: 0.8rem; margin-top: 1rem; border-collapse: collapse;"> <tbody id="top-posts-list"></tbody> </table></div>
-                    <div class="glass-box"><label>🔗 유입 경로 Top 10</label><table style="width: 100%; font-size: 0.8rem; margin-top: 1rem; border-collapse: collapse;"> <tbody id="top-referrers-list"></tbody> </table></div>
+                <div class="grid-2">
+                    <div class="ad-card"><h3>📈 방문자 추이 (14일)</h3><div style="height:280px;"><canvas id="dailyChart2"></canvas></div></div>
+                    <div class="ad-card"><h3>🕒 오늘 시간대별 트래픽</h3><div style="height:280px;"><canvas id="hourlyChart"></canvas></div></div>
                 </div>
-                <div class="glass-box" style="padding: 0; overflow: hidden;"><label style="display:block; padding: 1.5rem 2rem 0; font-weight:900;">📡 실시간 방문 피드 (Live Feed)</label><table class="admin-table" style="margin-top: 1rem;"><thead><tr><th>시간</th><th>접속 경로</th><th>유입처</th><th>식별값</th></tr></thead><tbody id="live-feed-list"></tbody></table></div>
-            </div>
-        </div>
-    </main>
+                <div class="grid-2">
+                    <div class="ad-card"><h3>🖥 OS / 브라우저</h3><div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem; height:200px;"><canvas id="osChart"></canvas><canvas id="browserChart"></canvas></div></div>
+                    <div class="ad-card"><h3>🔥 인기 콘텐츠 Top 10</h3><table class="ad-table"><tbody id="top-posts-list"></tbody></table></div>
+                </div>
+                <div class="ad-card"><h3>🔗 유입 경로 Top 10</h3><table class="ad-table"><tbody id="top-referrers-list"></tbody></table></div>
+                <div class="ad-card"><h3>📡 실시간 방문 피드</h3><table class="ad-table"><thead><tr><th>시간</th><th>접속 경로</th><th>유입처</th><th>식별값</th></tr></thead><tbody id="live-feed-list"></tbody></table></div>
+            </section>
+
+            <!-- SECURITY -->
+            <section class="ad-page" id="page-security">
+                <div class="ad-page-head"><h1>보안 / SNS</h1><p>비밀번호와 SNS 링크를 관리합니다.</p></div>
+                <div class="ad-card">
+                    <h3>⚷ 관리자 비밀번호</h3>
+                    <form id="password-form" style="display:flex; gap:0.8rem; align-items:flex-end;">
+                        <div style="flex:1;"><label class="ad-label">새 비밀번호</label><input type="password" id="new-password" class="ad-input"></div>
+                        <button type="submit" class="ad-btn-gold" style="padding:0 2rem; white-space:nowrap;">변경</button>
+                    </form>
+                </div>
+                <div class="ad-card">
+                    <h3>🔗 SNS 링크</h3>
+                    <form id="sns-form" style="display:flex; gap:0.8rem; align-items:flex-end; margin-bottom:1.5rem;">
+                        <div style="flex:1;"><label class="ad-label">플랫폼</label><input type="text" id="sns-key" class="ad-input" placeholder="Instagram"></div>
+                        <div style="flex:2;"><label class="ad-label">URL</label><input type="url" id="sns-value" class="ad-input" placeholder="https://..."></div>
+                        <button type="submit" class="ad-btn-gold" style="padding:0 1.8rem; white-space:nowrap;">추가</button>
+                    </form>
+                    <table class="ad-table"><thead><tr><th>플랫폼</th><th>URL</th><th>관리</th></tr></thead><tbody id="sns-admin-list"></tbody></table>
+                </div>
+            </section>
+        </main>
+    </div>
 
     <script type="module">
-        let currentBoard = null;
         let categoriesData = [];
         let charts = {};
+        let allPosts = [];          // 전체 게시글 캐시
+        let postFilter = { board: 'all', status: 'all', search: '' };
+
+        // ---------- Navigation ----------
+        window.toggleSidebar = () => {
+            document.getElementById('ad-side').classList.toggle('open');
+            document.getElementById('ad-scrim').classList.toggle('open');
+        };
+        function gotoPage(page) {
+            document.querySelectorAll('.ad-nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+            document.querySelectorAll('.ad-page').forEach(p => p.classList.toggle('active', p.id === 'page-' + page));
+            document.getElementById('ad-side').classList.remove('open');
+            document.getElementById('ad-scrim').classList.remove('open');
+            if (page === 'media') { loadAssets(); }
+            if (page === 'posts' && allPosts.length === 0) { loadAllPosts(); }
+        }
+        document.querySelectorAll('.ad-nav-item').forEach(btn => btn.addEventListener('click', () => gotoPage(btn.dataset.page)));
 
         window.logout = () => { document.cookie = "sg_auth_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;"; window.location.href = "/login.html"; };
-        window.toggleSection = (id) => { document.getElementById(id).classList.toggle('active'); if(id === 'sec-explorer') loadAssets(); };
         window.closeModal = (id) => document.getElementById(id).style.display = 'none';
 
-        // --- Core Functions ---
+        // ---------- Categories ----------
         async function loadCategories() {
             const res = await fetch('/api/categories'); categoriesData = await res.json();
-            document.getElementById('category-list-ui').innerHTML = categoriesData.map((cat, idx) => `<div style="background:#F8F9FA; border:1px solid var(--border); padding:0.8rem 1.5rem; border-radius:8px; display:flex; align-items:center; justify-content:space-between;"><span style="font-weight:800; font-size:0.95rem;">${cat.name}</span><div style="display:flex; gap:0.5rem;"><button class="sort-btn" onclick="renameCategory(${cat.id}, '${cat.name}')">이름수정</button><button class="sort-btn" onclick="moveCategory(${idx}, -1)">▲</button><button class="sort-btn" onclick="moveCategory(${idx}, 1)">▼</button><button onclick="deleteCategory(${cat.id})" style="background:none; border:none; color:#ff4d4d; cursor:pointer; font-weight:900; margin-left:1rem;">×</button></div></div>`).join('');
-            document.getElementById('board-selector-ui').innerHTML = categoriesData.map(cat => `<button class="board-btn ${currentBoard === cat.name ? 'active' : ''}" onclick="selectBoard('${cat.name}')">${cat.name}</button>`).join('');
+            document.getElementById('category-list-ui').innerHTML = categoriesData.map((cat, idx) =>
+                `<div class="cat-row"><span style="font-weight:800;">${cat.name}</span><div style="display:flex; gap:0.5rem; align-items:center;"><button class="sort-btn" onclick="renameCategory(${cat.id}, '${cat.name.replace(/'/g, "\\'")}')">이름수정</button><button class="sort-btn" onclick="moveCategory(${idx}, -1)">▲</button><button class="sort-btn" onclick="moveCategory(${idx}, 1)">▼</button><button onclick="deleteCategory(${cat.id})" style="background:none; border:none; color:var(--ad-red); cursor:pointer; font-weight:900; font-size:1.1rem;">×</button></div></div>`
+            ).join('');
+            // 게시판 필터 칩
+            document.getElementById('board-chips').innerHTML =
+                `<button class="chip ${postFilter.board==='all'?'active':''}" data-board="all">전체 보기</button>` +
+                categoriesData.map(c => `<button class="chip ${postFilter.board===c.name?'active':''}" data-board="${c.name}">${c.name}</button>`).join('');
+            document.querySelectorAll('#board-chips .chip').forEach(ch => ch.addEventListener('click', () => {
+                postFilter.board = ch.dataset.board;
+                document.querySelectorAll('#board-chips .chip').forEach(c => c.classList.toggle('active', c === ch));
+                renderPosts();
+            }));
         }
-        window.renameCategory = async (id, old) => { const n = prompt('이름 수정:', old); if(n && n!==old) { await fetch(`/api/categories?id=${id}`, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:n}) }); await loadCategories(); } };
+        window.renameCategory = async (id, old) => { const n = prompt('이름 수정:', old); if(n && n!==old) { await fetch(`/api/categories?id=${id}`, { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:n}) }); await loadCategories(); loadAllPosts(); } };
         window.moveCategory = async (idx, dir) => { const tidx = idx + dir; if(tidx < 0 || tidx >= categoriesData.length) return; const items = [...categoriesData]; [items[idx], items[tidx]] = [items[tidx], items[idx]]; await fetch('/api/categories', { method: 'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({items: items.map((it, i) => ({id:it.id, sort_order:i}))}) }); await loadCategories(); };
-        window.selectBoard = (name) => { currentBoard = name; document.querySelectorAll('.board-btn').forEach(b => b.classList.toggle('active', b.innerText === name)); loadAdminList(name); };
         document.getElementById('category-form').onsubmit = async (e) => { e.preventDefault(); await fetch('/api/categories', { method: 'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name: document.getElementById('cat-name').value}) }); e.target.reset(); loadCategories(); };
         window.deleteCategory = async (id) => { if(confirm('삭제하시겠습니까?')) { await fetch(`/api/categories?id=${id}`, { method: 'DELETE' }); loadCategories(); } };
 
-        async function loadAdminList(cat) {
-            const list = document.getElementById('admin-list'); list.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:4rem; color:#999;">로딩 중...</td></tr>';
-            const res = await fetch(`/api/portfolio?admin=true&category=${encodeURIComponent(cat)}`); const data = await res.json();
-            if(data.length === 0) { list.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:4rem; color:#999;">글이 없습니다.</td></tr>`; return; }
-            list.innerHTML = data.map(item => {
+        // ---------- Posts (강화된 통합 관리) ----------
+        async function loadAllPosts() {
+            const list = document.getElementById('admin-list');
+            list.innerHTML = '<tr><td colspan="5" class="empty">불러오는 중...</td></tr>';
+            try {
+                const res = await fetch('/api/portfolio?admin=true&category=all');
+                allPosts = await res.json();
+            } catch (e) { allPosts = []; }
+            renderPosts();
+            renderRecentPosts();
+        }
+        function renderPosts() {
+            const list = document.getElementById('admin-list');
+            let posts = allPosts.slice();
+            if (postFilter.board !== 'all') posts = posts.filter(p => p.category === postFilter.board);
+            if (postFilter.status === 'pub') posts = posts.filter(p => p.is_published);
+            if (postFilter.status === 'draft') posts = posts.filter(p => !p.is_published);
+            if (postFilter.search) { const q = postFilter.search.toLowerCase(); posts = posts.filter(p => (p.title||'').toLowerCase().includes(q)); }
+            if (posts.length === 0) { list.innerHTML = '<tr><td colspan="5" class="empty">조건에 맞는 글이 없습니다.</td></tr>'; return; }
+            list.innerHTML = posts.map(item => {
                 const isVideo = item.image && item.image.toLowerCase().match(/\.(mp4|webm|ogg)$/);
-                const mediaHtml = isVideo ? `<video src="${item.image}" muted style="width: 50px; height: 50px; object-fit: cover;"></video>` : `<img src="${item.image || ''}" style="width: 50px; height: 50px; object-fit: cover;">`;
-                const statusHtml = item.is_published ? '<span style="color:#28a745; font-weight:800;">[게시]</span>' : '<span style="color:#ffc107; font-weight:800;">[임시]</span>';
-                return `<tr><td>${mediaHtml}</td><td>${statusHtml}</td><td style="font-weight:700;">${item.title}</td><td class="admin-actions"><a href="editor.html?id=${item.id}">수정</a><button class="del-btn" onclick="deleteItem(${item.id})">삭제</button></td></tr>`;
+                const media = isVideo ? `<video src="${item.image}" muted class="thumb"></video>` : `<img src="${item.image || ''}" class="thumb">`;
+                const badge = item.is_published ? '<span class="badge pub">● 게시</span>' : '<span class="badge draft">● 임시</span>';
+                const toggleLabel = item.is_published ? '임시로' : '게시로';
+                return `<tr>
+                    <td>${media}</td>
+                    <td>${badge}</td>
+                    <td style="font-weight:700;">${item.title}</td>
+                    <td style="color:var(--ad-muted);">${item.category || '-'}</td>
+                    <td><div class="row-act">
+                        <a class="edit" href="editor.html?id=${item.id}">수정</a>
+                        <button class="toggle" onclick="togglePublish(${item.id})">${toggleLabel}</button>
+                        <button class="del" onclick="deleteItem(${item.id})">삭제</button>
+                    </div></td>
+                </tr>`;
             }).join('');
         }
-        window.deleteItem = async (id) => { if(confirm('삭제?')) { await fetch(`/api/portfolio?id=${id}`, { method: 'DELETE' }); if(currentBoard) loadAdminList(currentBoard); loadStats(); } };
-
-        // --- Profile Functions ---
-        window.triggerProfileUpload = () => document.getElementById('profile-file-input').click();
-        document.getElementById('profile-file-input').onchange = async (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const url = await uploadFile(file);
-                if (url) document.getElementById('profile-img-url').value = url;
-            }
+        function renderRecentPosts() {
+            const el = document.getElementById('home-recent-posts');
+            if (!el) return;
+            const recent = allPosts.slice(0, 6);
+            el.innerHTML = recent.length ? recent.map(p =>
+                `<tr><td style="font-weight:700;">${p.title}</td><td style="color:var(--ad-muted); text-align:right;">${p.category || '-'}</td><td style="text-align:right;">${p.is_published ? '<span class="badge pub">게시</span>' : '<span class="badge draft">임시</span>'}</td></tr>`
+            ).join('') : '<tr><td class="empty">글이 없습니다.</td></tr>';
+        }
+        // 인라인 게시/임시 토글 — 데이터 손실 방지를 위해 전체 레코드를 읽어 플래그만 변경 후 재저장
+        window.togglePublish = async (id) => {
+            try {
+                const res = await fetch(`/api/portfolio?id=${id}&admin=true`); const d = await res.json();
+                const payload = {
+                    title: d.title, category: d.category, tags: d.tags || '', prompt: d.prompt || '',
+                    description: d.description || '', content: d.content || '', image: d.image || '',
+                    attachments: d.attachments || '[]',
+                    is_published: d.is_published ? 0 : 1,
+                    is_hero: d.is_hero ? 1 : 0, is_recommended: d.is_recommended ? 1 : 0
+                };
+                await fetch(`/api/portfolio?id=${id}`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+                const local = allPosts.find(p => p.id === id); if (local) local.is_published = payload.is_published;
+                renderPosts(); renderRecentPosts();
+            } catch (e) { alert('상태 변경 실패'); }
         };
+        window.deleteItem = async (id) => { if(confirm('이 글을 삭제하시겠습니까?')) { await fetch(`/api/portfolio?id=${id}`, { method: 'DELETE' }); allPosts = allPosts.filter(p => p.id !== id); renderPosts(); renderRecentPosts(); loadStats(); } };
+
+        document.getElementById('post-search').addEventListener('input', (e) => { postFilter.search = e.target.value; clearTimeout(window.__st); window.__st = setTimeout(renderPosts, 250); });
+        document.querySelectorAll('#status-seg button').forEach(b => b.addEventListener('click', () => {
+            postFilter.status = b.dataset.status;
+            document.querySelectorAll('#status-seg button').forEach(x => x.classList.toggle('active', x === b));
+            renderPosts();
+        }));
+
+        // ---------- Profile ----------
+        window.triggerProfileUpload = () => document.getElementById('profile-file-input').click();
+        document.getElementById('profile-file-input').onchange = async (e) => { const file = e.target.files[0]; if (file) { const url = await uploadFile(file); if (url) document.getElementById('profile-img-url').value = url; } };
         window.openProfileAssetPicker = () => { document.getElementById('asset-modal').style.display = 'flex'; loadAssetsForPicker(); };
-        async function loadAssetsForPicker() {
+        window.loadAssetsForPicker = async () => {
             const listEl = document.getElementById('asset-picker-list');
-            listEl.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding:3rem; color:#888;">로딩 중...</p>';
+            listEl.innerHTML = '<p class="empty">로딩 중...</p>';
             try {
                 const res = await fetch('/api/assets'); const assets = await res.json();
-                listEl.innerHTML = assets.map(a => {
-                    if (!a.name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) return '';
-                    return `<div class="asset-card" onclick="selectProfileAsset('${a.name}')"><img src="/api/assets?name=${a.name}" class="asset-thumb"><div class="asset-info">${a.name.split('-').slice(1).join('-')}</div></div>`;
-                }).join('');
-            } catch (err) { listEl.innerHTML = '<p style="text-align:center; grid-column:1/-1; padding:3rem; color:#d9534f;">실패</p>'; }
-        }
+                listEl.innerHTML = assets.map(a => { if (!a.name.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) return ''; return `<div class="asset-card" onclick="selectProfileAsset('${a.name}')"><img src="/api/assets?name=${a.name}"><p>${a.name.split('-').slice(1).join('-')}</p></div>`; }).join('');
+            } catch (err) { listEl.innerHTML = '<p class="empty">실패</p>'; }
+        };
         window.selectProfileAsset = (name) => { document.getElementById('profile-img-url').value = `/api/assets?name=${name}`; closeModal('asset-modal'); };
 
         async function uploadFile(f) {
@@ -303,49 +503,70 @@
             }).catch(e => { alert('업로드 실패'); return null; });
         }
 
+        // ---------- Stats ----------
         async function loadStats() {
             try {
                 const res = await fetch('/api/stats'); const d = await res.json();
                 const a = d.analytics;
-                document.getElementById('total-views').innerText = a.totalViews.toLocaleString();
-                document.getElementById('today-unique').innerText = a.todayUnique.toLocaleString();
-                document.getElementById('yesterday-unique').innerText = a.yesterdayUnique.toLocaleString();
-                document.getElementById('db-stats-rows').innerText = d.storage.d1.statsRows.toLocaleString();
-                document.getElementById('top-posts-list').innerHTML = a.topPages.map(p => `<tr><td style="padding:0.6rem 0; border-bottom:1px solid #EEE;">${p.label}</td><td style="text-align:right; font-weight:800; color:var(--primary);">${p.count.toLocaleString()}</td></tr>`).join('');
-                document.getElementById('top-referrers-list').innerHTML = a.topReferrers.length ? a.topReferrers.map(r => `<tr><td style="padding:0.6rem 0; border-bottom:1px solid #EEE; word-break:break-all;">${r.referrer}</td><td style="text-align:right; font-weight:800; color:#28a745;">${r.count.toLocaleString()}</td></tr>`).join('') : '<tr><td style="color:#999; text-align:center; padding:1rem;">직접 유입</td></tr>';
-                document.getElementById('live-feed-list').innerHTML = a.recentLogs.map(l => `<tr><td style="font-size:0.75rem; color:#888;">${new Date(l.createdAt).toLocaleTimeString()}</td><td style="font-weight:700;">${l.page}</td><td style="font-size:0.75rem; color:#666;">${l.referrer || '-'}</td><td style="font-family:monospace; font-size:0.7rem; color:#AAA;">${l.ip_hash}</td></tr>`).join('');
-                updateCharts(a);
+                const setText = (id, v) => { const el = document.getElementById(id); if (el) el.innerText = v; };
+                setText('total-views', a.totalViews.toLocaleString());
+                setText('today-unique', a.todayUnique.toLocaleString());
+                setText('yesterday-unique', a.yesterdayUnique.toLocaleString());
+                setText('db-stats-rows', d.storage.d1.statsRows.toLocaleString());
+                setText('home-today', a.todayUnique.toLocaleString());
+                setText('home-views', a.totalViews.toLocaleString());
+                setText('home-files', d.storage.r2.count.toLocaleString());
+                setText('home-total-posts', d.storage.d1.posts.toLocaleString());
+
+                document.getElementById('top-posts-list').innerHTML = a.topPages.map(p => `<tr><td>${p.label}</td><td style="text-align:right; font-weight:800; color:var(--ad-gold);">${p.count.toLocaleString()}</td></tr>`).join('');
+                document.getElementById('top-referrers-list').innerHTML = a.topReferrers.length ? a.topReferrers.map(r => `<tr><td style="word-break:break-all;">${r.referrer}</td><td style="text-align:right; font-weight:800; color:var(--ad-green);">${r.count.toLocaleString()}</td></tr>`).join('') : '<tr><td class="empty">직접 유입</td></tr>';
+                document.getElementById('live-feed-list').innerHTML = a.recentLogs.map(l => `<tr><td style="font-size:0.75rem; color:var(--ad-muted);">${new Date(l.createdAt).toLocaleTimeString()}</td><td style="font-weight:700;">${l.page}</td><td style="font-size:0.75rem; color:var(--ad-muted);">${l.referrer || '-'}</td><td style="font-family:monospace; font-size:0.7rem; color:var(--ad-muted);">${l.ip_hash}</td></tr>`).join('');
+
                 const usedMB = (d.storage.r2.used / (1024*1024)).toFixed(2);
                 document.getElementById('r2-usage-text').innerText = `${usedMB} MB / 10 GB`;
                 document.getElementById('r2-usage-fill').style.width = `${Math.min(100, (d.storage.r2.used/d.storage.r2.limit)*100)}%`;
                 document.getElementById('r2-count').innerText = `${d.storage.r2.count} files stored`;
                 document.getElementById('d1-counts').innerText = `게시글 ${d.storage.d1.posts}개 | 로그 ${d.storage.d1.statsRows}개`;
                 document.getElementById('d1-usage-fill').style.width = `${Math.min(100, (d.storage.d1.statsRows/10000)*100)}%`;
+                updateCharts(a);
             } catch(e) { console.error("Stats Error:", e); }
         }
-
         function updateCharts(a) {
-            const chartConfig = (id, type, labels, data, color) => {
-                const ctx = document.getElementById(id).getContext('2d');
+            const gridColor = 'rgba(255,255,255,0.06)';
+            const tickColor = '#8A8A93';
+            const line = (id, labels, data, color) => {
+                const cv = document.getElementById(id); if (!cv) return;
                 if (charts[id]) charts[id].destroy();
-                charts[id] = new Chart(ctx, {
-                    type,
-                    data: { labels, datasets: [{ data, borderColor: color, backgroundColor: color + '22', borderWidth: 2, fill: true, tension: 0.4 }] },
-                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: id.includes('Chart') ? { y: { beginAtZero: true } } : {} }
+                charts[id] = new Chart(cv.getContext('2d'), {
+                    type: 'line',
+                    data: { labels, datasets: [{ data, borderColor: color, backgroundColor: color + '22', borderWidth: 2, fill: true, tension: 0.4, pointRadius: 2 }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor } }, x: { grid: { color: gridColor }, ticks: { color: tickColor } } } }
                 });
             };
-            chartConfig('dailyChart', 'line', a.dailyUnique.map(d=>d.date.slice(5)), a.dailyUnique.map(d=>d.count), '#0055FF');
-            const hourData = Array.from({length: 24}, (_, i) => a.hourlyToday.find(at => at.hour === i)?.count || 0);
-            chartConfig('hourlyChart', 'bar', Array.from({length: 24}, (_, i) => i+'시'), hourData, '#28a745');
+            const dailyLabels = a.dailyUnique.map(d=>d.date.slice(5));
+            const dailyData = a.dailyUnique.map(d=>d.count);
+            line('dailyChart', dailyLabels, dailyData, '#D4AF37');
+            line('dailyChart2', dailyLabels, dailyData, '#D4AF37');
+            const barCv = document.getElementById('hourlyChart');
+            if (barCv) {
+                if (charts['hourlyChart']) charts['hourlyChart'].destroy();
+                const hourData = Array.from({length: 24}, (_, i) => a.hourlyToday.find(at => at.hour === i)?.count || 0);
+                charts['hourlyChart'] = new Chart(barCv.getContext('2d'), {
+                    type: 'bar',
+                    data: { labels: Array.from({length: 24}, (_, i) => i+'시'), datasets: [{ data: hourData, backgroundColor: '#34D399' }] },
+                    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: tickColor } }, x: { grid: { color: gridColor }, ticks: { color: tickColor, font: { size: 8 } } } } }
+                });
+            }
             const donut = (id, obj, colors) => {
-                const ctx = document.getElementById(id).getContext('2d');
+                const cv = document.getElementById(id); if (!cv) return;
                 if (charts[id]) charts[id].destroy();
-                charts[id] = new Chart(ctx, { type: 'doughnut', data: { labels: Object.keys(obj), datasets: [{ data: Object.values(obj), backgroundColor: colors }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } } } });
+                charts[id] = new Chart(cv.getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(obj), datasets: [{ data: Object.values(obj), backgroundColor: colors, borderWidth: 0 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: tickColor, boxWidth: 10, font: { size: 9 } } } } } });
             };
-            donut('osChart', a.os, ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF']);
-            donut('browserChart', a.browsers, ['#4BC0C0', '#FF9F40', '#FF6384', '#36A2EB', '#9966FF']);
+            donut('osChart', a.os, ['#D4AF37', '#36A2EB', '#FBBF24', '#34D399', '#9966FF']);
+            donut('browserChart', a.browsers, ['#34D399', '#FF9F40', '#F87171', '#36A2EB', '#9966FF']);
         }
 
+        // ---------- Assets explorer ----------
         async function loadAssets() {
             const res = await fetch('/api/assets'); const assets = await res.json();
             document.getElementById('asset-list').innerHTML = assets.map(a => {
@@ -356,40 +577,32 @@
         }
         window.deleteAsset = async (n) => { if(confirm(`${n} 삭제?`)) { await fetch(`/api/assets?name=${n}`, { method: 'DELETE' }); loadAssets(); loadStats(); } };
 
+        // ---------- Settings ----------
         const loadAllInitialSettings = async () => {
-            try {
-                const res = await fetch('/api/settings'); const settings = await res.json();
-                settings.forEach(s => { const el = document.querySelector(`[data-key="${s.key}"]`); if (el) el.value = s.value; });
-            } catch (e) {}
+            try { const res = await fetch('/api/settings'); const settings = await res.json(); settings.forEach(s => { const el = document.querySelector(`[data-key="${s.key}"]`); if (el) el.value = s.value; }); } catch (e) {}
         };
-
         const saveHandler = async (form, type) => {
             const elements = Array.from(form.querySelectorAll('[data-key]'));
             const dataToSave = elements.map(el => ({ key: el.getAttribute('data-key'), value: el.value, type }));
-            
-            try {
-                const res = await fetch('/api/settings', { 
-                    method: 'POST', 
-                    headers: { 'Content-Type': 'application/json' }, 
-                    body: JSON.stringify(dataToSave) 
-                });
-                if (res.ok) alert('설정이 성공적으로 저장되었습니다.');
-                else throw new Error('저장 실패');
-            } catch (e) { alert('오류가 발생했습니다: ' + e.message); }
+            try { const res = await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dataToSave) }); if (res.ok) alert('저장되었습니다.'); else throw new Error('저장 실패'); } catch (e) { alert('오류: ' + e.message); }
         };
-
         document.getElementById('profile-form').onsubmit = (e) => { e.preventDefault(); saveHandler(e.target, 'profile'); };
         document.getElementById('site-text-form').onsubmit = (e) => { e.preventDefault(); saveHandler(e.target, 'site_text'); };
         document.getElementById('password-form').onsubmit = async (e) => { e.preventDefault(); await fetch('/api/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({key:'admin_password',value:document.getElementById('new-password').value,type:'security'})}); alert('변경완료'); e.target.reset(); };
 
+        async function loadSNS() {
+            const res = await fetch('/api/settings'); const data = await res.json();
+            document.getElementById('sns-admin-list').innerHTML = data.filter(s => s.type === 'sns').map(item => `<tr><td style="font-weight:800;">${item.key}</td><td style="color:var(--ad-muted); word-break:break-all;">${item.value}</td><td><div class="row-act"><button class="del" onclick="deleteSNS(${item.id})">제거</button></div></td></tr>`).join('');
+        }
+        window.deleteSNS = async (id) => { if (confirm('삭제?')) { await fetch(`/api/settings?id=${id}`, { method: 'DELETE' }); loadSNS(); } };
+        document.getElementById('sns-form').onsubmit = async (e) => { e.preventDefault(); await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: document.getElementById('sns-key').value, value: document.getElementById('sns-value').value, type: 'sns' }) }); e.target.reset(); loadSNS(); };
+
+        // ---------- Init ----------
         document.addEventListener('DOMContentLoaded', async () => {
-            await loadCategories(); loadStats(); loadAllInitialSettings();
-            const loadSNS = async () => {
-                const res = await fetch('/api/settings'); const data = await res.json();
-                document.getElementById('sns-admin-list').innerHTML = data.filter(s => s.type === 'sns').map(item => `<tr><td style="font-weight:800;">${item.key}</td><td style="color:var(--text-muted);">${item.value}</td><td class="admin-actions"><button class="del-btn" onclick="deleteSNS(${item.id})">제거</button></td></tr>`).join('');
-            };
-            window.deleteSNS = async (id) => { if (confirm('삭제?')) { await fetch(`/api/settings?id=${id}`, { method: 'DELETE' }); loadSNS(); } };
-            document.getElementById('sns-form').onsubmit = async (e) => { e.preventDefault(); await fetch('/api/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key: document.getElementById('sns-key').value, value: document.getElementById('sns-value').value, type: 'sns' }) }); e.target.reset(); loadSNS(); };
+            await loadCategories();
+            await loadAllPosts();
+            loadStats();
+            loadAllInitialSettings();
             loadSNS();
         });
     </script>
