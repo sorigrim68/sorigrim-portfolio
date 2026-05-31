@@ -220,6 +220,12 @@
                                     <button type="button" onclick="resizeSelectedMedia('50%')">50%</button>
                                     <button type="button" onclick="resizeSelectedMedia('100%')">100%</button>
                                 </div>
+                                <div class="toolbar-group">
+                                    <span style="font-size:0.65rem; font-weight:800; color:#AAA; margin-right:5px;">정렬:</span>
+                                    <button type="button" onclick="alignSelectedMedia('left')" title="왼쪽 정렬 (글이 오른쪽을 감쌈)">◧ 왼쪽</button>
+                                    <button type="button" onclick="alignSelectedMedia('center')" title="중앙 정렬">▣ 중앙</button>
+                                    <button type="button" onclick="alignSelectedMedia('right')" title="오른쪽 정렬 (글이 왼쪽을 감쌈)">오른쪽 ◨</button>
+                                </div>
                             </div>
                             <div id="attachment-preview" class="toolbar-attachments"></div>
                             <div id="content-editor" class="rich-editor" contenteditable="true" spellcheck="false"></div>
@@ -387,6 +393,24 @@
         }
 
         window.resizeSelectedMedia = (width) => { if (lastSelectedMedia) lastSelectedMedia.style.width = width; else alert("이미지를 먼저 클릭해 주세요."); updateSEO(); };
+        window.alignSelectedMedia = (align) => {
+            if (!lastSelectedMedia) { alert("이미지를 먼저 클릭해 주세요."); return; }
+            const w = lastSelectedMedia;
+            const curW = w.style.width;
+            if (align === 'left') {
+                w.style.float = 'left';
+                w.style.margin = '0.5rem 2rem 1rem 0';
+                if (!curW || curW === '100%') w.style.width = '45%';
+            } else if (align === 'right') {
+                w.style.float = 'right';
+                w.style.margin = '0.5rem 0 1rem 2rem';
+                if (!curW || curW === '100%') w.style.width = '45%';
+            } else {
+                w.style.float = 'none';
+                w.style.margin = '2.5rem auto';
+            }
+            updateSEO();
+        };
         window.closeModal = (id) => document.getElementById(id).style.display = 'none';
         window.openTemplates = () => document.getElementById('template-modal').style.display = 'flex';
 
