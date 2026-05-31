@@ -1,7 +1,8 @@
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&display=swap');
 
 :root {
-  --primary: #0055FF;
+  --primary: #D4AF37;
   --secondary: #111111;
   --text-main: #1A1A1A;
   --text-muted: #666666;
@@ -38,7 +39,7 @@ body {
 @media (max-width: 768px) { .sg-row { grid-template-columns: 1fr; gap: 1.5rem; } }
 .sg-col { min-height: 50px; border: 1px dashed transparent; }
 .rich-editor .sg-col:empty::after { content: '내용을 입력하세요...'; color: #CCC; font-size: 0.9rem; }
-.rich-editor .sg-col { border-color: rgba(0,85,255,0.1); padding: 1rem; border-radius: 4px; }
+.rich-editor .sg-col { border-color: rgba(212,175,55,0.1); padding: 1rem; border-radius: 4px; }
 
 /* Image Caption Styling */
 .sg-image-wrapper { margin: 2.5rem 0; text-align: center; }
@@ -71,7 +72,7 @@ body {
 .hero-content p { font-size: clamp(1rem, 2vw, 1.5rem); color: rgba(255,255,255,0.75); max-width: 700px; margin-bottom: 4.5rem; opacity: 0; transform: translateY(30px); animation: reveal-up 1.2s var(--ease-smooth) 0.5s forwards; }
 
 .btn-premium { display: inline-flex; padding: 1.2rem 3.5rem; background: var(--primary); color: white; text-decoration: none; font-weight: 700; font-size: 0.95rem; border-radius: 4px; transition: 0.4s; border: none; cursor: pointer; }
-.btn-premium:hover { background: #0044CC; transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,85,255,0.25); }
+.btn-premium:hover { background: #0044CC; transform: translateY(-5px); box-shadow: 0 20px 40px rgba(212,175,55,0.25); }
 
 /* Grid */
 .container { max-width: 1400px; margin: 0 auto; padding: 0 4rem; width: 100%; }
