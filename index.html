@@ -67,11 +67,325 @@
                 </div>
             </div>
         </section>
+        <!-- ===== PROMPT GALLERY ===== -->
+        <section id="prompt-gallery" class="py-xl">
+            <div class="container">
+                <h2 class="reveal section-title">Prompt Gallery.</h2>
+                <p class="reveal section-desc">AI 영상·이미지 생성에 바로 쓸 수 있는 정제된 프롬프트 컬렉션입니다.<br>카테고리를 선택하고 프롬프트를 복사해보세요.</p>
+
+                <!-- 카테고리 필터 -->
+                <div class="pg-filters reveal">
+                    <div class="pg-filter-group">
+                        <span class="pg-filter-label">장르</span>
+                        <div class="pg-tags" id="pg-genre-tags">
+                            <button class="pg-tag active" data-filter="all">All</button>
+                            <button class="pg-tag" data-filter="cinematic">Cinematic</button>
+                            <button class="pg-tag" data-filter="fantasy">Fantasy</button>
+                            <button class="pg-tag" data-filter="action">Action</button>
+                            <button class="pg-tag" data-filter="scifi">Sci-Fi</button>
+                            <button class="pg-tag" data-filter="fashion">Fashion</button>
+                            <button class="pg-tag" data-filter="drama">Drama</button>
+                            <button class="pg-tag" data-filter="animation">Animation</button>
+                            <button class="pg-tag" data-filter="surreal">Surreal</button>
+                            <button class="pg-tag" data-filter="portrait">Portrait</button>
+                        </div>
+                    </div>
+                    <div class="pg-filter-group">
+                        <span class="pg-filter-label">스타일</span>
+                        <div class="pg-tags" id="pg-style-tags">
+                            <button class="pg-tag pg-tag--style active" data-style="all">All</button>
+                            <button class="pg-tag pg-tag--style" data-style="realistic">Realistic</button>
+                            <button class="pg-tag pg-tag--style" data-style="firstperson">First Person</button>
+                            <button class="pg-tag pg-tag--style" data-style="slowmo">Slow Motion</button>
+                            <button class="pg-tag pg-tag--style" data-style="tracking">Tracking</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 프롬프트 카드 그리드 -->
+                <div class="pg-grid reveal" id="pg-grid">
+
+                    <div class="pg-card" data-genre="fantasy cinematic" data-style="tracking">
+                        <div class="pg-card-visual">
+                            <img src="https://wjvqayfliyzimffhxdld.supabase.co/storage/v1/object/public/thumbnails/thumbnails/2047819270705336637.jpg" alt="Fantasy Cinematic" loading="lazy">
+                            <span class="pg-card-type">VIDEO</span>
+                        </div>
+                        <div class="pg-card-body">
+                            <div class="pg-card-tags">
+                                <span class="pg-badge">Fantasy</span>
+                                <span class="pg-badge">Cinematic</span>
+                            </div>
+                            <p class="pg-prompt-text">Live action. Use @image1 to create a 15s cinematic fantasy video. Sweeping camera movements, dramatic lighting with god rays piercing through mist, epic orchestral pacing. No text overlays.</p>
+                            <button class="pg-copy-btn" onclick="pgCopy(this)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                Copy Prompt
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pg-card" data-genre="action" data-style="realistic slowmo">
+                        <div class="pg-card-visual">
+                            <img src="https://wjvqayfliyzimffhxdld.supabase.co/storage/v1/object/public/thumbnails/thumbnails/2057245353158840375.jpg" alt="Olympic Diver" loading="lazy">
+                            <span class="pg-card-type">VIDEO</span>
+                        </div>
+                        <div class="pg-card-body">
+                            <div class="pg-card-tags">
+                                <span class="pg-badge">Action</span>
+                                <span class="pg-badge">Realistic</span>
+                            </div>
+                            <p class="pg-prompt-text">Female Olympic diver from platform takeoff to mid-air perfect dive into blue pool. Slow-motion water entry with crystalline splash, underwater bubbles trailing behind. Broadcast sports cinematography, 4K, peak athletic form.</p>
+                            <button class="pg-copy-btn" onclick="pgCopy(this)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                Copy Prompt
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pg-card" data-genre="action cinematic" data-style="slowmo tracking">
+                        <div class="pg-card-visual">
+                            <img src="https://wjvqayfliyzimffhxdld.supabase.co/storage/v1/object/public/thumbnails/thumbnails/2055167081029738811.jpg" alt="Sports Cinematography" loading="lazy">
+                            <span class="pg-card-type">VIDEO</span>
+                        </div>
+                        <div class="pg-card-body">
+                            <div class="pg-card-tags">
+                                <span class="pg-badge">Cinematic</span>
+                                <span class="pg-badge">Action</span>
+                            </div>
+                            <p class="pg-prompt-text">High-speed commercial sports cinematography. 35mm lens feel, dynamic tracking shots of athlete in motion. Sweat droplets in slow-motion, stadium lights creating dramatic rim lighting. Nike commercial aesthetic, ultra-crisp motion.</p>
+                            <button class="pg-copy-btn" onclick="pgCopy(this)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                Copy Prompt
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pg-card" data-genre="fashion cinematic" data-style="slowmo">
+                        <div class="pg-card-visual">
+                            <img src="https://wjvqayfliyzimffhxdld.supabase.co/storage/v1/object/public/thumbnails/thumbnails/2058027726242820345.jpg" alt="Luxury Perfume" loading="lazy">
+                            <span class="pg-card-type">VIDEO</span>
+                        </div>
+                        <div class="pg-card-body">
+                            <div class="pg-card-tags">
+                                <span class="pg-badge">Fashion</span>
+                                <span class="pg-badge">Cinematic</span>
+                            </div>
+                            <p class="pg-prompt-text">Luxury perfume commercial video. Elegant East Asian female model in black sleeve dress holds crystal bottle. Macro close-ups of liquid swirling inside. Soft gold-tone studio lighting, silk fabric texture, ultra-premium brand aesthetic.</p>
+                            <button class="pg-copy-btn" onclick="pgCopy(this)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                Copy Prompt
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pg-card" data-genre="fashion animation" data-style="tracking">
+                        <div class="pg-card-visual">
+                            <img src="https://wjvqayfliyzimffhxdld.supabase.co/storage/v1/object/public/thumbnails/thumbnails/2055146944566292553.jpg" alt="Harajuku Fashion" loading="lazy">
+                            <span class="pg-card-type">VIDEO</span>
+                        </div>
+                        <div class="pg-card-body">
+                            <div class="pg-card-tags">
+                                <span class="pg-badge">Fashion</span>
+                                <span class="pg-badge">Animation</span>
+                            </div>
+                            <p class="pg-prompt-text">Stylized Japanese Harajuku street fashion 'Get Ready With Me' vertical video. Kawaii aesthetic, layered pastel outfits with bold accessories. Anime-influenced character design, vibrant Shibuya background, social media vertical format.</p>
+                            <button class="pg-copy-btn" onclick="pgCopy(this)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                Copy Prompt
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pg-card" data-genre="animation portrait" data-style="tracking">
+                        <div class="pg-card-visual">
+                            <img src="https://wjvqayfliyzimffhxdld.supabase.co/storage/v1/object/public/thumbnails/thumbnails/2052812384386048465.jpg" alt="Cinematic Animation Portrait" loading="lazy">
+                            <span class="pg-card-type">VIDEO</span>
+                        </div>
+                        <div class="pg-card-body">
+                            <div class="pg-card-tags">
+                                <span class="pg-badge">Animation</span>
+                                <span class="pg-badge">Portrait</span>
+                            </div>
+                            <p class="pg-prompt-text">Trendy Gen-Z cinematic animation of monochrome typographic portrait logo. Bold sans-serif typography morphing into a face silhouette, glitch transitions, lo-fi aesthetic with grain overlay. 15-second loop, TikTok-native vertical format.</p>
+                            <button class="pg-copy-btn" onclick="pgCopy(this)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                Copy Prompt
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pg-card" data-genre="drama" data-style="realistic firstperson">
+                        <div class="pg-card-visual">
+                            <img src="https://wjvqayfliyzimffhxdld.supabase.co/storage/v1/object/public/thumbnails/thumbnails/2055899694799139117.jpg" alt="iPhone Camera Realism" loading="lazy">
+                            <span class="pg-card-type">VIDEO</span>
+                        </div>
+                        <div class="pg-card-body">
+                            <div class="pg-card-tags">
+                                <span class="pg-badge">Realistic</span>
+                                <span class="pg-badge">First Person</span>
+                            </div>
+                            <p class="pg-prompt-text">Front-facing iPhone camera POV. Soft handheld realism, natural daylight from a window. Subject speaking candidly to camera, authentic micro-expressions, slight lens flare from backlight. Raw, unfiltered documentary feel.</p>
+                            <button class="pg-copy-btn" onclick="pgCopy(this)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                Copy Prompt
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pg-card" data-genre="surreal scifi" data-style="tracking">
+                        <div class="pg-card-visual">
+                            <img src="https://wjvqayfliyzimffhxdld.supabase.co/storage/v1/object/public/thumbnails/thumbnails/2051282565278171446.jpg" alt="Desolate Landscape" loading="lazy">
+                            <span class="pg-card-type">VIDEO</span>
+                        </div>
+                        <div class="pg-card-body">
+                            <div class="pg-card-tags">
+                                <span class="pg-badge">Surreal</span>
+                                <span class="pg-badge">Sci-Fi</span>
+                            </div>
+                            <p class="pg-prompt-text">Desolate ashen landscape under pitch-black sky. Cracked earth stretches to infinity, faint bioluminescent roots pulse beneath the surface. Slow push-in camera, eerie silence, post-apocalyptic atmosphere. Hyper-real 8K texture detail.</p>
+                            <button class="pg-copy-btn" onclick="pgCopy(this)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                Copy Prompt
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pg-card" data-genre="action fantasy cinematic" data-style="tracking slowmo">
+                        <div class="pg-card-visual">
+                            <img src="https://wjvqayfliyzimffhxdld.supabase.co/storage/v1/object/public/thumbnails/thumbnails/2045443972928086292.jpg" alt="Medieval Siege" loading="lazy">
+                            <span class="pg-card-type">VIDEO</span>
+                        </div>
+                        <div class="pg-card-body">
+                            <div class="pg-card-tags">
+                                <span class="pg-badge">Action</span>
+                                <span class="pg-badge">Fantasy</span>
+                                <span class="pg-badge">Cinematic</span>
+                            </div>
+                            <p class="pg-prompt-text">5-second ultra-intense cinematic medieval siege, black-and-white, hyper-real. Castle walls crumbling under catapult fire, armored knights clashing in slow-motion, debris and embers floating in the air. IMAX film grain, desaturated war epic.</p>
+                            <button class="pg-copy-btn" onclick="pgCopy(this)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                Copy Prompt
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pg-card" data-genre="scifi fantasy cinematic" data-style="tracking">
+                        <div class="pg-card-visual">
+                            <img src="https://customer-qs6wnyfuv0gcybzj.cloudflarestream.com/7ec8cf21148b39e7df98676ac29516ba/thumbnails/thumbnail.jpg" alt="Subterranean Megastructure" loading="lazy">
+                            <span class="pg-card-type">VIDEO</span>
+                        </div>
+                        <div class="pg-card-body">
+                            <div class="pg-card-tags">
+                                <span class="pg-badge">Sci-Fi</span>
+                                <span class="pg-badge">Fantasy</span>
+                                <span class="pg-badge">Cinematic</span>
+                            </div>
+                            <p class="pg-prompt-text">Flooded subterranean megastructure, ancient stone corridors half-submerged in dark water. Bioluminescent algae lines the walls, beam of light from a crack in the ceiling. Slow gliding camera through the cavern, echoing drips, mysterious and vast.</p>
+                            <button class="pg-copy-btn" onclick="pgCopy(this)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                Copy Prompt
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pg-card" data-genre="fantasy action cinematic" data-style="slowmo tracking">
+                        <div class="pg-card-visual">
+                            <img src="https://wjvqayfliyzimffhxdld.supabase.co/storage/v1/object/public/thumbnails/thumbnails/2051693476027551757.jpg" alt="Ice Monarch Battle" loading="lazy">
+                            <span class="pg-card-type">VIDEO</span>
+                        </div>
+                        <div class="pg-card-body">
+                            <div class="pg-card-tags">
+                                <span class="pg-badge">Fantasy</span>
+                                <span class="pg-badge">Action</span>
+                            </div>
+                            <p class="pg-prompt-text">Ice monarch battles dark shadow lord in ruined frozen courtyard as snow swirls around them. Magical energy clash in slow-motion, ice shards and dark tendrils suspended mid-air. Epic fantasy cinematography, blue and obsidian color palette, 120fps.</p>
+                            <button class="pg-copy-btn" onclick="pgCopy(this)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                Copy Prompt
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="pg-card" data-genre="drama cinematic" data-style="realistic tracking">
+                        <div class="pg-card-visual">
+                            <img src="https://wjvqayfliyzimffhxdld.supabase.co/storage/v1/object/public/thumbnails/thumbnails/2051382118954291362.jpg" alt="Desert Bedouin" loading="lazy">
+                            <span class="pg-card-type">VIDEO</span>
+                        </div>
+                        <div class="pg-card-body">
+                            <div class="pg-card-tags">
+                                <span class="pg-badge">Drama</span>
+                                <span class="pg-badge">Cinematic</span>
+                            </div>
+                            <p class="pg-prompt-text">Cinematic desert night scene, lone Bedouin man walking across vast sand dunes under a star-filled sky. Moonlight casting long shadows, robes rippling in the wind, wide tracking shot. Lawrence of Arabia atmosphere, 35mm film look, poetic and solitary.</p>
+                            <button class="pg-copy-btn" onclick="pgCopy(this)">
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                Copy Prompt
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="pg-empty reveal" id="pg-empty" style="display:none;">
+                    <p>해당 카테고리의 프롬프트가 없습니다.</p>
+                </div>
+            </div>
+        </section>
+        <!-- ===== /PROMPT GALLERY ===== -->
     </main>
 
     <sg-footer></sg-footer>
 
     <script defer src="/main.js" type="module"></script>
+    <script>
+        // Prompt Gallery — filter & copy
+        function pgCopy(btn) {
+            const text = btn.closest('.pg-card-body').querySelector('.pg-prompt-text').textContent.trim();
+            navigator.clipboard.writeText(text).then(() => {
+                btn.classList.add('copied');
+                btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Prompt';
+                }, 2000);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let activeGenre = 'all';
+            let activeStyle = 'all';
+
+            function applyFilters() {
+                const cards = document.querySelectorAll('.pg-card');
+                let visible = 0;
+                cards.forEach(card => {
+                    const g = card.dataset.genre;
+                    const s = card.dataset.style;
+                    const show = (activeGenre === 'all' || g === activeGenre) && (activeStyle === 'all' || s === activeStyle);
+                    card.classList.toggle('hidden', !show);
+                    if (show) visible++;
+                });
+                document.getElementById('pg-empty').style.display = visible === 0 ? 'block' : 'none';
+            }
+
+            document.querySelectorAll('#pg-genre-tags .pg-tag').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#pg-genre-tags .pg-tag').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    activeGenre = btn.dataset.filter;
+                    applyFilters();
+                });
+            });
+
+            document.querySelectorAll('#pg-style-tags .pg-tag').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('#pg-style-tags .pg-tag').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    activeStyle = btn.dataset.style;
+                    applyFilters();
+                });
+            });
+        });
+    </script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const observer = new IntersectionObserver((entries) => {
