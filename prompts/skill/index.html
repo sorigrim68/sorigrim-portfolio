@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Seedance 2.0 프롬프트 스킬 가이드 — SORIGRIM</title>
+    <meta name="description" content="991개의 실제 Seedance 2.0 프롬프트 분석으로 도출한 최적 프롬프트 작성 가이드. 구조, 카메라 기법, 품질 수식어, 템플릿까지.">
+    <link rel="canonical" href="https://sorigrim.com/prompts/skill/">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        /* ── Layout ── */
+        .sk-page { padding-top: 7rem; }
+        .sk-hero { padding: 5rem 0 4rem; border-bottom: 1px solid var(--border); }
+        .sk-hero h1 { font-size: clamp(2.4rem,5vw,4.2rem); font-weight: 800; letter-spacing: -.04em; margin-bottom: .7rem; }
+        .sk-hero p  { color: var(--text-muted); font-size: 1.05rem; max-width: 600px; line-height: 1.75; }
+        .sk-badge { display: inline-flex; align-items: center; gap: .4rem; background: rgba(212,175,55,.12); border: 1px solid rgba(212,175,55,.3); color: var(--primary); font-size: .75rem; font-weight: 700; padding: .3rem .8rem; border-radius: 100px; margin-bottom: 1.2rem; }
+        .sk-stats { display: flex; gap: 2rem; margin-top: 2rem; flex-wrap: wrap; }
+        .sk-stat { text-align: center; }
+        .sk-stat-n { font-size: 2.2rem; font-weight: 900; color: var(--primary); letter-spacing: -.04em; line-height: 1; }
+        .sk-stat-l { font-size: .78rem; color: var(--text-muted); margin-top: .3rem; }
+
+        /* ── TOC ── */
+        .sk-toc { background: var(--bg-light); border: 1px solid var(--border); border-radius: 12px; padding: 1.8rem 2rem; margin: 3rem 0; }
+        .sk-toc h3 { font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted); margin-bottom: 1rem; }
+        .sk-toc-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: .5rem; }
+        .sk-toc-list a { font-size: .9rem; color: var(--text-main); text-decoration: none; display: flex; align-items: center; gap: .5rem; transition: .2s; }
+        .sk-toc-list a:hover { color: var(--primary); }
+        .sk-toc-list .n { font-size: .72rem; font-weight: 800; color: var(--primary); min-width: 1.4rem; }
+
+        /* ── Section ── */
+        .sk-section { padding: 4rem 0; border-bottom: 1px solid var(--border); }
+        .sk-section:last-of-type { border-bottom: none; }
+        .sk-section-num { font-size: .72rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: .12em; margin-bottom: .5rem; }
+        .sk-section h2 { font-size: clamp(1.6rem,3vw,2.4rem); font-weight: 800; letter-spacing: -.03em; margin-bottom: 1rem; }
+        .sk-section-desc { color: var(--text-muted); font-size: 1rem; max-width: 680px; line-height: 1.75; margin-bottom: 2.5rem; }
+
+        /* ── Structure cards ── */
+        .sk-structure-grid { display: grid; grid-template-columns: repeat(2,1fr); gap: 1.2rem; margin-bottom: 2rem; }
+        @media (max-width: 768px) { .sk-structure-grid { grid-template-columns: 1fr; } }
+        .sk-struct-card { border: 1px solid var(--border); border-radius: 10px; padding: 1.4rem; transition: .25s; }
+        .sk-struct-card:hover { border-color: var(--primary); }
+        .sk-struct-card .rank { font-size: .65rem; font-weight: 800; color: var(--primary); text-transform: uppercase; letter-spacing: .1em; margin-bottom: .4rem; }
+        .sk-struct-card h4 { font-size: 1rem; font-weight: 700; margin-bottom: .5rem; }
+        .sk-struct-card p { font-size: .85rem; color: var(--text-muted); line-height: 1.65; }
+        .sk-struct-card .count { font-size: .78rem; color: var(--text-muted); margin-top: .7rem; border-top: 1px solid var(--border); padding-top: .7rem; }
+
+        /* ── Code blocks ── */
+        .sk-code { background: #0d0d0d; border: 1px solid #2a2a2a; border-radius: 10px; padding: 1.4rem 1.6rem; margin: 1.2rem 0; position: relative; overflow: hidden; }
+        .sk-code pre { font-family: 'JetBrains Mono', monospace; font-size: .83rem; color: #e8e8e8; line-height: 1.8; margin: 0; white-space: pre-wrap; word-break: break-word; }
+        .sk-code .hl-label { color: #D4AF37; font-weight: 600; }
+        .sk-code .hl-value { color: #93c5fd; }
+        .sk-code .hl-cam   { color: #86efac; }
+        .sk-code .hl-qual  { color: #f9a8d4; }
+        .sk-code .hl-neg   { color: #fca5a5; }
+        .sk-code .hl-time  { color: #fbbf24; }
+        .sk-copy-code { position: absolute; top: .8rem; right: .8rem; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); color: rgba(255,255,255,.6); font-size: .7rem; font-weight: 600; padding: .28rem .7rem; border-radius: 4px; cursor: pointer; font-family: inherit; transition: .2s; }
+        .sk-copy-code:hover { background: rgba(212,175,55,.2); color: #D4AF37; border-color: rgba(212,175,55,.4); }
+        .sk-copy-code.copied { background: rgba(34,197,94,.2); color: #22c55e; border-color: rgba(34,197,94,.4); }
+
+        /* ── Keyword pills ── */
+        .sk-pills { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1rem 0; }
+        .sk-pill { padding: .35rem .9rem; border-radius: 100px; font-size: .78rem; font-weight: 600; border: 1px solid; cursor: pointer; transition: .2s; }
+        .sk-pill.cam   { color: #86efac; border-color: rgba(134,239,172,.3); background: rgba(134,239,172,.07); }
+        .sk-pill.qual  { color: #f9a8d4; border-color: rgba(249,168,212,.3); background: rgba(249,168,212,.07); }
+        .sk-pill.style { color: #93c5fd; border-color: rgba(147,197,253,.3); background: rgba(147,197,253,.07); }
+        .sk-pill.neg   { color: #fca5a5; border-color: rgba(252,165,165,.3); background: rgba(252,165,165,.07); }
+        .sk-pill.time  { color: #fbbf24; border-color: rgba(251,191,36,.3); background: rgba(251,191,36,.07); }
+        .sk-pill:hover { opacity: .7; }
+        .sk-pill-label { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); margin: 1.2rem 0 .5rem; }
+
+        /* ── Formula ── */
+        .sk-formula { background: var(--bg-light); border-left: 3px solid var(--primary); border-radius: 0 8px 8px 0; padding: 1.3rem 1.5rem; margin: 1.5rem 0; }
+        .sk-formula h4 { font-size: .8rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--primary); margin-bottom: .7rem; }
+        .sk-formula .formula-row { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; font-size: .88rem; margin: .4rem 0; }
+        .sk-formula .f-box { background: var(--bg-white); border: 1px solid var(--border); border-radius: 4px; padding: .2rem .65rem; font-size: .8rem; font-weight: 600; }
+        .sk-formula .f-op { color: var(--text-muted); font-size: .8rem; }
+
+        /* ── Table ── */
+        .sk-table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: .88rem; }
+        .sk-table th { background: var(--bg-light); font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--text-muted); padding: .7rem 1rem; text-align: left; border: 1px solid var(--border); }
+        .sk-table td { padding: .7rem 1rem; border: 1px solid var(--border); vertical-align: top; }
+        .sk-table td:first-child { font-weight: 700; color: var(--primary); white-space: nowrap; }
+        .sk-table tr:hover td { background: var(--bg-light); }
+
+        /* ── Do/Don't ── */
+        .sk-dodont { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; margin: 1.5rem 0; }
+        @media (max-width: 640px) { .sk-dodont { grid-template-columns: 1fr; } }
+        .sk-do, .sk-dont { border-radius: 8px; padding: 1.3rem; }
+        .sk-do { background: rgba(34,197,94,.06); border: 1px solid rgba(34,197,94,.2); }
+        .sk-dont { background: rgba(239,68,68,.06); border: 1px solid rgba(239,68,68,.2); }
+        .sk-do h4 { color: #22c55e; font-size: .78rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; margin-bottom: .8rem; }
+        .sk-dont h4 { color: #ef4444; font-size: .78rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; margin-bottom: .8rem; }
+        .sk-do li, .sk-dont li { font-size: .85rem; color: var(--text-muted); margin: .4rem 0; line-height: 1.6; padding-left: .2rem; }
+        .sk-do ul, .sk-dont ul { list-style: none; }
+        .sk-do li::before { content: "✓ "; color: #22c55e; font-weight: 700; }
+        .sk-dont li::before { content: "✗ "; color: #ef4444; font-weight: 700; }
+
+        /* ── Templates ── */
+        .sk-template-tabs { display: flex; gap: .4rem; margin-bottom: 1rem; flex-wrap: wrap; }
+        .sk-tab { padding: .4rem 1rem; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-size: .8rem; font-weight: 600; border-radius: 6px; cursor: pointer; font-family: inherit; transition: .2s; }
+        .sk-tab.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .sk-template-content { display: none; }
+        .sk-template-content.active { display: block; }
+
+        /* ── Insights ── */
+        .sk-insights { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.2rem; margin: 1.5rem 0; }
+        @media (max-width: 900px) { .sk-insights { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 580px) { .sk-insights { grid-template-columns: 1fr; } }
+        .sk-insight { background: var(--bg-light); border: 1px solid var(--border); border-radius: 10px; padding: 1.3rem; }
+        .sk-insight .icon { font-size: 1.5rem; margin-bottom: .6rem; }
+        .sk-insight h4 { font-size: .88rem; font-weight: 700; margin-bottom: .4rem; }
+        .sk-insight p { font-size: .8rem; color: var(--text-muted); line-height: 1.6; }
+
+        /* ── Checklist ── */
+        .sk-checklist { list-style: none; }
+        .sk-checklist li { display: flex; align-items: flex-start; gap: .7rem; padding: .6rem 0; border-bottom: 1px solid var(--border); font-size: .9rem; }
+        .sk-checklist li:last-child { border-bottom: none; }
+        .sk-check { width: 20px; height: 20px; border: 2px solid var(--border); border-radius: 4px; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: .2s; margin-top: .1rem; }
+        .sk-check.done { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .sk-checklist .sk-cl-text { flex: 1; line-height: 1.6; }
+        .sk-checklist .sk-cl-text strong { display: block; font-size: .85rem; margin-bottom: .1rem; }
+        .sk-checklist .sk-cl-text span { font-size: .8rem; color: var(--text-muted); }
+
+        @media (max-width: 768px) { .sk-page { padding-top: 5rem; } .sk-toc-list { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <nav id="global-nav">
+        <a href="/" class="brand">SORIGRIM</a>
+        <div class="nav-links">
+            <a href="/portfolio/">아카이브</a>
+            <a href="/prompts/">프롬프트</a>
+        </div>
+    </nav>
+
+    <main class="sk-page">
+    <div class="container">
+
+        <!-- Hero -->
+        <div class="sk-hero">
+            <div class="sk-badge">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                991개 프롬프트 데이터 기반 분석
+            </div>
+            <h1 class="reveal">Seedance 2.0<br>프롬프트 스킬 가이드</h1>
+            <p class="reveal">scenic.sh의 실제 크리에이터 991개 프롬프트를 분석해 도출한<br>Seedance 2.0 최적 프롬프트 작성 방법론입니다.</p>
+            <div class="sk-stats">
+                <div class="sk-stat"><div class="sk-stat-n">991</div><div class="sk-stat-l">분석 프롬프트</div></div>
+                <div class="sk-stat"><div class="sk-stat-n">699</div><div class="sk-stat-l">평균 글자 수</div></div>
+                <div class="sk-stat"><div class="sk-stat-n">6</div><div class="sk-stat-l">핵심 구조 패턴</div></div>
+                <div class="sk-stat"><div class="sk-stat-n">34</div><div class="sk-stat-l">장르/스타일 태그</div></div>
+            </div>
+        </div>
+
+        <!-- TOC -->
+        <div class="sk-toc">
+            <h3>목차</h3>
+            <ul class="sk-toc-list">
+                <li><a href="#structure"><span class="n">01</span> 프롬프트 구조 패턴</a></li>
+                <li><a href="#length"><span class="n">02</span> 최적 길이와 밀도</a></li>
+                <li><a href="#camera"><span class="n">03</span> 카메라 기법 사전</a></li>
+                <li><a href="#style"><span class="n">04</span> 스타일 & 품질 수식어</a></li>
+                <li><a href="#negative"><span class="n">05</span> 네거티브 프롬프트</a></li>
+                <li><a href="#formula"><span class="n">06</span> 황금 공식 & 템플릿</a></li>
+                <li><a href="#bygenre"><span class="n">07</span> 장르별 특화 기법</a></li>
+                <li><a href="#checklist"><span class="n">08</span> 최종 체크리스트</a></li>
+            </ul>
+        </div>
+
+        <!-- 01. 구조 패턴 -->
+        <section class="sk-section" id="structure">
+            <div class="sk-section-num">01</div>
+            <h2>프롬프트 구조 패턴</h2>
+            <p class="sk-section-desc">991개 프롬프트에서 발견된 6가지 핵심 구조입니다. 상위 크리에이터들은 대부분 <strong>CAPS 섹션 헤더</strong>나 <strong>타임라인 분할</strong> 구조를 사용합니다.</p>
+
+            <div class="sk-structure-grid">
+                <div class="sk-struct-card">
+                    <div class="rank">🥇 가장 많음 · 170개</div>
+                    <h4>씬 직접 묘사형</h4>
+                    <p>장면을 직접 서술하는 가장 자연스러운 방식. "A lone warrior stands at the edge of..." 처럼 시작. 짧고 직관적이지만 AI 해석 여지가 큼.</p>
+                    <div class="count">평균 450자 · 간결한 컨셉에 적합</div>
+                </div>
+                <div class="sk-struct-card">
+                    <div class="rank">🥈 138개</div>
+                    <h4>스타일 + 시간 선언형</h4>
+                    <p>첫 줄에 STYLE: / DURATION: 을 선언하고 씬을 이어가는 방식. AI가 톤을 즉시 파악해 일관성이 높아짐.</p>
+                    <div class="count">평균 699자 · 상업 광고·패션에 최적</div>
+                </div>
+                <div class="sk-struct-card">
+                    <div class="rank">🥉 92개</div>
+                    <h4>패널 / 스토리보드형</h4>
+                    <p>PANEL 01, PANEL 02 또는 Shot 1, Shot 2 형태로 컷을 분리. 복잡한 씬 흐름을 정밀하게 제어 가능.</p>
+                    <div class="count">평균 810자 · 멀티씬·스토리 영상에 최적</div>
+                </div>
+                <div class="sk-struct-card">
+                    <div class="rank">⏱ 52개</div>
+                    <h4>타임코드 분할형</h4>
+                    <p>[0-3s], [3-7s], [7-11s] 처럼 초 단위로 씬을 나눔. 가장 정밀하게 영상 흐름을 제어할 수 있는 고급 방식.</p>
+                    <div class="count">평균 900자 이상 · 액션·SF에 최적</div>
+                </div>
+                <div class="sk-struct-card">
+                    <div class="rank">🔠 59개</div>
+                    <h4>CAPS 섹션 헤더형</h4>
+                    <p>CHARACTER:, ARENA:, TECHNICAL:, CAMERA: 등 대문자 헤더로 정보를 분류. AI가 각 요소를 독립적으로 처리.</p>
+                    <div class="count">평균 750자 · 캐릭터 중심 영상에 최적</div>
+                </div>
+                <div class="sk-struct-card">
+                    <div class="rank">🖼 46개</div>
+                    <h4>이미지 레퍼런스 + 지시형</h4>
+                    <p>"Use @image1 as reference for..." 형태로 이미지를 특정 역할에 결합. 캐릭터 일관성이나 스타일 재현에 사용.</p>
+                    <div class="count">평균 600자 · 이미지-투-비디오에 필수</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 02. 길이 -->
+        <section class="sk-section" id="length">
+            <div class="sk-section-num">02</div>
+            <h2>최적 길이와 밀도</h2>
+            <p class="sk-section-desc">길수록 무조건 좋은 것이 아닙니다. 핵심 정보의 <strong>밀도</strong>가 중요합니다. 분석 결과 200~900자 범위가 최적이었습니다.</p>
+
+            <table class="sk-table">
+                <tr><th>길이</th><th>비중</th><th>특징</th><th>적합한 용도</th></tr>
+                <tr><td>&lt; 200자</td><td>2.5%</td><td>매우 짧음. AI 창의성에 의존</td><td>실험적 컨셉 테스트</td></tr>
+                <tr><td>200~400자</td><td>25%</td><td>핵심만 담음. 간결하고 효과적</td><td>단순 씬, 자연/풍경</td></tr>
+                <tr><td>400~700자</td><td>30%</td><td>⭐ 최적 범위. 스타일+씬+카메라 포함 가능</td><td>대부분의 영상 유형</td></tr>
+                <tr><td>700~1000자</td><td>25%</td><td>상세 묘사. 캐릭터·의상·씬 분리</td><td>액션, 캐릭터 중심</td></tr>
+                <tr><td>1000자+</td><td>17%</td><td>타임라인/패널 구조 필수. 복잡한 스토리</td><td>광고, 멀티씬 영상</td></tr>
+            </table>
+
+            <div class="sk-dodont">
+                <div class="sk-do">
+                    <h4>✓ 해야 할 것</h4>
+                    <ul>
+                        <li>스타일을 먼저, 씬을 나중에</li>
+                        <li>카메라 무브먼트는 구체적으로</li>
+                        <li>조명 조건을 항상 명시</li>
+                        <li>영상 길이(duration)를 적어라</li>
+                        <li>감정·분위기를 단어로 지정</li>
+                    </ul>
+                </div>
+                <div class="sk-dont">
+                    <h4>✗ 하지 말 것</h4>
+                    <ul>
+                        <li>모순된 스타일 혼용 (realistic + cartoon)</li>
+                        <li>너무 많은 씬을 15초에 넣기</li>
+                        <li>추상적인 단어만 나열</li>
+                        <li>카메라 무브 없이 씬만 묘사</li>
+                        <li>텍스트/자막 지시 없이 넣기 기대</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- 03. 카메라 기법 -->
+        <section class="sk-section" id="camera">
+            <div class="sk-section-num">03</div>
+            <h2>카메라 기법 사전</h2>
+            <p class="sk-section-desc">분석에서 가장 자주 등장한 카메라 키워드들입니다. 복사해서 바로 프롬프트에 삽입하세요.</p>
+
+            <p class="sk-pill-label">📍 카메라 무브먼트</p>
+            <div class="sk-pills">
+                <span class="sk-pill cam" onclick="copyPill(this,'slow push-in toward subject')">slow push-in</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'pull back reveal')">pull back reveal</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'orbital tracking shot')">orbital tracking</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'handheld intimate camera')">handheld</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'gimbal smooth tracking')">gimbal smooth</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'crane shot rising')">crane shot</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'aerial drone shot')">aerial drone</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'whip pan transition')">whip pan</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'rack focus shift')">rack focus</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'dutch angle')">dutch angle</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'360 degree orbit')">360 orbit</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'steadicam glide')">steadicam glide</span>
+            </div>
+
+            <p class="sk-pill-label">🎯 샷 사이즈</p>
+            <div class="sk-pills">
+                <span class="sk-pill cam" onclick="copyPill(this,'extreme close-up')">extreme close-up</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'tight close-up')">tight close-up</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'medium shot')">medium shot</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'wide establishing shot')">wide establishing</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'ultra-wide panoramic')">ultra-wide</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'overhead bird\'s eye view')">bird's eye</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'over-the-shoulder shot')">over-the-shoulder</span>
+                <span class="sk-pill cam" onclick="copyPill(this,'POV first person')">POV first person</span>
+            </div>
+
+            <p class="sk-pill-label">⏱ 속도 & 타이밍</p>
+            <div class="sk-pills">
+                <span class="sk-pill time" onclick="copyPill(this,'slow motion 120fps')">slow motion</span>
+                <span class="sk-pill time" onclick="copyPill(this,'240fps hyper slow-motion')">240fps</span>
+                <span class="sk-pill time" onclick="copyPill(this,'timelapse accelerated')">timelapse</span>
+                <span class="sk-pill time" onclick="copyPill(this,'real-time pacing')">real-time</span>
+                <span class="sk-pill time" onclick="copyPill(this,'15-second continuous shot')">15s continuous</span>
+                <span class="sk-pill time" onclick="copyPill(this,'seamless loop')">seamless loop</span>
+            </div>
+
+            <div class="sk-code">
+                <button class="sk-copy-code" onclick="copyCode(this)">복사</button>
+                <pre><span class="hl-label">CAMERA:</span> <span class="hl-cam">Slow push-in</span> starting at medium shot, gradually closing to <span class="hl-cam">tight close-up</span> on subject's eyes.
+<span class="hl-label">MOVEMENT:</span> <span class="hl-cam">Gimbal-stabilized</span>, smooth and deliberate. No cuts.
+<span class="hl-label">LENS:</span> <span class="hl-cam">Anamorphic 35mm</span>, shallow depth of field, soft bokeh background.
+<span class="hl-label">FRAME:</span> <span class="hl-value">16:9</span>, <span class="hl-time">15 seconds</span> duration.</pre>
+            </div>
+        </section>
+
+        <!-- 04. 스타일 & 품질 수식어 -->
+        <section class="sk-section" id="style">
+            <div class="sk-section-num">04</div>
+            <h2>스타일 & 품질 수식어</h2>
+            <p class="sk-section-desc">상위 크리에이터들이 가장 많이 사용한 수식어들입니다. 계층적으로 쌓으면 효과가 배가됩니다.</p>
+
+            <p class="sk-pill-label">🏆 품질 수식어 (사용 빈도순)</p>
+            <div class="sk-pills">
+                <span class="sk-pill qual" onclick="copyPill(this,'ultra-cinematic')">ultra (521)</span>
+                <span class="sk-pill qual" onclick="copyPill(this,'hyper-realistic')">hyper (181)</span>
+                <span class="sk-pill qual" onclick="copyPill(this,'photorealistic')">photorealistic (103)</span>
+                <span class="sk-pill qual" onclick="copyPill(this,'4K resolution')">4K (112)</span>
+                <span class="sk-pill qual" onclick="copyPill(this,'IMAX cinematic quality')">IMAX (47)</span>
+                <span class="sk-pill qual" onclick="copyPill(this,'8K ultra-detailed')">8K (49)</span>
+                <span class="sk-pill qual" onclick="copyPill(this,'professional broadcast quality')">broadcast quality</span>
+                <span class="sk-pill qual" onclick="copyPill(this,'AAA visual quality')">AAA</span>
+                <span class="sk-pill qual" onclick="copyPill(this,'cinematic realism')">cinematic realism (31)</span>
+            </div>
+
+            <p class="sk-pill-label">🎨 렌더링 스타일</p>
+            <div class="sk-pills">
+                <span class="sk-pill style" onclick="copyPill(this,'anamorphic film grain')">anamorphic</span>
+                <span class="sk-pill style" onclick="copyPill(this,'35mm film grain')">35mm film grain</span>
+                <span class="sk-pill style" onclick="copyPill(this,'Pixar 3D animation style')">Pixar style</span>
+                <span class="sk-pill style" onclick="copyPill(this,'Studio Ghibli aesthetic')">Ghibli aesthetic</span>
+                <span class="sk-pill style" onclick="copyPill(this,'anime cel-shading')">anime style</span>
+                <span class="sk-pill style" onclick="copyPill(this,'watercolor animation')">watercolor</span>
+                <span class="sk-pill style" onclick="copyPill(this,'clay animation Claymation')">clay animation</span>
+                <span class="sk-pill style" onclick="copyPill(this,'documentary found footage')">found footage</span>
+                <span class="sk-pill style" onclick="copyPill(this,'TikTok/Reels vertical format 9:16')">TikTok/Reels 9:16</span>
+            </div>
+
+            <p class="sk-pill-label">💡 조명 키워드</p>
+            <div class="sk-pills">
+                <span class="sk-pill style" onclick="copyPill(this,'golden hour warm light')">golden hour</span>
+                <span class="sk-pill style" onclick="copyPill(this,'dramatic rim lighting')">rim lighting</span>
+                <span class="sk-pill style" onclick="copyPill(this,'volumetric god rays')">god rays</span>
+                <span class="sk-pill style" onclick="copyPill(this,'neon-lit atmosphere')">neon-lit</span>
+                <span class="sk-pill style" onclick="copyPill(this,'natural soft daylight')">natural daylight</span>
+                <span class="sk-pill style" onclick="copyPill(this,'harsh backlit silhouette')">backlit</span>
+                <span class="sk-pill style" onclick="copyPill(this,'studio three-point lighting')">studio lighting</span>
+                <span class="sk-pill style" onclick="copyPill(this,'moonlight cold blue tones')">moonlight</span>
+            </div>
+
+            <p class="sk-pill-label">🌫 분위기/파티클</p>
+            <div class="sk-pills">
+                <span class="sk-pill style" onclick="copyPill(this,'volumetric fog atmosphere')">fog (81)</span>
+                <span class="sk-pill style" onclick="copyPill(this,'floating dust particles')">dust (100)</span>
+                <span class="sk-pill style" onclick="copyPill(this,'ember sparks flying')">embers</span>
+                <span class="sk-pill style" onclick="copyPill(this,'motion blur on fast movement')">motion blur (88)</span>
+                <span class="sk-pill style" onclick="copyPill(this,'heavy smoke atmosphere')">smoke (63)</span>
+                <span class="sk-pill style" onclick="copyPill(this,'lens flare anamorphic')">lens flare</span>
+            </div>
+
+            <div class="sk-formula">
+                <h4>품질 수식어 계층 공식</h4>
+                <div class="formula-row">
+                    <span class="f-box">해상도</span>
+                    <span class="f-op">+</span>
+                    <span class="f-box">렌더 스타일</span>
+                    <span class="f-op">+</span>
+                    <span class="f-box">품질 레벨</span>
+                    <span class="f-op">+</span>
+                    <span class="f-box">특수 효과</span>
+                </div>
+                <div class="formula-row" style="margin-top:.6rem;font-size:.82rem;color:var(--text-muted)">
+                    예: <em>"4K · anamorphic 35mm · ultra-cinematic · film grain + volumetric fog"</em>
+                </div>
+            </div>
+        </section>
+
+        <!-- 05. 네거티브 프롬프트 -->
+        <section class="sk-section" id="negative">
+            <div class="sk-section-num">05</div>
+            <h2>네거티브 프롬프트</h2>
+            <p class="sk-section-desc">991개 중 62개(6%)만 사용했지만, 고품질 결과물에서는 필수입니다. 원하지 않는 요소를 명확히 배제하세요.</p>
+
+            <div class="sk-pills">
+                <span class="sk-pill neg" onclick="copyPill(this,'no text overlays')">no text</span>
+                <span class="sk-pill neg" onclick="copyPill(this,'no subtitles or captions')">no subtitles</span>
+                <span class="sk-pill neg" onclick="copyPill(this,'no watermarks')">no watermarks</span>
+                <span class="sk-pill neg" onclick="copyPill(this,'no UI elements')">no UI</span>
+                <span class="sk-pill neg" onclick="copyPill(this,'no logo')">no logo</span>
+                <span class="sk-pill neg" onclick="copyPill(this,'avoid jank or artifacts')">no jank</span>
+                <span class="sk-pill neg" onclick="copyPill(this,'no morphing or distortion')">no morphing</span>
+                <span class="sk-pill neg" onclick="copyPill(this,'no camera shake')">no shake</span>
+                <span class="sk-pill neg" onclick="copyPill(this,'no cuts, one continuous shot')">no cuts</span>
+                <span class="sk-pill neg" onclick="copyPill(this,'avoid AI artifacts')">no artifacts</span>
+            </div>
+
+            <div class="sk-code">
+                <button class="sk-copy-code" onclick="copyCode(this)">복사</button>
+                <pre><span class="hl-neg">NEGATIVE:</span> No text overlays, no watermarks, no UI elements, no logo.
+No cuts — continuous single shot only.
+Avoid AI morphing artifacts, jank, or distortion.
+No camera shake unless intentionally specified.</pre>
+            </div>
+        </section>
+
+        <!-- 06. 황금 공식 & 템플릿 -->
+        <section class="sk-section" id="formula">
+            <div class="sk-section-num">06</div>
+            <h2>황금 공식 & 완성형 템플릿</h2>
+            <p class="sk-section-desc">분석 결과를 바탕으로 만든 복붙 바로 가능한 템플릿입니다. 탭을 선택하고 수정해서 사용하세요.</p>
+
+            <div class="sk-template-tabs">
+                <button class="sk-tab active" onclick="showTab('basic')">기본형</button>
+                <button class="sk-tab" onclick="showTab('timeline')">타임라인형</button>
+                <button class="sk-tab" onclick="showTab('character')">캐릭터형</button>
+                <button class="sk-tab" onclick="showTab('commercial')">광고/패션형</button>
+                <button class="sk-tab" onclick="showTab('action')">액션형</button>
+            </div>
+
+            <div id="tab-basic" class="sk-template-content active">
+                <div class="sk-code">
+                    <button class="sk-copy-code" onclick="copyCode(this)">복사</button>
+                    <pre><span class="hl-label">STYLE:</span> <span class="hl-value">[스타일: cinematic / realistic / anime 등]</span>, ultra-detailed, 4K
+<span class="hl-label">DURATION:</span> <span class="hl-time">15 seconds</span>
+<span class="hl-label">ASPECT:</span> <span class="hl-value">16:9</span>
+
+<span class="hl-value">[씬 묘사]</span>. <span class="hl-value">[분위기/장소]</span>, <span class="hl-value">[조명 조건]</span>.
+
+<span class="hl-label">CAMERA:</span> <span class="hl-cam">[카메라 무브먼트]</span>. <span class="hl-cam">[렌즈: 35mm / anamorphic]</span>, shallow depth of field.
+
+<span class="hl-label">MOOD:</span> <span class="hl-value">[감정/분위기 단어]</span>. Cinematic pacing.
+
+<span class="hl-neg">NO TEXT. NO WATERMARK. NO CUTS.</span></pre>
+                </div>
+            </div>
+
+            <div id="tab-timeline" class="sk-template-content">
+                <div class="sk-code">
+                    <button class="sk-copy-code" onclick="copyCode(this)">복사</button>
+                    <pre><span class="hl-label">STYLE:</span> <span class="hl-value">Ultra-cinematic [스타일]</span> | <span class="hl-time">15 seconds total</span> | <span class="hl-value">16:9</span>
+
+<span class="hl-time">[0–4s]</span> <span class="hl-cam">Establishing wide shot</span>. <span class="hl-value">[오프닝 씬 묘사]</span>.
+         카메라: <span class="hl-cam">[무브먼트]</span>. 조명: <span class="hl-value">[조명 조건]</span>.
+
+<span class="hl-time">[4–10s]</span> <span class="hl-cam">Close-up</span> on <span class="hl-value">[주요 액션/캐릭터]</span>.
+         <span class="hl-value">[핵심 씬 전개]</span>. 분위기 고조.
+
+<span class="hl-time">[10–15s]</span> <span class="hl-cam">Pull back / wide reveal</span>. <span class="hl-value">[클라이맥스/마무리]</span>.
+         엔딩 무드: <span class="hl-value">[감정]</span>.
+
+<span class="hl-label">TECHNICAL:</span> <span class="hl-qual">4K, anamorphic lens, film grain, volumetric atmosphere</span>
+<span class="hl-neg">NO TEXT · NO CUTS BETWEEN SECTIONS · NO ARTIFACTS</span></pre>
+                </div>
+            </div>
+
+            <div id="tab-character" class="sk-template-content">
+                <div class="sk-code">
+                    <button class="sk-copy-code" onclick="copyCode(this)">복사</button>
+                    <pre><span class="hl-label">CHARACTER:</span> <span class="hl-value">[성별/나이]</span>, <span class="hl-value">[헤어/특징]</span>, <span class="hl-value">[의상 상세]</span>.
+           표정: <span class="hl-value">[감정]</span>. 체형: <span class="hl-value">[묘사]</span>.
+
+<span class="hl-label">SETTING:</span> <span class="hl-value">[장소]</span>, <span class="hl-value">[시간대]</span>, <span class="hl-value">[날씨/분위기]</span>.
+
+<span class="hl-label">ACTION:</span> <span class="hl-value">[캐릭터 행동 묘사]</span>. Fluid, natural movement.
+
+<span class="hl-label">CAMERA:</span> <span class="hl-cam">[카메라 무브]</span> capturing <span class="hl-value">[포커스 포인트]</span>.
+         Lens: <span class="hl-cam">85mm portrait</span>, shallow DoF, bokeh background.
+
+<span class="hl-label">STYLE:</span> <span class="hl-qual">Photorealistic, 4K, soft natural lighting</span>
+<span class="hl-time">DURATION: 15 seconds</span>
+<span class="hl-neg">NO TEXT · NO WATERMARK</span></pre>
+                </div>
+            </div>
+
+            <div id="tab-commercial" class="sk-template-content">
+                <div class="sk-code">
+                    <button class="sk-copy-code" onclick="copyCode(this)">복사</button>
+                    <pre><span class="hl-value">[브랜드/제품명]</span> commercial video. <span class="hl-time">15 seconds</span>.
+
+HERO: <span class="hl-value">[모델 묘사]</span> in <span class="hl-value">[의상]</span>.
+      Skin: flawless, natural texture. Expression: confident, aspirational.
+
+PRODUCT: <span class="hl-value">[제품 묘사]</span>. Material: <span class="hl-value">[소재]</span>. Color: <span class="hl-value">[색상]</span>.
+
+<span class="hl-label">CAMERA SEQUENCE:</span>
+  — <span class="hl-cam">Hero wide shot</span>: full look reveal
+  — <span class="hl-cam">Macro close-up</span>: product detail / texture
+  — <span class="hl-cam">Slow-motion</span>: fabric movement / liquid pour
+  — <span class="hl-cam">Beauty shot</span>: final editorial pose
+
+<span class="hl-label">LIGHTING:</span> <span class="hl-value">Soft studio key light, gold reflector fill, dramatic rim.</span>
+<span class="hl-qual">QUALITY: Ultra-premium, Vogue editorial, 4K, anamorphic</span>
+<span class="hl-neg">NO TEXT · NO LOGOS · SEAMLESS LOOP OPTIONAL</span></pre>
+                </div>
+            </div>
+
+            <div id="tab-action" class="sk-template-content">
+                <div class="sk-code">
+                    <button class="sk-copy-code" onclick="copyCode(this)">복사</button>
+                    <pre><span class="hl-label">SCENE:</span> <span class="hl-value">[전투/액션 배경]</span>. Obliterated, chaotic atmosphere.
+       Environment: <span class="hl-value">[파티클: embers / dust / sparks / debris]</span>.
+
+<span class="hl-label">CHARACTER A:</span> <span class="hl-value">[외형]</span>, <span class="hl-value">[무기/장비]</span>, <span class="hl-value">[전투 스타일]</span>.
+<span class="hl-label">CHARACTER B:</span> <span class="hl-value">[외형]</span>, <span class="hl-value">[무기/장비]</span>, <span class="hl-value">[전투 스타일]</span>.
+
+<span class="hl-time">[0–5s]</span>  Tense standoff. <span class="hl-cam">Slow orbit</span> around combatants.
+<span class="hl-time">[5–10s]</span> Explosive clash. <span class="hl-cam">Dynamic handheld tracking</span>. Sparks, shockwave.
+<span class="hl-time">[10–15s]</span> <span class="hl-cam">Slow-motion</span> finishing sequence. <span class="hl-cam">Pull-back wide reveal</span>.
+
+<span class="hl-label">TECHNICAL:</span> <span class="hl-qual">Hyperrealistic cinematic, 4K, anamorphic lens flare,
+             volumetric dust, motion blur on impact, Dolby Vision HDR</span>
+<span class="hl-neg">NO TEXT · CONTINUOUS SHOT · NO MORPHING ARTIFACTS</span></pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- 07. 장르별 특화 기법 -->
+        <section class="sk-section" id="bygenre">
+            <div class="sk-section-num">07</div>
+            <h2>장르별 특화 기법</h2>
+            <p class="sk-section-desc">태그별 분석에서 발견한 장르별 고유 패턴입니다.</p>
+
+            <div class="sk-insights">
+                <div class="sk-insight">
+                    <div class="icon">🎬</div>
+                    <h4>Cinematic (486개)</h4>
+                    <p>평균 723자. "anamorphic", "film grain", "IMAX" 필수. 조명 묘사 매우 상세. 타임코드 구조 선호.</p>
+                </div>
+                <div class="sk-insight">
+                    <div class="icon">⚔️</div>
+                    <h4>Action (265개)</h4>
+                    <p>평균 680자. 파티클 키워드(sparks/embers/dust) 필수. 캐릭터 LOCKED 선언 → 타임라인 분할.</p>
+                </div>
+                <div class="sk-insight">
+                    <div class="icon">📷</div>
+                    <h4>Realistic (169개)</h4>
+                    <p>평균 739자. "photorealistic", "natural light" 강조. handheld 카메라. POV/first person 빈번.</p>
+                </div>
+                <div class="sk-insight">
+                    <div class="icon">🐉</div>
+                    <h4>Fantasy (123개)</h4>
+                    <p>평균 710자. 스케일 강조("colossal", "vast", "enormous"). 마법 파티클 묘사 필수. 황금빛 조명.</p>
+                </div>
+                <div class="sk-insight">
+                    <div class="icon">🎨</div>
+                    <h4>Animation (116개)</h4>
+                    <p>평균 769자 — 가장 긺. 스타일 레퍼런스 필수(Pixar/Ghibli). 색상 팔레트를 PALETTE: 헤더로 명시.</p>
+                </div>
+                <div class="sk-insight">
+                    <div class="icon">🤖</div>
+                    <h4>Anime (67개)</h4>
+                    <p>평균 747자. 캐릭터 디테일 극도로 상세. "speed lines", "cel-shading" 명시. 의상/무기 상세 묘사.</p>
+                </div>
+                <div class="sk-insight">
+                    <div class="icon">😂</div>
+                    <h4>Comedy (66개)</h4>
+                    <p>평균 733자. 상황 설정이 핵심. 리액션 묘사 상세. 카메라는 단순하게 — handheld, POV.</p>
+                </div>
+                <div class="sk-insight">
+                    <div class="icon">👗</div>
+                    <h4>Fashion (23개)</h4>
+                    <p>평균 717자. 의상 소재·컬러·브랜드 필수. 모델 피부/표정 묘사. 뷰티샷 → 슬로우모션 순서.</p>
+                </div>
+                <div class="sk-insight">
+                    <div class="icon">🍜</div>
+                    <h4>Food (53개)</h4>
+                    <p>평균 717자. 매크로 클로즈업 필수. 증기/질감 묘사. 오버헤드 → 사이드 앵글 순서가 표준.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- 08. 체크리스트 -->
+        <section class="sk-section" id="checklist">
+            <div class="sk-section-num">08</div>
+            <h2>프롬프트 완성 체크리스트</h2>
+            <p class="sk-section-desc">생성 전 반드시 확인하세요. 항목을 클릭해서 체크할 수 있습니다.</p>
+
+            <ul class="sk-checklist" id="sk-checklist">
+                <li>
+                    <div class="sk-check" onclick="toggleCheck(this)"></div>
+                    <div class="sk-cl-text">
+                        <strong>스타일 선언</strong>
+                        <span>프롬프트 첫 줄에 STYLE: 또는 스타일 형용사를 명시했는가?</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="sk-check" onclick="toggleCheck(this)"></div>
+                    <div class="sk-cl-text">
+                        <strong>영상 길이 명시</strong>
+                        <span>DURATION: 15 seconds 또는 "15-second" 표현이 포함되어 있는가?</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="sk-check" onclick="toggleCheck(this)"></div>
+                    <div class="sk-cl-text">
+                        <strong>카메라 무브먼트</strong>
+                        <span>push-in / pull-back / orbit / tracking 등 구체적인 카메라 동작이 있는가?</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="sk-check" onclick="toggleCheck(this)"></div>
+                    <div class="sk-cl-text">
+                        <strong>조명 조건</strong>
+                        <span>golden hour / studio / dramatic / natural light 등 조명 상태를 명시했는가?</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="sk-check" onclick="toggleCheck(this)"></div>
+                    <div class="sk-cl-text">
+                        <strong>품질 수식어</strong>
+                        <span>ultra / hyper / 4K / cinematic realism 등 품질 키워드가 포함되어 있는가?</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="sk-check" onclick="toggleCheck(this)"></div>
+                    <div class="sk-cl-text">
+                        <strong>분위기 파티클</strong>
+                        <span>fog / dust / embers / smoke 등 분위기를 강화하는 파티클을 추가했는가?</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="sk-check" onclick="toggleCheck(this)"></div>
+                    <div class="sk-cl-text">
+                        <strong>네거티브 프롬프트</strong>
+                        <span>NO TEXT / NO WATERMARK / NO CUTS 등 제외 요소를 명시했는가?</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="sk-check" onclick="toggleCheck(this)"></div>
+                    <div class="sk-cl-text">
+                        <strong>길이 확인</strong>
+                        <span>프롬프트가 최소 300자 이상이며 핵심 정보가 빠짐없이 담겨 있는가?</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="sk-check" onclick="toggleCheck(this)"></div>
+                    <div class="sk-cl-text">
+                        <strong>모순 없음</strong>
+                        <span>realistic + cartoon처럼 상충하는 스타일 지시가 없는가?</span>
+                    </div>
+                </li>
+                <li>
+                    <div class="sk-check" onclick="toggleCheck(this)"></div>
+                    <div class="sk-cl-text">
+                        <strong>종횡비 명시</strong>
+                        <span>16:9 / 9:16 / 1:1 등 출력 종횡비를 지정했는가?</span>
+                    </div>
+                </li>
+            </ul>
+
+            <div style="margin-top:2rem;padding:1.5rem;background:var(--bg-light);border-radius:10px;text-align:center;">
+                <p style="font-size:.9rem;color:var(--text-muted);margin-bottom:1rem;">프롬프트 갤러리에서 실제 예시를 확인하세요</p>
+                <a href="/prompts/" class="btn-premium" style="font-size:.85rem;padding:.9rem 2.5rem;">991개 프롬프트 갤러리 →</a>
+            </div>
+        </section>
+
+    </div>
+    </main>
+
+    <sg-footer></sg-footer>
+    <script defer src="/main.js" type="module"></script>
+
+    <script>
+    // 탭 전환
+    function showTab(name) {
+        document.querySelectorAll('.sk-template-content').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.sk-tab').forEach(el => el.classList.remove('active'));
+        document.getElementById('tab-'+name).classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    // 코드 복사
+    function copyCode(btn) {
+        const pre = btn.nextElementSibling;
+        const text = pre.textContent;
+        navigator.clipboard.writeText(text.trim()).then(() => {
+            btn.textContent = '✓ 복사됨';
+            btn.classList.add('copied');
+            setTimeout(() => { btn.textContent = '복사'; btn.classList.remove('copied'); }, 2000);
+        });
+    }
+
+    // 필 복사
+    function copyPill(el, text) {
+        navigator.clipboard.writeText(text).then(() => {
+            const orig = el.textContent;
+            el.textContent = '✓';
+            setTimeout(() => el.textContent = orig, 1200);
+        });
+    }
+
+    // 체크리스트
+    function toggleCheck(el) {
+        el.classList.toggle('done');
+        el.textContent = el.classList.contains('done') ? '✓' : '';
+    }
+
+    // Reveal
+    document.addEventListener('DOMContentLoaded', () => {
+        const obs = new IntersectionObserver(entries => {
+            entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('active'); });
+        }, { threshold: 0.08 });
+        document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    });
+    </script>
+</body>
+</html>
