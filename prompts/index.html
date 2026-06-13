@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Gallery — SORIGRIM</title>
+    <meta name="description" content="AI 영상·이미지 생성에 바로 쓸 수 있는 정제된 프롬프트 컬렉션. Seedance 2.0, Runway, Kling 등 최신 AI 모델용 프롬프트를 필터링하고 복사하세요.">
+    <link rel="canonical" href="https://sorigrim.com/prompts/">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/style.css">
+    <style>
+        /* ── Page Layout ── */
+        .pg-page { padding-top: 7rem; min-height: 100vh; background: var(--bg-white); }
+        .pg-header { padding: 4rem 0 3rem; border-bottom: 1px solid var(--border); margin-bottom: 3rem; }
+        .pg-header h1 { font-size: clamp(2.2rem, 5vw, 4rem); font-weight: 800; letter-spacing: -0.04em; margin-bottom: .8rem; }
+        .pg-header p  { color: var(--text-muted); font-size: 1.05rem; max-width: 560px; line-height: 1.7; }
+        .pg-meta { margin-top: 1.2rem; font-size: .8rem; color: var(--text-muted); display: flex; gap: 1.5rem; flex-wrap: wrap; }
+        .pg-meta span { display: flex; align-items: center; gap: .4rem; }
+
+        /* ── Search ── */
+        .pg-search-wrap { position: relative; margin-bottom: 2rem; max-width: 480px; }
+        .pg-search-wrap svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
+        #pg-search { width: 100%; padding: .75rem 1rem .75rem 2.8rem; border: 1px solid var(--border); background: var(--bg-white); color: var(--text-main); font-size: .9rem; border-radius: 8px; font-family: inherit; transition: .25s; }
+        #pg-search:focus { outline: none; border-color: var(--primary); }
+
+        /* ── Filters ── */
+        .pg-filters { display: flex; flex-direction: column; gap: 1rem; margin-bottom: 2.5rem; }
+        .pg-filter-row { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; }
+        .pg-filter-label { font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted); white-space: nowrap; min-width: 3.5rem; }
+        .pg-tags { display: flex; gap: .45rem; flex-wrap: wrap; }
+        .pg-tag { padding: .38rem 1rem; border: 1px solid var(--border); background: transparent; color: var(--text-muted); font-size: .78rem; font-weight: 600; border-radius: 100px; cursor: pointer; transition: .22s; font-family: inherit; white-space: nowrap; }
+        .pg-tag:hover  { border-color: var(--primary); color: var(--primary); }
+        .pg-tag.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+        /* ── Stats bar ── */
+        .pg-stats { font-size: .82rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+        .pg-stats strong { color: var(--primary); }
+
+        /* ── Grid ── */
+        .pg-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.6rem; }
+        @media (max-width: 1100px) { .pg-grid { grid-template-columns: repeat(2,1fr); } }
+        @media (max-width: 640px)  { .pg-grid { grid-template-columns: 1fr; } }
+
+        /* ── Card ── */
+        .pg-card { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--bg-white); transition: .45s cubic-bezier(.19,1,.22,1); cursor: pointer; display: flex; flex-direction: column; }
+        .pg-card:hover { transform: translateY(-7px); border-color: var(--primary); box-shadow: 0 20px 50px rgba(0,0,0,.1); }
+        .pg-card.hidden { display: none; }
+
+        .pg-thumb { height: 165px; position: relative; overflow: hidden; background: #111; flex-shrink: 0; }
+        .pg-thumb img { width: 100%; height: 100%; object-fit: cover; transition: transform .6s cubic-bezier(.19,1,.22,1); display: block; }
+        .pg-card:hover .pg-thumb img { transform: scale(1.06); }
+        .pg-thumb-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); }
+        .pg-thumb-placeholder svg { opacity: .3; }
+
+        .pg-type-badge { position: absolute; top: .8rem; left: .8rem; z-index: 2; font-size: .65rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: rgba(255,255,255,.92); background: rgba(0,0,0,.5); padding: .28rem .65rem; border-radius: 100px; backdrop-filter: blur(6px); }
+        .pg-play-btn { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0); transition: .3s; z-index: 3; }
+        .pg-play-btn svg { opacity: 0; transform: scale(.8); transition: .3s; filter: drop-shadow(0 2px 8px rgba(0,0,0,.5)); }
+        .pg-card:hover .pg-play-btn svg { opacity: 1; transform: scale(1); }
+
+        .pg-body { padding: 1.3rem; display: flex; flex-direction: column; gap: .85rem; flex: 1; }
+        .pg-badges { display: flex; gap: .4rem; flex-wrap: wrap; }
+        .pg-badge { font-size: .68rem; font-weight: 700; color: var(--primary); background: rgba(212,175,55,.1); border: 1px solid rgba(212,175,55,.25); padding: .2rem .6rem; border-radius: 100px; text-transform: uppercase; letter-spacing: .05em; }
+
+        .pg-prompt { font-size: .875rem; color: var(--text-muted); line-height: 1.68; flex: 1; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+
+        .pg-actions { display: flex; gap: .6rem; margin-top: auto; }
+        .pg-btn { display: inline-flex; align-items: center; gap: .4rem; padding: .55rem 1rem; font-size: .78rem; font-weight: 600; border-radius: 6px; cursor: pointer; transition: .22s; font-family: inherit; border: 1px solid var(--border); background: transparent; color: var(--text-muted); }
+        .pg-btn:hover { border-color: var(--primary); color: var(--primary); }
+        .pg-btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+        .pg-btn.primary:hover { background: #b8960f; border-color: #b8960f; }
+        .pg-btn.copied { background: #22c55e; border-color: #22c55e; color: #fff; }
+
+        /* ── Empty state ── */
+        .pg-empty { display: none; text-align: center; padding: 6rem 0; }
+        .pg-empty svg { opacity: .2; margin-bottom: 1rem; }
+        .pg-empty p { color: var(--text-muted); }
+
+        /* ── Modal ── */
+        .pg-modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.85); z-index: 9999; align-items: center; justify-content: center; padding: 1.5rem; backdrop-filter: blur(8px); }
+        .pg-modal-bg.open { display: flex; }
+        .pg-modal { background: var(--bg-white); border-radius: 16px; max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; position: relative; }
+        .pg-modal-close { position: absolute; top: 1rem; right: 1rem; background: rgba(0,0,0,.08); border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; color: var(--text-main); transition: .2s; z-index: 10; }
+        .pg-modal-close:hover { background: rgba(212,175,55,.15); color: var(--primary); }
+
+        .pg-modal-video { background: #000; border-radius: 12px 12px 0 0; overflow: hidden; min-height: 200px; display: flex; align-items: center; justify-content: center; }
+        .pg-modal-video .twitter-embed-wrap { width: 100%; padding: 1rem; display: flex; justify-content: center; }
+        .pg-modal-video .tw-loading { color: rgba(255,255,255,.4); font-size: .85rem; padding: 3rem; text-align: center; }
+
+        .pg-modal-body { padding: 2rem; }
+        .pg-modal-tags { display: flex; gap: .45rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .pg-modal-prompt { font-size: .9rem; line-height: 1.75; color: var(--text-muted); background: var(--bg-light); border-left: 3px solid var(--primary); border-radius: 0 6px 6px 0; padding: 1.2rem 1.4rem; margin-bottom: 1.5rem; white-space: pre-wrap; word-break: break-word; }
+        .pg-modal-actions { display: flex; gap: .8rem; flex-wrap: wrap; }
+
+        /* ── Source credit ── */
+        .pg-source { text-align: center; padding: 4rem 0 2rem; color: var(--text-muted); font-size: .82rem; }
+        .pg-source a { color: var(--primary); text-decoration: none; }
+
+        @media (max-width: 768px) {
+            .pg-header { padding: 2.5rem 0 2rem; }
+            .pg-page { padding-top: 5rem; }
+        }
+    </style>
+</head>
+<body>
+    <nav id="global-nav">
+        <a href="/" class="brand">SORIGRIM</a>
+        <div class="nav-links">
+            <a href="/portfolio/">아카이브</a>
+            <a href="/prompts/" style="color:var(--primary);">프롬프트</a>
+        </div>
+    </nav>
+
+    <main class="pg-page">
+        <div class="container">
+            <div class="pg-header">
+                <h2 class="reveal section-title" style="margin-bottom:.6rem;">Prompt Gallery.</h2>
+                <p class="reveal">AI 영상·이미지 생성에 바로 쓸 수 있는 프롬프트 컬렉션입니다.<br>카드를 클릭하면 실제 결과 영상을 볼 수 있습니다.</p>
+                <div class="pg-meta">
+                    <span>
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        Source: <a href="https://www.scenic.sh" target="_blank" rel="noopener" style="color:var(--primary);">scenic.sh</a> — Seedance 2.0 Prompt Gallery
+                    </span>
+                </div>
+            </div>
+
+            <!-- 검색 -->
+            <div class="pg-search-wrap reveal">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" id="pg-search" placeholder="프롬프트 검색...">
+            </div>
+
+            <!-- 필터 -->
+            <div class="pg-filters reveal">
+                <div class="pg-filter-row">
+                    <span class="pg-filter-label">장르</span>
+                    <div class="pg-tags" id="pg-genre-tags"></div>
+                </div>
+                <div class="pg-filter-row">
+                    <span class="pg-filter-label">스타일</span>
+                    <div class="pg-tags" id="pg-style-tags"></div>
+                </div>
+            </div>
+
+            <!-- 통계 -->
+            <p class="pg-stats reveal">총 <strong id="pg-count">0</strong>개의 프롬프트</p>
+
+            <!-- 그리드 -->
+            <div class="pg-grid" id="pg-grid"></div>
+
+            <!-- 빈 상태 -->
+            <div class="pg-empty" id="pg-empty">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <p>검색 결과가 없습니다.</p>
+            </div>
+
+            <div class="pg-source">
+                Data sourced from <a href="https://www.scenic.sh" target="_blank" rel="noopener">scenic.sh</a> · Videos hosted on <a href="https://x.com" target="_blank" rel="noopener">X (Twitter)</a>
+            </div>
+        </div>
+    </main>
+
+    <!-- 모달 -->
+    <div class="pg-modal-bg" id="pg-modal-bg">
+        <div class="pg-modal" id="pg-modal">
+            <button class="pg-modal-close" id="pg-modal-close" aria-label="닫기">✕</button>
+            <div class="pg-modal-video" id="pg-modal-video"></div>
+            <div class="pg-modal-body">
+                <div class="pg-modal-tags" id="pg-modal-tags"></div>
+                <div class="pg-modal-prompt" id="pg-modal-prompt"></div>
+                <div class="pg-modal-actions" id="pg-modal-actions"></div>
+            </div>
+        </div>
+    </div>
+
+    <sg-footer></sg-footer>
+    <script defer src="/main.js" type="module"></script>
+    <script async src="https://platform.twitter.com/widgets.js"></script>
+
+    <script>
+    // ── 전체 프롬프트 데이터셋 ──
+    const SUPABASE = 'https://wjvqayfliyzimffhxdld.supabase.co/storage/v1/object/public/thumbnails/references/';
+    function thumb(tweetId) { return SUPABASE + tweetId + '-0.jpg'; }
+    function tweetId(url) { return url ? url.split('/status/')[1] : null; }
+
+    const PROMPTS = [
+      {
+        id: '3e290dcc',
+        prompt: 'Create a hyper-cinematic extreme street BMX video. image1 = strict identity and outfit reference for the rider: keep her exact face, blue eyes, long straight black hair, body proportions, white sporty cropped top, airy white mesh skirt, white socks, white sneakers, and natural skin texture. Shot in Istanbul\'s Galata district at sunrise, 15-second continuous shot featuring BMX tricks over cobblestone streets, dramatic tracking camera, golden hour light, cinematic grain.',
+        twitterUrl: 'https://x.com/ai_gezgini/status/2057018080396521624',
+        tags: ['Action', 'Cinematic']
+      },
+      {
+        id: '823cf813',
+        prompt: 'Ultra-cinematic fantasy desert sequence featuring an enormous wandering kingdom carried on the backs of gigantic walking creatures crossing endless dunes beneath a blazing sun. Sweeping aerial establishing shots reveal the colossal scale — entire cities built atop the creatures\' backs, with markets, temples, and towers swaying with each step. Volumetric dust clouds, heat shimmer, distant thunderstorms.',
+        twitterUrl: 'https://x.com/LudovicCreator/status/2057023581435883843',
+        tags: ['Fantasy', 'Cinematic']
+      },
+      {
+        id: '7755a239',
+        prompt: 'Use @[image1] as the exact character reference for the wild mountain boy student. Use @[image2] as the exact character reference for the immortal sage master. Create a 15-second cinematic anime action video of a high-speed martial arts training scene in a misty mountain dojo. Dynamic camera language, energy clash visual effects, anime-style speed lines, dramatic lighting shifts.',
+        twitterUrl: 'https://x.com/gptproto/status/2056984488434168013',
+        tags: ['Anime', 'Action']
+      },
+      {
+        id: '8c00d66f',
+        prompt: '10-second retro-cinematic animation of a camel on a yellow Bajaj scooter tearing through a desert market on "Hump Day." Seven detailed panels with specific shot types, character actions, camera movements, visual effects, and voice-over narration emphasizing the camel\'s confident attitude. Vintage film grain, warm orange tones.',
+        twitterUrl: 'https://x.com/CurieuxExplorer/status/2056991395500749242',
+        tags: ['Animation', 'Action']
+      },
+      {
+        id: 'ebeb4353',
+        prompt: 'Ultra-realistic cinematic macro live-action video of a tiny human woman from @image1 living naturally inside a real-world environment. Three detailed scenes: kitchen countertop exploration, bookshelf climbing, and windowsill sunset moment. Photorealistic scale illusion, natural lighting, no visual effects artifacts.',
+        twitterUrl: 'https://x.com/SimplyAnnisa/status/2056992802186178905',
+        tags: ['Realistic', 'Cinematic']
+      },
+      {
+        id: '4fa512f7',
+        prompt: 'A human fighter battling a powerful humanoid AI robot in a high-tech facility. Metal impacts sending sparks flying, powerful punches causing shockwaves, dynamic camera angles, slow motion finishing moves, intense lighting flashes, cinematic VFX, blockbuster sci-fi fight scene, ultra realistic, 4K. Camera weaves between combatants capturing every impact.',
+        twitterUrl: 'https://x.com/Itswsm105f/status/2056967677994795446',
+        tags: ['Sci Fi', 'Action']
+      },
+      {
+        id: 'e9dce788',
+        prompt: 'DURATION: 15 seconds. STYLE: Viral cinematic daily-life vlog, ultra-realistic 4K, soft natural lighting, dreamy lifestyle aesthetic, authentic candid moments, handheld camera energy, cozy but modern vibe, emotionally addictive visuals, smooth TikTok/Reels-style transitions, realistic everyday beauty. Morning routine sequence showing coffee, journaling, golden hour window light.',
+        twitterUrl: 'https://x.com/kingofdairyque/status/2056968124696867056',
+        tags: ['Realistic', 'Cinematic']
+      },
+      {
+        id: 'b1608916',
+        prompt: '[0-3s] Nova sits in dark underground server room, hundreds of holographic screens floating around her, neon blue light painting her face. Fingers hovering over virtual keyboard. Camera slow push-in on glowing eyes.\n[3-7s] She begins hacking — fingers move at impossible speed across holographic interface. Data streams flow visibly through her robotic arm up into her neck jack.\n[7-11s] Alarm triggers — red light floods room. She stands, robotic arm transforms into energy weapon. Her circuit tattoos pulse bright white.\n[11-15s] She fires — massive energy beam. Camera cuts to outside city view, entire building\'s power grid explodes outward in cascade.',
+        twitterUrl: 'https://x.com/Strength04_X/status/2056976453842219323',
+        tags: ['Sci Fi', 'Cinematic']
+      },
+      {
+        id: '6e6bda4d',
+        prompt: '日本の横浜中華街で、BYDの車がロボットに変形し、東京タワーまで飛んでいく。そして、レクサスが変形したロボットと戦う。横浜・東京の夜景をバックにした壮大なロボットバトル。シネマティックな映像、CGI特殊効果、迫力ある変形シーン。',
+        twitterUrl: 'https://x.com/RyoTakeuchi2333/status/2056927606218625522',
+        tags: ['Sci Fi', 'Action']
+      },
+      {
+        id: 'a1b7dde2',
+        prompt: 'Make a rapid fire video that shows a different neighborhood of Charleston SC every 1 second, upbeat music, include text labels for each neighborhood. Quick cuts between historic downtown, Rainbow Row, King Street, Sullivan\'s Island, and more. Energetic montage style, golden hour lighting throughout.',
+        twitterUrl: 'https://x.com/seeksteve/status/2056928552814055729',
+        tags: ['Urban', 'Realistic']
+      },
+      {
+        id: '23444073',
+        prompt: 'Modern urban-anime infiltration unit character sheet, high-speed mobility specialist, futuristic tactical fantasy design. STYLE: Strong graphic design layout, AAA game concept sheet, Spider-Verse + Arcane + Jet Set Radio influence, rough cel-shading, painterly brush strokes, clean silhouette readability, kinetic motion sketch lines. CHARACTER: Young anime male, messy brown hair, left eye green, right eye blue, lightweight tactical armor, cream oversized hooded jacket, orange accent straps. LAYOUT: Large hero pose left side, expression sheet top right, action poses middle right.',
+        twitterUrl: 'https://x.com/Cia0_exe/status/2056930569108504644',
+        tags: ['Anime', 'Action']
+      },
+      {
+        id: '443f67c7',
+        prompt: 'Dense futuristic megacity at night covered in fog. A woman moves through crowded elevated walkways while emergency broadcasts interrupt giant holographic screens overhead. A colossal biomechanical creature advances through the cityscape — each footstep shatters buildings, the ground trembles. Crowds scatter in panic. Atmospheric tension, cyberpunk color palette, Blade Runner aesthetic.',
+        twitterUrl: 'https://x.com/AllaAisling/status/2056897037917135060',
+        tags: ['Sci Fi', 'Cinematic']
+      },
+      {
+        id: 'ca3549ab',
+        prompt: 'USの大学生が朝、ルームメイトに大音量のアラームを聴かせて無理やり起こすドッキリ。iPhoneで撮影された映像。アラームをセットして枕元に置き、寝ている友人を撮影。アラームが鳴り響き友人が飛び起き、ドッキリに気付いてカメラに向かって怒る。自然なリアクション、ハンドヘルドカメラ。',
+        twitterUrl: 'https://x.com/flowphantom/status/2056898738426404937',
+        tags: ['Comedy', 'First Person']
+      },
+      {
+        id: '7d7688e6',
+        prompt: 'Cinematic 3D animation style, Pixar aesthetic. Three-act structure:\n1) Low-altitude drone aerial shot sweeping over a ruined tropical villa on a cliff at dawn, crumbling stone and broken wood, young couple watching.\n2) Accelerated timelapse of construction: couple working together nailing beams, painting walls, planting palm trees, filling a pool, garden growing.\n3) Golden hour shot of fully restored luxury villa, couple and children laughing during a family meal.',
+        twitterUrl: 'https://x.com/hedo_ist/status/2056877802687693187',
+        tags: ['Animation', 'Cinematic']
+      },
+      {
+        id: 'e9038157',
+        prompt: 'Insane ultra-wide cinematic meteor strike. Perfect camera orbit tracking the incoming projectile, shockwave physics rippling outward on impact, volumetric explosion with mushroom cloud formation, zero jank. Photorealistic debris field, atmospheric distortion, scale of destruction visible across the horizon. IMAX quality, 4K.',
+        twitterUrl: 'https://x.com/andreasawires/status/2056880965402661194',
+        tags: ['Cinematic', 'Sci Fi']
+      },
+      {
+        id: '1ef8ed2d',
+        prompt: 'Hyper-realistic cinematic anime action video, 15 seconds. CHARACTERS: SUNGY — tall lean male, long wild black hair, white tracksuit with red side stripes, custom katana Kageuchi 105cm. MIRA — slender female, long straight silver-white hair, deep crimson and gold kimono-haori, Tsukikage katana. ARENA: Obliterated urban warzone, collapsed steel-frame buildings, cracked asphalt, glowing embers, storm clouds. Detailed 15-second sequence with camera choreography and 4K rendering specs.',
+        twitterUrl: 'https://x.com/MO_IAI/status/2056863929406476616',
+        tags: ['Action', 'Anime']
+      },
+      {
+        id: '84e9d274',
+        prompt: 'A shaky, panicked handheld recording from the balcony of a sea-facing hotel during the day. The person filming spots something in the distance, does a jerky zoom-in as a massive meteor streaks across the sky and crashes into the ocean. The impact creates a colossal tsunami rushing toward shore. The wave violently annihilates the beach. Camera extremely shaky, breathing heavy. Water surges until it reaches just below the balcony. Cinematic hyper-realistic documentary-style footage.',
+        twitterUrl: 'https://x.com/rahulnanda86/status/2056827504355381316',
+        tags: ['Cinematic', 'Realistic']
+      },
+      {
+        id: '086b92e7',
+        prompt: '[CINEMATIC SETUP] Anamorphic 35mm, fluorescent overhead practical lighting — the flat affectless light of a convention center or community hall. Kodachrome with muted institutional colors — beige carpet, folding tables, name badges, 1980s public television production aesthetic. Retro comedy with anachronistic AI product demonstration. Complete second-by-second timeline and style specifications.',
+        twitterUrl: 'https://x.com/BLVCKLIGHTai/status/2056833298689839244',
+        tags: ['Retro', 'Comedy']
+      },
+      {
+        id: 'f092f000',
+        prompt: 'Style: Photorealistic extreme macro nature film, hypnotic and meditative, rich saturated butterfly-wing colors with crystalline clarity. One continuous 15-second dolly-forward macro push into the same butterfly wing surface, revealing increasingly microscopic scale detail — from wing edge to single iridescent scale to the nano-structure of a single scale. Seamless transition through scales of reality. 8K, no cuts.',
+        twitterUrl: 'https://x.com/kaan_alper/status/2056854083689234753',
+        tags: ['Nature', 'Close Up']
+      },
+      {
+        id: 'de4b11de',
+        prompt: 'Storyboard — \'The Golden Pact\'. Format: 16:9. Total duration: 10 seconds. Style: cinematic fantasy, Klimt-inspired, gold mosaic, Art Nouveau, intimate mythological encounter. Five detailed panel descriptions (0:00–0:10) featuring a dragon and woman encounter. Camera directions: slow push-in, orbit, rack focus. Dialogue: whispered ancient language with subtitle overlay.',
+        twitterUrl: 'https://x.com/nimentrix/status/2056838619999219828',
+        tags: ['Fantasy', 'Cinematic']
+      },
+      {
+        id: '7dbf09c0',
+        prompt: 'Storyboard — \'The Golden Pact\' (extended version). Format: 16:9. Total duration: 10 seconds. Style: cinematic fantasy, Klimt-inspired gold mosaic and Art Nouveau. Dragon rears back, enormous golden wings spreading to fill frame. Woman stands unflinching, hand raised with a glowing seal. Their eyes lock. The pact ignites — golden light floods outward. Both bow in mutual recognition.',
+        twitterUrl: 'https://x.com/nimentrix/status/2056838708494786739',
+        tags: ['Fantasy', 'Cinematic']
+      },
+      {
+        id: '4f6ad5bf',
+        prompt: 'Use Image 1 as the primary hero-frame reference for Ārash-e Kamāngīr\'s exact face, costume, body proportions, color palette, bow, quiver, cloak, and cinematic visual style. Use Image 2 only as a storyboard reference for the action sequence, camera beats, emotional arc, and arrow trajectory. Create one continuous epic cinematic animation of the mythological hero drawing his bow at the mountain summit, arrow release with supernatural force, camera following the arrow\'s impossible flight.',
+        twitterUrl: 'https://x.com/4rdavan/status/2056840580131610873',
+        tags: ['Cinematic', 'Animation']
+      },
+      {
+        id: '0a8ae3ed',
+        prompt: 'Watercolor animation showing an elderly security guard at a rainy apartment complex who receives a drawing from a lonely girl in a yellow raincoat, leading to a touching moment of human connection ending in a warm morning greeting. Visual direction: hand-drawn watercolor sketch animation, loose ink outlines, warm muted colors, cinematic storybook aesthetic, melancholic yet heartwarming mood, soft handheld camera movement, rainy atmospheric lighting.',
+        twitterUrl: 'https://x.com/Ankit_patel211/status/2056815833201234310',
+        tags: ['Animation', 'Drama']
+      },
+      {
+        id: 'ca2313c6',
+        prompt: 'Adapt this into a high-end, slick live-action cinematic film scene following this production board, faithfully adapted from the provided production storyboard. Shot on location with a high-end camera on 65mm film, capturing crisp, ultrafine film grain and dramatic cinematography. Practical lighting setups, authentic location, professional grade color grading in the style of a major studio production.',
+        twitterUrl: 'https://x.com/BrentLynch/status/2056903725613252820',
+        tags: ['Cinematic', 'Realistic']
+      },
+      {
+        id: 'b47e6e51',
+        prompt: 'Stylized Japanese Harajuku street fashion "Get Ready With Me" vertical video featuring a trendy Japanese fashion creator preparing for a day out in Shibuya. Bright colorful bedroom filled with posters, plushies, neon signs. She talks in Japanese while applying glitter makeup, colored eyeliner, glossy lips, and styling layered Harajuku outfits. Fast-paced cuts, spinning outfit reveals, VHS overlays, animated Japanese text graphics, energetic J-pop pacing.',
+        twitterUrl: 'https://x.com/movielover93582/status/2056936490752672008',
+        tags: ['Fashion', 'Urban']
+      },
+      {
+        id: 'e3559ba9',
+        prompt: 'Photorealistic cinematic fashion video set on an elegant London shopping street inspired by Bond Street. A stylish British woman in her late 20s walks confidently past a luxury boutique. She wears gold earrings, a burgundy double-breasted blazer, matching mini skirt. Her phone rings. She stops, answers. A male voice asks, "Can you please scan your outfit?" She replies in a soft British accent, camera performs a smooth head-to-toe scan displaying elegant text labels. 9:16 vertical, 15 seconds.',
+        twitterUrl: 'https://x.com/ShamiWeb3/status/2056904361792716894',
+        tags: ['Fashion', 'Cinematic']
+      },
+      {
+        id: 'bbbf0dfd',
+        prompt: 'Use the uploaded portrait image as the primary facial identity reference. Use the multi-angle character sheet for movement consistency and body proportions. Use the environment boards for scene design and lighting style. Use the outfit reference sheet for wardrobe continuity. Use the storyboard frames for cinematic pacing and camera composition. Generate a realistic underground fighting short film with consistent character identity, cinematic realism, emotional close-ups, and grounded action choreography.',
+        twitterUrl: 'https://x.com/AndrewHand95/status/2056920003740586041',
+        tags: ['Action', 'Realistic']
+      }
+    ];
+
+    // ── 태그 추출 ──
+    const genreSet = new Set();
+    const styleSet = new Set();
+    const STYLE_TAGS = new Set(['Close Up', 'Aerial', 'Tracking', 'Slow Motion', 'Timelapse', 'First Person', 'Realistic']);
+
+    PROMPTS.forEach(p => {
+      p.tags.forEach(t => {
+        if (STYLE_TAGS.has(t)) styleSet.add(t);
+        else genreSet.add(t);
+      });
+    });
+
+    // ── 필터 상태 ──
+    let activeGenre = 'all';
+    let activeStyle = 'all';
+    let searchQuery = '';
+
+    // ── DOM 빌드 ──
+    function buildFilters() {
+      const genreWrap = document.getElementById('pg-genre-tags');
+      const styleWrap = document.getElementById('pg-style-tags');
+
+      const makeTag = (label, isStyle) => {
+        const btn = document.createElement('button');
+        btn.className = 'pg-tag' + (label === 'all' ? ' active' : '');
+        btn.textContent = label === 'all' ? 'All' : label;
+        btn.dataset.value = label;
+        btn.addEventListener('click', () => {
+          const container = isStyle ? styleWrap : genreWrap;
+          container.querySelectorAll('.pg-tag').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          if (isStyle) activeStyle = label;
+          else activeGenre = label;
+          applyFilters();
+        });
+        return btn;
+      };
+
+      genreWrap.appendChild(makeTag('all', false));
+      [...genreSet].sort().forEach(t => genreWrap.appendChild(makeTag(t, false)));
+
+      styleWrap.appendChild(makeTag('all', true));
+      [...styleSet].sort().forEach(t => styleWrap.appendChild(makeTag(t, true)));
+    }
+
+    function buildCards() {
+      const grid = document.getElementById('pg-grid');
+      PROMPTS.forEach(p => {
+        const tid = tweetId(p.twitterUrl);
+        const imgSrc = thumb(tid);
+        const tagsHtml = p.tags.map(t => `<span class="pg-badge">${t}</span>`).join('');
+        const promptShort = p.prompt.replace(/\n/g, ' ');
+
+        const card = document.createElement('div');
+        card.className = 'pg-card';
+        card.dataset.id = p.id;
+        card.dataset.tags = p.tags.join(' ').toLowerCase();
+        card.dataset.prompt = p.prompt.toLowerCase();
+
+        card.innerHTML = `
+          <div class="pg-thumb">
+            <img src="${imgSrc}" alt="${p.tags.join(' ')} prompt" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+            <div class="pg-thumb-placeholder" style="display:none">
+              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            </div>
+            <div class="pg-play-btn">
+              <svg width="52" height="52" viewBox="0 0 24 24" fill="white" stroke="none"><circle cx="12" cy="12" r="12" fill="rgba(0,0,0,0.55)"/><polygon points="10,8 18,12 10,16" fill="white"/></svg>
+            </div>
+          </div>
+          <div class="pg-body">
+            <div class="pg-badges">${tagsHtml}</div>
+            <p class="pg-prompt">${promptShort}</p>
+            <div class="pg-actions">
+              <button class="pg-btn primary" onclick="openModal('${p.id}',event)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                영상 보기
+              </button>
+              <button class="pg-btn" onclick="copyPrompt('${p.id}',this,event)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                복사
+              </button>
+            </div>
+          </div>`;
+
+        card.addEventListener('click', (e) => {
+          if (!e.target.closest('button')) openModal(p.id, e);
+        });
+
+        grid.appendChild(card);
+      });
+      updateCount();
+    }
+
+    function applyFilters() {
+      const cards = document.querySelectorAll('.pg-card');
+      let visible = 0;
+      cards.forEach(card => {
+        const tags = card.dataset.tags;
+        const promptText = card.dataset.prompt;
+        const matchGenre = activeGenre === 'all' || tags.includes(activeGenre.toLowerCase());
+        const matchStyle = activeStyle === 'all' || tags.includes(activeStyle.toLowerCase());
+        const matchSearch = !searchQuery || promptText.includes(searchQuery.toLowerCase());
+        const show = matchGenre && matchStyle && matchSearch;
+        card.classList.toggle('hidden', !show);
+        if (show) visible++;
+      });
+      document.getElementById('pg-empty').style.display = visible === 0 ? 'block' : 'none';
+      updateCount(visible);
+    }
+
+    function updateCount(n) {
+      const count = n !== undefined ? n : PROMPTS.length;
+      document.getElementById('pg-count').textContent = count;
+    }
+
+    // ── 복사 ──
+    window.copyPrompt = function(id, btn, e) {
+      e.stopPropagation();
+      const p = PROMPTS.find(x => x.id === id);
+      if (!p) return;
+      navigator.clipboard.writeText(p.prompt).then(() => {
+        btn.classList.add('copied');
+        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> 복사됨';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> 복사';
+        }, 2200);
+      });
+    };
+
+    // ── 모달 ──
+    window.openModal = function(id, e) {
+      if (e) e.stopPropagation();
+      const p = PROMPTS.find(x => x.id === id);
+      if (!p) return;
+      const tid = tweetId(p.twitterUrl);
+
+      // 태그
+      document.getElementById('pg-modal-tags').innerHTML =
+        p.tags.map(t => `<span class="pg-badge">${t}</span>`).join('');
+
+      // 프롬프트
+      document.getElementById('pg-modal-prompt').textContent = p.prompt;
+
+      // 액션 버튼
+      document.getElementById('pg-modal-actions').innerHTML = `
+        <button class="pg-btn" onclick="copyModalPrompt('${id}',this)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          프롬프트 복사
+        </button>
+        <a class="pg-btn" href="${p.twitterUrl}" target="_blank" rel="noopener">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.259 5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          X에서 보기
+        </a>`;
+
+      // 트윗 임베드
+      const videoWrap = document.getElementById('pg-modal-video');
+      videoWrap.innerHTML = `<div class="twitter-embed-wrap"><div class="tw-loading">영상 로딩 중...</div></div>`;
+
+      document.getElementById('pg-modal-bg').classList.add('open');
+      document.body.style.overflow = 'hidden';
+
+      // Twitter 위젯 로드
+      setTimeout(() => {
+        videoWrap.innerHTML = `<div class="twitter-embed-wrap" id="tw-embed-${tid}"></div>`;
+        if (window.twttr && window.twttr.widgets) {
+          window.twttr.widgets.createTweet(tid, document.getElementById('tw-embed-'+tid), {
+            theme: 'dark', dnt: true, conversation: 'none'
+          }).then(el => {
+            if (!el) {
+              videoWrap.innerHTML = `<div class="tw-loading">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="currentColor" style="opacity:.4;margin-bottom:.8rem"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.73-8.835L1.254 2.25H8.08l4.259 5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                <p style="font-size:.85rem">트윗을 불러올 수 없습니다.</p>
+                <a href="${p.twitterUrl}" target="_blank" rel="noopener" style="color:#D4AF37;font-size:.8rem;margin-top:.5rem;display:block;">X(트위터)에서 직접 보기 →</a>
+              </div>`;
+            }
+          });
+        } else {
+          videoWrap.innerHTML = `<div class="tw-loading">
+            <a href="${p.twitterUrl}" target="_blank" rel="noopener" style="color:#D4AF37;font-size:.9rem;">X(트위터)에서 영상 보기 →</a>
+          </div>`;
+        }
+      }, 300);
+    };
+
+    function closeModal() {
+      document.getElementById('pg-modal-bg').classList.remove('open');
+      document.body.style.overflow = '';
+      document.getElementById('pg-modal-video').innerHTML = '';
+    }
+
+    window.copyModalPrompt = function(id, btn) {
+      const p = PROMPTS.find(x => x.id === id);
+      if (!p) return;
+      navigator.clipboard.writeText(p.prompt).then(() => {
+        btn.classList.add('copied');
+        btn.innerHTML = '✓ 복사됨';
+        setTimeout(() => {
+          btn.classList.remove('copied');
+          btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> 프롬프트 복사';
+        }, 2200);
+      });
+    };
+
+    document.getElementById('pg-modal-close').addEventListener('click', closeModal);
+    document.getElementById('pg-modal-bg').addEventListener('click', e => {
+      if (e.target === e.currentTarget) closeModal();
+    });
+    document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+    // ── 검색 ──
+    document.getElementById('pg-search').addEventListener('input', e => {
+      searchQuery = e.target.value.trim();
+      applyFilters();
+    });
+
+    // ── 초기화 ──
+    document.addEventListener('DOMContentLoaded', () => {
+      buildFilters();
+      buildCards();
+
+      // reveal 애니메이션
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) entry.target.classList.add('active');
+        });
+      }, { threshold: 0.1 });
+      document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+    });
+    </script>
+</body>
+</html>
