@@ -18,7 +18,7 @@ function validPin(request: Request, env: Env) {
 }
 
 function safeName(value: string) {
-  return value.replace(/[^a-zA-Z0-9가-힣._-]/g, '_').slice(0, 120)
+  return value.replace(/[^\p{L}\p{N}._-]/gu, '_').slice(0, 120)
 }
 
 async function authorized(request: Request, env: Env, shareKey: string) {
@@ -51,6 +51,22 @@ export const onRequestDelete: PagesFunction<Env> = async ({ env, request }) => {
   if (!fileKey.startsWith(`crm/${shareKey}/`)) return json({ error: 'invalid_file_key' }, 400)
   await env.BUCKET.delete(fileKey)
   return json({ ok: true })
+}
+
+export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
+  const url = new URL(request.url)
+  const shareKey = getShareKey(request)
+  if (!await authorized(request, env, shareKey)) return json({ error: 'unauthorized' }, 401)
+  const fileKey = url.searchParams.get('fileKey') ?? ''
+  if (!fileKey.startsWith(`crm/${shareKey}/`)) return json({ error: 'invalid_file_key' }, 400)
+  const object = await env.BUCKET.get(fileKey)
+  if (!object) return json({ error: 'file_not_found' }, 404)
+  const fileName = object.customMetadata?.originalName || fileKey.split('/').at(-1) || 'document'
+  const responseHeaders = new Headers()
+  object.writeHttpMetadata(responseHeaders)
+  responseHeaders.set('content-disposition', `inline; filename*=UTF-8''${encodeURIComponent(fileName)}`)
+  responseHeaders.set('cache-control', 'private, no-store')
+  return new Response(object.body, { headers: responseHeaders })
 }
 
 export const onRequest: PagesFunction<Env> = () => json({ error: 'method_not_allowed' }, 405)
