@@ -24,7 +24,7 @@ function validPin(request: Request, env: Env) {
   return request.headers.get('x-crm-pin') === (env.CRM_PIN ?? env.BOARD_PIN ?? '2580')
 }
 
-const emptyCrm = { companies: [], requests: [], tasks: [], team: [] }
+const emptyCrm = { companies: [], requests: [], tasks: [], team: [], commonDocuments: [] }
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const key = getKey(request)
@@ -49,7 +49,7 @@ export const onRequestPut: PagesFunction<Env> = async ({ env, request }) => {
   if (!validPin(request, env)) return json({ error: 'pin_required' }, 401)
 
   const data = await request.json() as Record<string, unknown>
-  if (!data || !Array.isArray(data.companies) || !Array.isArray(data.requests) || !Array.isArray(data.tasks) || !Array.isArray(data.team)) {
+  if (!data || !Array.isArray(data.companies) || !Array.isArray(data.requests) || !Array.isArray(data.tasks) || !Array.isArray(data.team) || (data.commonDocuments !== undefined && !Array.isArray(data.commonDocuments))) {
     return json({ error: 'invalid_payload' }, 400)
   }
 
@@ -62,7 +62,7 @@ export const onRequestPut: PagesFunction<Env> = async ({ env, request }) => {
     VALUES (?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
     ON CONFLICT(share_key) DO UPDATE SET data = excluded.data,
     updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`)
-    .bind(key, JSON.stringify({ companies: data.companies, requests: data.requests, tasks: data.tasks, team: data.team })).run()
+    .bind(key, JSON.stringify({ companies: data.companies, requests: data.requests, tasks: data.tasks, team: data.team, commonDocuments: data.commonDocuments ?? [] })).run()
 
   const updated = await env.DB.prepare('SELECT updated_at FROM boards WHERE share_key = ?')
     .bind(key).first<{ updated_at: string }>()

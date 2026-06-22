@@ -31,6 +31,15 @@ function toBase64(bytes: Uint8Array) {
   return btoa(binary)
 }
 
+export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
+  const key = getKey(request)
+  if (!key) return json({ error: 'invalid_key' }, 400)
+  if (!validPin(request, env)) return json({ error: 'pin_required' }, 401)
+  const board = await env.DB.prepare('SELECT share_key FROM boards WHERE share_key = ?').bind(key).first()
+  if (!board) return json({ error: 'crm_not_found' }, 404)
+  return json({ configured: Boolean(env.RESEND_API_KEY), from: env.CRM_FROM_EMAIL ?? 'crm@sorigrim.com' })
+}
+
 export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
   const key = getKey(request)
   if (!key) return json({ error: 'invalid_key' }, 400)
