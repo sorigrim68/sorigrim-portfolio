@@ -24,7 +24,7 @@ function validPin(request: Request, env: Env) {
   return request.headers.get('x-crm-pin') === (env.CRM_PIN ?? env.BOARD_PIN ?? '2580')
 }
 
-const emptyCrm = { companies: [], requests: [], tasks: [], team: [], commonDocuments: [] }
+const emptyCrm = { companies: [], requests: [], tasks: [], team: [], commonDocuments: [], auditLog: [] }
 
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const key = getKey(request)
@@ -49,20 +49,33 @@ export const onRequestPut: PagesFunction<Env> = async ({ env, request }) => {
   if (!validPin(request, env)) return json({ error: 'pin_required' }, 401)
 
   const data = await request.json() as Record<string, unknown>
-  if (!data || !Array.isArray(data.companies) || !Array.isArray(data.requests) || !Array.isArray(data.tasks) || !Array.isArray(data.team) || (data.commonDocuments !== undefined && !Array.isArray(data.commonDocuments))) {
+  if (!data || !Array.isArray(data.companies) || !Array.isArray(data.requests) || !Array.isArray(data.tasks) || !Array.isArray(data.team) || (data.commonDocuments !== undefined && !Array.isArray(data.commonDocuments)) || (data.auditLog !== undefined && !Array.isArray(data.auditLog))) {
     return json({ error: 'invalid_payload' }, 400)
   }
 
   const current = await env.DB.prepare('SELECT updated_at FROM boards WHERE share_key = ?')
     .bind(key).first<{ updated_at: string }>()
   const revision = request.headers.get('x-crm-revision') ?? ''
-  if (current && revision && revision !== current.updated_at) return json({ error: 'stale_revision' }, 409)
+  if (current && revision && revision !== current.updated_at) {
+    const latest = await env.DB.prepare('SELECT data, updated_at FROM boards WHERE share_key = ?').bind(key).first<CrmRow>()
+    return json({ error: 'stale_revision', ...(latest ? JSON.parse(latest.data) : emptyCrm), updatedAt: latest?.updated_at ?? '' }, 409)
+  }
+
+  const currentRow = await env.DB.prepare('SELECT data, updated_at FROM boards WHERE share_key = ?').bind(key).first<CrmRow>()
+  if (currentRow) {
+    const backupKey = `${key}_backup_${Date.now()}`
+    await env.DB.prepare('INSERT INTO boards (share_key, data, updated_at) VALUES (?, ?, ?)')
+      .bind(backupKey, currentRow.data, currentRow.updated_at).run()
+    await env.DB.prepare(`DELETE FROM boards WHERE share_key IN (
+      SELECT share_key FROM boards WHERE share_key GLOB ? ORDER BY updated_at DESC LIMIT -1 OFFSET 30
+    )`).bind(`${key}_backup_*`).run()
+  }
 
   await env.DB.prepare(`INSERT INTO boards (share_key, data, updated_at)
     VALUES (?, ?, strftime('%Y-%m-%dT%H:%M:%fZ', 'now'))
     ON CONFLICT(share_key) DO UPDATE SET data = excluded.data,
     updated_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')`)
-    .bind(key, JSON.stringify({ companies: data.companies, requests: data.requests, tasks: data.tasks, team: data.team, commonDocuments: data.commonDocuments ?? [] })).run()
+    .bind(key, JSON.stringify({ companies: data.companies, requests: data.requests, tasks: data.tasks, team: data.team, commonDocuments: data.commonDocuments ?? [], auditLog: data.auditLog ?? [] })).run()
 
   const updated = await env.DB.prepare('SELECT updated_at FROM boards WHERE share_key = ?')
     .bind(key).first<{ updated_at: string }>()
