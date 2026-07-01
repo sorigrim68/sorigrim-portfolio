@@ -32,15 +32,13 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
   if (!await authorized(request, env, shareKey)) return json({ error: 'unauthorized' }, 401)
   const companyId = safeName(url.searchParams.get('companyId') ?? '')
   const fileName = safeName(url.searchParams.get('filename') ?? 'document')
-  const size = Number(request.headers.get('content-length') ?? 0)
-  if (!companyId || size > 10 * 1024 * 1024) return json({ error: 'invalid_file' }, 400)
+  const declaredSize = Number(request.headers.get('content-length') ?? 0)
+  if (!companyId || !request.body) return json({ error: 'invalid_file' }, 400)
 
   const key = `crm/${shareKey}/${companyId}/${crypto.randomUUID()}-${fileName}`
-  const bytes = await request.arrayBuffer()
-  if (!bytes.byteLength || bytes.byteLength > 10 * 1024 * 1024) return json({ error: 'invalid_file' }, 400)
   const type = request.headers.get('content-type') || 'application/octet-stream'
-  await env.BUCKET.put(key, bytes, { httpMetadata: { contentType: type }, customMetadata: { originalName: fileName } })
-  return json({ key, name: fileName, size: bytes.byteLength, type })
+  const object = await env.BUCKET.put(key, request.body, { httpMetadata: { contentType: type }, customMetadata: { originalName: fileName } })
+  return json({ key, name: fileName, size: object?.size ?? declaredSize, type })
 }
 
 export const onRequestDelete: PagesFunction<Env> = async ({ env, request }) => {
