@@ -1,6 +1,7 @@
 type Env = {
   BOARD_PIN?: string
   BUCKET: R2Bucket
+  DB: D1Database
 }
 
 const headers = { 'content-type': 'application/json; charset=utf-8' }
@@ -16,6 +17,13 @@ function validPin(request: Request, env: Env) {
   return request.headers.get('x-board-pin') === (env.BOARD_PIN ?? '2580')
 }
 
+async function issueBoardExists(env: Env, shareKey: string) {
+  if (!shareKey) return false
+  return Boolean(await env.DB.prepare(
+    'SELECT share_key FROM xconda_issues WHERE share_key = ?',
+  ).bind(shareKey).first())
+}
+
 function safeName(value: string) {
   return value.replace(/[^\p{L}\p{N}._-]/gu, '_').slice(0, 120)
 }
@@ -28,7 +36,8 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
   const fileName = safeName(url.searchParams.get('filename') ?? 'attachment')
   if (!issueId || !request.body) return json({ error: 'invalid_file' }, 400)
 
-  const key = `issues/${shareKey}/${issueId}/${crypto.randomUUID()}-${fileName}`
+  if (!await issueBoardExists(env, shareKey)) return json({ error: 'unauthorized' }, 401)
+  const key = `issue/${shareKey}/${issueId}/${crypto.randomUUID()}-${fileName}`
   const type = request.headers.get('content-type') || 'application/octet-stream'
   const object = await env.BUCKET.put(key, request.body, {
     httpMetadata: { contentType: type },
@@ -40,15 +49,27 @@ export const onRequestPost: PagesFunction<Env> = async ({ env, request }) => {
 export const onRequestGet: PagesFunction<Env> = async ({ env, request }) => {
   const url = new URL(request.url)
   const shareKey = getShareKey(request)
-  if (!shareKey || !validPin(request, env)) return json({ error: 'unauthorized' }, 401)
+  if (!shareKey || !await issueBoardExists(env, shareKey)) return json({ error: 'unauthorized' }, 401)
   const fileKey = url.searchParams.get('fileKey') ?? ''
-  if (!fileKey.startsWith(`issues/${shareKey}/`)) return json({ error: 'invalid_file_key' }, 400)
+  if (!fileKey.startsWith(`issue/${shareKey}/`)) return json({ error: 'invalid_file_key' }, 400)
   const object = await env.BUCKET.get(fileKey)
   if (!object) return json({ error: 'file_not_found' }, 404)
   const responseHeaders = new Headers()
   object.writeHttpMetadata(responseHeaders)
   responseHeaders.set('cache-control', 'private, no-store')
   return new Response(object.body, { headers: responseHeaders })
+}
+
+export const onRequestDelete: PagesFunction<Env> = async ({ env, request }) => {
+  const url = new URL(request.url)
+  const shareKey = getShareKey(request)
+  if (!shareKey || !validPin(request, env) || !await issueBoardExists(env, shareKey)) {
+    return json({ error: 'unauthorized' }, 401)
+  }
+  const fileKey = url.searchParams.get('fileKey') ?? ''
+  if (!fileKey.startsWith(`issue/${shareKey}/`)) return json({ error: 'invalid_file_key' }, 400)
+  await env.BUCKET.delete(fileKey)
+  return json({ ok: true })
 }
 
 export const onRequest: PagesFunction<Env> = () =>
