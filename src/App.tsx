@@ -233,6 +233,8 @@ const pinSessionKey = 'team-task-manager.pin-ok'
 const requireShareKey = import.meta.env.VITE_REQUIRE_SHARE_KEY === 'true'
 const requirePin = import.meta.env.VITE_REQUIRE_PIN === 'true'
 const boardPin = import.meta.env.VITE_BOARD_PIN ?? '2580'
+const defaultBoardKey =
+  import.meta.env.VITE_DEFAULT_BOARD_KEY ?? 'xconda-team-2026-random-long-key'
 
 type BoardPayload = {
   members: string[]
@@ -423,7 +425,8 @@ function escapeCsvCell(value: string | number) {
 }
 
 function getShareKey() {
-  return new URLSearchParams(window.location.search).get('key')?.trim() ?? ''
+  const queryKey = new URLSearchParams(window.location.search).get('key')?.trim()
+  return queryKey || defaultBoardKey.trim()
 }
 
 function getPinSessionKey(shareKey: string) {
